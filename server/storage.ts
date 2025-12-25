@@ -1,38 +1,50 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { products, leads, type Product, type InsertLead, type Lead } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getProducts(): Promise<Product[]>;
+  getProduct(id: number): Promise<Product | undefined>;
+  createLead(lead: InsertLead): Promise<Lead>;
+  seedProducts(): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getProducts(): Promise<Product[]> {
+    return await db.select().from(products);
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getProduct(id: number): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createLead(insertLead: InsertLead): Promise<Lead> {
+    const [lead] = await db.insert(leads).values(insertLead).returning();
+    return lead;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async seedProducts(): Promise<void> {
+    const existing = await this.getProducts();
+    if (existing.length === 0) {
+      await db.insert(products).values([
+        {
+          name: "Semaglutide",
+          description: "A GLP-1 receptor agonist that mimics the GLP-1 hormone, which is released in the gastrointestinal tract in response to eating. It prompts the body to produce more insulin, which reduces blood sugar (glucose).",
+          price: "Starts at $299/mo",
+          image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=600",
+          benefits: ["Reduces appetite", "Supports weight loss", "Improves metabolic health", "Weekly injection"]
+        },
+        {
+          name: "Tirzepatide",
+          description: "The first and only unimolecular GIP and GLP-1 receptor agonist. It activates both the GLP-1 and GIP receptors to improve blood sugar control.",
+          price: "Starts at $399/mo",
+          image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&q=80&w=600",
+          benefits: ["Dual action mechanism", "Significantly greater weight loss", "Improved glycemic control", "Weekly injection"]
+        }
+      ]);
+    }
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

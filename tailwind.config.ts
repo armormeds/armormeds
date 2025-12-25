@@ -83,8 +83,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        serif: ["var(--font-serif)"],
+        sans: ["DM Sans", "sans-serif"],
+        heading: ["Outfit", "sans-serif"],
         mono: ["var(--font-mono)"],
       },
       keyframes: {
