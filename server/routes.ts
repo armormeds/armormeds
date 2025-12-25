@@ -26,16 +26,18 @@ export async function registerRoutes(
 
   app.post(api.leads.create.path, async (req, res) => {
     try {
+      console.log('Received lead submission:', req.body);
       const input = api.leads.create.input.parse(req.body);
       const lead = await storage.createLead(input);
       res.status(201).json(lead);
     } catch (err) {
+      console.error('Lead submission error:', err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
         });
       }
-      throw err;
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
