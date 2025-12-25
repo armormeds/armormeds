@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { ScrollToTop } from "@/components/ScrollToTop"; // Helper component I'll create inline below if needed, but better to put in router
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 

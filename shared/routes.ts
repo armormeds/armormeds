@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertLeadSchema, products, leads } from './schema';
+import { insertLeadSchema, products, leads, type InsertLead } from './schema';
 
 export const errorSchemas = {
   validation: z.object({ message: z.string() }),
@@ -83,3 +83,5 @@ export function buildUrl(path: string, params?: Record<string, string | number>)
   }
   return url;
 }
+
+export { type InsertLead };
