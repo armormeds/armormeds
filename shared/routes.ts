@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { insertLeadSchema, products, leads } from './schema';
 
+export const errorSchemas = {
+  validation: z.object({ message: z.string() }),
+  notFound: z.object({ message: z.string() }),
+};
+
 export const api = {
   products: {
     list: {
@@ -15,20 +20,55 @@ export const api = {
       path: '/api/products/:id',
       responses: {
         200: z.custom<typeof products.$inferSelect>(),
-        404: z.object({ message: z.string() }),
+        404: errorSchemas.notFound,
+      }
+    },
+    update: {
+      method: 'PATCH' as const,
+      path: '/api/products/:id',
+      input: z.object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+        price: z.string().optional(),
+        image: z.string().optional(),
+        benefits: z.array(z.string()).optional(),
+      }),
+      responses: {
+        200: z.custom<typeof products.$inferSelect>(),
+        404: errorSchemas.notFound,
       }
     }
   },
   leads: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/leads',
+      responses: {
+        200: z.array(z.custom<typeof leads.$inferSelect>()),
+      },
+    },
     create: {
       method: 'POST' as const,
       path: '/api/leads',
       input: insertLeadSchema,
       responses: {
         201: z.custom<typeof leads.$inferSelect>(),
-        400: z.object({ message: z.string() }),
+        400: errorSchemas.validation,
       },
     },
+    update: {
+      method: 'PATCH' as const,
+      path: '/api/leads/:id',
+      input: z.object({
+        status: z.string().optional(),
+        name: z.string().optional(),
+        email: z.string().optional(),
+      }),
+      responses: {
+        200: z.custom<typeof leads.$inferSelect>(),
+        404: errorSchemas.notFound,
+      }
+    }
   },
 };
 

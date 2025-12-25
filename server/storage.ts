@@ -1,11 +1,14 @@
-import { products, leads, type Product, type InsertLead, type Lead } from "@shared/schema";
+import { products, leads, type Product, type InsertLead, type Lead, type UpdateLeadRequest } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
+  updateProduct(id: number, updates: Partial<Product>): Promise<Product>;
+  getLeads(): Promise<Lead[]>;
   createLead(lead: InsertLead): Promise<Lead>;
+  updateLead(id: number, updates: UpdateLeadRequest): Promise<Lead>;
   seedProducts(): Promise<void>;
 }
 
@@ -19,9 +22,23 @@ export class DatabaseStorage implements IStorage {
     return product;
   }
 
+  async updateProduct(id: number, updates: Partial<Product>): Promise<Product> {
+    const [updated] = await db.update(products).set(updates).where(eq(products.id, id)).returning();
+    return updated;
+  }
+
+  async getLeads(): Promise<Lead[]> {
+    return await db.select().from(leads);
+  }
+
   async createLead(insertLead: InsertLead): Promise<Lead> {
     const [lead] = await db.insert(leads).values(insertLead).returning();
     return lead;
+  }
+
+  async updateLead(id: number, updates: UpdateLeadRequest): Promise<Lead> {
+    const [updated] = await db.update(leads).set(updates).where(eq(leads.id, id)).returning();
+    return updated;
   }
 
   async seedProducts(): Promise<void> {
