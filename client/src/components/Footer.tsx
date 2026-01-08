@@ -23,25 +23,51 @@ export function Footer() {
               <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
               <li><Link href="/medications" className="hover:text-white transition-colors">Medications</Link></li>
               <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+              <li><Link href="/providers" className="hover:text-white transition-colors">Our Providers</Link></li>
               <li><Link href="/get-started" className="hover:text-white transition-colors">Get Started</Link></li>
             </ul>
           </div>
           
           <div>
-            <h4 className="text-white font-semibold mb-6">Contact</h4>
-            <ul className="space-y-4 text-slate-400">
-              <li>support@wellnessmeds.com</li>
-              <li>1-800-555-0123</li>
-              <li>123 Wellness Blvd<br/>Suite 100<br/>Austin, TX 78701</li>
+            <h4 className="text-white font-semibold mb-6">Legal</h4>
+            <ul className="space-y-4">
+              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>
             </ul>
           </div>
+          
         </div>
         
-        <div className="border-t border-slate-800 mt-12 pt-8 text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© 2024 WellnessMeds. All rights reserved.</p>
-          <div className="flex gap-6">
-            <span className="cursor-pointer hover:text-slate-300">Privacy Policy</span>
-            <span className="cursor-pointer hover:text-slate-300">Terms of Service</span>
+        <div className="border-t border-slate-800 mt-12 pt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div>
+              <h4 className="text-white font-semibold mb-4">Contact Us</h4>
+              <ul className="space-y-2 text-slate-400 text-sm">
+                <li>support@wellnessmeds.com</li>
+                <li>1-800-555-0123</li>
+                <li>123 Wellness Blvd, Suite 100, Austin, TX 78701</li>
+              </ul>
+            </div>
+            <div className="text-sm text-slate-400">
+              <p className="mb-2">
+                WellnessMeds provides telehealth consultations for weight management medications. 
+                All consultations are conducted by licensed healthcare providers.
+              </p>
+              <p>
+                <strong className="text-slate-300">Not a substitute for emergency care.</strong> If you are experiencing a medical emergency, call 911.
+              </p>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-800 pt-6 text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>© 2026 WellnessMeds. All rights reserved.</p>
+            <div className="flex flex-wrap gap-6 justify-center">
+              <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
+              <Link href="/refund-policy" className="hover:text-slate-300 transition-colors">Refund Policy</Link>
+              <Link href="/providers" className="hover:text-slate-300 transition-colors">Our Providers</Link>
+            </div>
           </div>
         </div>
       </div>

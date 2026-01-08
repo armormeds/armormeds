@@ -13,6 +13,10 @@ import Medications from "@/pages/Medications";
 import GetStarted from "@/pages/GetStarted";
 import About from "@/pages/About";
 import Admin from "@/pages/Admin";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
+import RefundPolicy from "@/pages/RefundPolicy";
+import Providers from "@/pages/Providers";
 import NotFound from "@/pages/not-found";
 
 // Helper to scroll to top on route change
@@ -36,6 +40,10 @@ function Router() {
           <Route path="/get-started" component={GetStarted} />
           <Route path="/about" component={About} />
           <Route path="/admin" component={Admin} />
+          <Route path="/privacy" component={PrivacyPolicy} />
+          <Route path="/terms" component={TermsOfService} />
+          <Route path="/refund-policy" component={RefundPolicy} />
+          <Route path="/providers" component={Providers} />
           <Route component={NotFound} />
         </Switch>
       </main>
