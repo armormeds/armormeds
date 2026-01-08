@@ -41,5 +41,27 @@ export async function registerRoutes(
     }
   });
 
+  app.get(api.leads.list.path, async (req, res) => {
+    const allLeads = await storage.getLeads();
+    res.json(allLeads);
+  });
+
+  app.patch(api.leads.update.path, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const input = api.leads.update.input.parse(req.body);
+      const updated = await storage.updateLead(id, input);
+      if (!updated) {
+        return res.status(404).json({ message: "Lead not found" });
+      }
+      res.json(updated);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   return httpServer;
 }
