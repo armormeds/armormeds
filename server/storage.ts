@@ -32,7 +32,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createLead(insertLead: InsertLead): Promise<Lead> {
-    const [lead] = await db.insert(leads).values(insertLead).returning();
+    const [lead] = await db.insert(leads).values(insertLead as any).returning();
     return lead;
   }
 

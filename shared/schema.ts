@@ -50,4 +50,9 @@ export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, statu
 export type Product = typeof products.$inferSelect;
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
-export type UpdateLeadRequest = Partial<z.infer<typeof insertLeadSchema> & { status: string }>;
+export type UpdateLeadRequest = {
+  status?: string;
+  name?: string;
+  email?: string;
+  phone?: string | null;
+};

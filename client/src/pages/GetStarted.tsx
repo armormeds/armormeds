@@ -125,7 +125,24 @@ export default function GetStarted() {
     });
   };
 
-  const nextStep = () => {
+  const getFieldsForStep = (step: number): (keyof FormData)[] => {
+    switch (step) {
+      case 1: return [];
+      case 2: return ["email"];
+      case 3: return ["name"];
+      case 4: return [];
+      case 5: return [];
+      case 6: return [];
+      default: return [];
+    }
+  };
+
+  const nextStep = async () => {
+    const fieldsToValidate = getFieldsForStep(currentStep);
+    if (fieldsToValidate.length > 0) {
+      const isValid = await form.trigger(fieldsToValidate);
+      if (!isValid) return;
+    }
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     }
