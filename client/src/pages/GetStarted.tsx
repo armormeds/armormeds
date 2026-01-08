@@ -6,32 +6,138 @@ import { useCreateLead } from "@/hooks/use-leads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Progress } from "@/components/ui/progress";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle2, ArrowRight, ArrowLeft, Shield, Clock, Stethoscope } from "lucide-react";
 import { useState } from "react";
+import { z } from "zod";
+
+const US_STATES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+  "Wisconsin", "Wyoming"
+];
+
+const GOALS = [
+  { id: "weight_loss", label: "Weight Loss" },
+  { id: "energy", label: "Energy & Vitality" },
+  { id: "metabolic_health", label: "Metabolic Health" },
+  { id: "appetite_control", label: "Appetite Control" },
+  { id: "blood_sugar", label: "Blood Sugar Management" },
+];
+
+const MEDICAL_CONDITIONS = [
+  { id: "high_blood_pressure", label: "High/Low Blood Pressure" },
+  { id: "heart_issues", label: "Heart Related Issues" },
+  { id: "irregular_heartbeat", label: "Irregular Heart Rhythm" },
+  { id: "liver_kidney", label: "Liver or Kidney Issues" },
+  { id: "chest_pain", label: "Chest Pain or Angina" },
+  { id: "blood_disorders", label: "Blood Disorders (Leukemia, Sickle Cell, etc.)" },
+  { id: "retinopathy", label: "Retinopathy" },
+  { id: "stroke", label: "Stroke History" },
+  { id: "none", label: "NONE" },
+];
+
+const SOLUTION_TYPES = [
+  { id: "injections", label: "Injections (Weekly)" },
+  { id: "pills", label: "Pills (Daily)" },
+];
+
+const formSchema = insertLeadSchema.extend({
+  name: z.string().min(2, "Name is required"),
+  email: z.string().email("Valid email is required"),
+  goals: z.array(z.string()).optional(),
+  state: z.string().optional(),
+  patientType: z.string().optional(),
+  previousTreatments: z.string().optional(),
+  solutionTypes: z.array(z.string()).optional(),
+  medicalConditions: z.array(z.string()).optional(),
+  currentMedications: z.string().optional(),
+  allergies: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  heightFeet: z.string().optional(),
+  heightInches: z.string().optional(),
+  weight: z.string().optional(),
+  sex: z.string().optional(),
+  hasPancreatitis: z.string().optional(),
+  hasThyroidCancer: z.string().optional(),
+  hasKidneyIssues: z.string().optional(),
+  hasDiabetes: z.string().optional(),
+  isPregnant: z.string().optional(),
+  previousGlp: z.string().optional(),
+  glpDetails: z.string().optional(),
+  consentGiven: z.string().optional(),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+const TOTAL_STEPS = 6;
 
 export default function GetStarted() {
   const { mutate, isPending } = useCreateLead();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
-  const form = useForm<InsertLead>({
-    resolver: zodResolver(insertLeadSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
       phone: "",
       medicationInterest: "",
-      message: ""
+      message: "",
+      goals: [],
+      state: "",
+      patientType: "",
+      previousTreatments: "",
+      solutionTypes: [],
+      medicalConditions: [],
+      currentMedications: "",
+      allergies: "",
+      dateOfBirth: "",
+      heightFeet: "",
+      heightInches: "",
+      weight: "",
+      sex: "",
+      hasPancreatitis: "",
+      hasThyroidCancer: "",
+      hasKidneyIssues: "",
+      hasDiabetes: "",
+      isPregnant: "",
+      previousGlp: "",
+      glpDetails: "",
+      consentGiven: "",
     }
   });
 
-  const onSubmit = (data: InsertLead) => {
-    mutate(data, {
+  const onSubmit = (data: FormData) => {
+    mutate(data as InsertLead, {
       onSuccess: () => setIsSuccess(true)
     });
   };
+
+  const nextStep = () => {
+    if (currentStep < TOTAL_STEPS) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const progress = (currentStep / TOTAL_STEPS) * 100;
 
   if (isSuccess) {
     return (
@@ -44,13 +150,24 @@ export default function GetStarted() {
           <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
             <CheckCircle2 className="w-12 h-12 text-green-600" />
           </div>
-          <h2 className="text-3xl font-display font-bold mb-4 text-slate-900">Request Received!</h2>
+          <h2 className="text-3xl font-display font-bold mb-4 text-slate-900" data-testid="text-success-title">Medical Form Submitted!</h2>
           <p className="text-slate-600 mb-8 text-lg">
-            Thank you for starting your journey with us. A care coordinator will review your information and contact you within 24 hours.
+            Thank you for completing your medical intake form. A licensed provider will review your information and contact you within 24-48 hours to discuss your treatment options.
           </p>
+          <div className="flex items-center justify-center gap-4 text-sm text-slate-500 mb-8">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>24-48 hour response</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span>HIPAA Compliant</span>
+            </div>
+          </div>
           <Button 
             className="w-full h-12 rounded-xl"
             onClick={() => window.location.href = '/'}
+            data-testid="button-return-home"
           >
             Return Home
           </Button>
@@ -60,168 +177,773 @@ export default function GetStarted() {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-32 pb-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-16 lg:gap-24">
-        
-        {/* Left Side - Content */}
-        <div className="flex-1 lg:pt-12">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-5xl font-display font-bold text-slate-900 mb-6 leading-tight">
-              Your Transformation <br/> Starts Here
-            </h1>
-            <p className="text-xl text-slate-600 mb-10 leading-relaxed">
-              Complete this short inquiry form to see if you qualify for our weight management program. 
-              No payment is required today.
-            </p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-28 pb-16">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">
+            Medical Intake Form
+          </h1>
+          <p className="text-slate-600">
+            Complete this form to see if you qualify for our weight management program.
+          </p>
+        </motion.div>
 
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 mt-1">1</div>
-                <div>
-                  <h3 className="font-bold text-lg mb-1">Submit Inquiry</h3>
-                  <p className="text-slate-600">Tell us about your goals and medical history.</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-gray-200 ml-4"></div>
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0 mt-1">2</div>
-                <div>
-                  <h3 className="font-bold text-lg mb-1 text-slate-400">Provider Review</h3>
-                  <p className="text-slate-400">A licensed provider reviews your eligibility.</p>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-gray-200 ml-4"></div>
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0 mt-1">3</div>
-                <div>
-                  <h3 className="font-bold text-lg mb-1 text-slate-400">Medications Shipped</h3>
-                  <p className="text-slate-400">If approved, medication is shipped to your door.</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+        <div className="mb-8">
+          <div className="flex items-center justify-between text-sm text-slate-600 mb-2">
+            <span>Step {currentStep} of {TOTAL_STEPS}</span>
+            <span>{Math.round(progress)}% Complete</span>
+          </div>
+          <Progress value={progress} className="h-2" />
         </div>
 
-        {/* Right Side - Form */}
-        <div className="flex-1">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="bg-white p-8 md:p-10 rounded-[2rem] shadow-2xl border border-gray-100"
-          >
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Jane Doe" className="h-12 rounded-xl bg-slate-50 border-gray-200 focus:bg-white transition-colors" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8"
+        >
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <AnimatePresence mode="wait">
+                {currentStep === 1 && (
+                  <motion.div
+                    key="step1"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">What are your goals?</h2>
+                      <p className="text-slate-600">Select all that apply to you</p>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base">Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="jane@example.com" className="h-12 rounded-xl bg-slate-50 border-gray-200 focus:bg-white transition-colors" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                    <FormField
+                      control={form.control}
+                      name="goals"
+                      render={() => (
+                        <FormItem>
+                          <div className="grid gap-3">
+                            {GOALS.map((goal) => (
+                              <FormField
+                                key={goal.id}
+                                control={form.control}
+                                name="goals"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={goal.id}
+                                      className="flex items-center space-x-3 space-y-0 p-4 rounded-xl border border-gray-200 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(goal.id)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...(field.value || []), goal.id])
+                                              : field.onChange(
+                                                  field.value?.filter((value) => value !== goal.id)
+                                                );
+                                          }}
+                                          data-testid={`checkbox-goal-${goal.id}`}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-medium cursor-pointer flex-1">
+                                        {goal.label}
+                                      </FormLabel>
+                                    </FormItem>
+                                  );
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </motion.div>
+                )}
+
+                {currentStep === 2 && (
+                  <motion.div
+                    key="step2"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Contact Information</h2>
+                      <p className="text-slate-600">How can we reach you?</p>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email" 
+                              placeholder="your@email.com" 
+                              className="h-12 rounded-xl"
+                              data-testid="input-email"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="tel" 
+                              placeholder="(555) 123-4567" 
+                              className="h-12 rounded-xl"
+                              data-testid="input-phone"
+                              {...field} 
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Which state do you live in?</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 rounded-xl" data-testid="select-state">
+                                <SelectValue placeholder="Select your state" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {US_STATES.map((state) => (
+                                <SelectItem key={state} value={state}>{state}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="patientType"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Are you a new or existing patient?</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="flex flex-col space-y-2"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors">
+                                <FormControl>
+                                  <RadioGroupItem value="new" data-testid="radio-patient-new" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">New Patient</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors">
+                                <FormControl>
+                                  <RadioGroupItem value="existing" data-testid="radio-patient-existing" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">Existing Patient</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </motion.div>
+                )}
+
+                {currentStep === 3 && (
+                  <motion.div
+                    key="step3"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Personal Information</h2>
+                      <p className="text-slate-600">Tell us about yourself</p>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Jane Doe" 
+                              className="h-12 rounded-xl"
+                              data-testid="input-name"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="dateOfBirth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date of Birth</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="date" 
+                              className="h-12 rounded-xl"
+                              data-testid="input-dob"
+                              {...field} 
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="sex"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Sex</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="flex gap-4"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="male" data-testid="radio-sex-male" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">Male</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="female" data-testid="radio-sex-female" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">Female</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="heightFeet"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height (ft)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="5" 
+                                className="h-12 rounded-xl"
+                                data-testid="input-height-feet"
+                                {...field} 
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="heightInches"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height (in)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="8" 
+                                className="h-12 rounded-xl"
+                                data-testid="input-height-inches"
+                                {...field} 
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="weight"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Weight (lbs)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="180" 
+                                className="h-12 rounded-xl"
+                                data-testid="input-weight"
+                                {...field} 
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 4 && (
+                  <motion.div
+                    key="step4"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Medical History</h2>
+                      <p className="text-slate-600">Help us understand your health background</p>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="medicalConditions"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Do you have any of the following conditions?</FormLabel>
+                          <div className="grid gap-2 mt-2">
+                            {MEDICAL_CONDITIONS.map((condition) => (
+                              <FormField
+                                key={condition.id}
+                                control={form.control}
+                                name="medicalConditions"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={condition.id}
+                                      className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(condition.id)}
+                                          onCheckedChange={(checked) => {
+                                            if (condition.id === "none" && checked) {
+                                              field.onChange(["none"]);
+                                            } else if (checked) {
+                                              const filtered = field.value?.filter(v => v !== "none") || [];
+                                              field.onChange([...filtered, condition.id]);
+                                            } else {
+                                              field.onChange(
+                                                field.value?.filter((value) => value !== condition.id)
+                                              );
+                                            }
+                                          }}
+                                          data-testid={`checkbox-condition-${condition.id}`}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal cursor-pointer text-sm">
+                                        {condition.label}
+                                      </FormLabel>
+                                    </FormItem>
+                                  );
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="currentMedications"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Current Medications</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="List any medications you are currently taking (or write 'None')" 
+                              className="min-h-[80px] rounded-xl resize-none"
+                              data-testid="textarea-medications"
+                              {...field} 
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="allergies"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Allergies</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="List any allergies (or write 'None')" 
+                              className="h-12 rounded-xl"
+                              data-testid="input-allergies"
+                              {...field} 
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </motion.div>
+                )}
+
+                {currentStep === 5 && (
+                  <motion.div
+                    key="step5"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">GLP-1 Specific Questions</h2>
+                      <p className="text-slate-600">Important safety information</p>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="hasPancreatitis"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Do you have pancreatitis or a history of pancreatitis?</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="flex gap-4"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="yes" data-testid="radio-pancreatitis-yes" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="no" data-testid="radio-pancreatitis-no" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasThyroidCancer"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Do you have medullary thyroid cancer or a family history of it?</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="flex gap-4"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="yes" data-testid="radio-thyroid-yes" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="no" data-testid="radio-thyroid-no" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hasKidneyIssues"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Do you have renal (kidney) impairment?</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="flex gap-4"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="yes" data-testid="radio-kidney-yes" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="no" data-testid="radio-kidney-no" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="previousGlp"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormLabel>Have you previously taken a GLP-1 medication (Ozempic, Wegovy, Mounjaro, etc.)?</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              className="flex gap-4"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="yes" data-testid="radio-glp-yes" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                <FormControl>
+                                  <RadioGroupItem value="no" data-testid="radio-glp-no" />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {form.watch("previousGlp") === "yes" && (
+                      <FormField
+                        control={form.control}
+                        name="glpDetails"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Please provide details about your previous GLP-1 experience</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Which medication did you take? What dosage? How long ago?" 
+                                className="min-h-[80px] rounded-xl resize-none"
+                                data-testid="textarea-glp-details"
+                                {...field} 
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base">Phone</FormLabel>
-                        <FormControl>
-                          <Input type="tel" placeholder="(555) 123-4567" className="h-12 rounded-xl bg-slate-50 border-gray-200 focus:bg-white transition-colors" {...field} value={field.value || ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
-                <FormField
-                  control={form.control}
-                  name="medicationInterest"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Interested In</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                        <FormControl>
-                          <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-gray-200 focus:bg-white transition-colors">
-                            <SelectValue placeholder="Select medication" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="semaglutide">Semaglutide (Generic Ozempic)</SelectItem>
-                          <SelectItem value="tirzepatide">Tirzepatide (Generic Mounjaro)</SelectItem>
-                          <SelectItem value="unsure">Not sure / Advice needed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="medicationInterest"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Which medication are you interested in?</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 rounded-xl" data-testid="select-medication">
+                                <SelectValue placeholder="Select medication" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="semaglutide">Semaglutide</SelectItem>
+                              <SelectItem value="tirzepatide">Tirzepatide</SelectItem>
+                              <SelectItem value="unsure">Not sure / Need advice</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </motion.div>
+                )}
 
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base">Additional Questions (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Tell us about your goals..." 
-                          className="min-h-[120px] rounded-xl bg-slate-50 border-gray-200 focus:bg-white transition-colors resize-none p-4" 
-                          {...field} 
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {currentStep === 6 && (
+                  <motion.div
+                    key="step6"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Review & Consent</h2>
+                      <p className="text-slate-600">Almost done! Please review and agree to our terms.</p>
+                    </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={isPending}
-                  className="w-full h-14 text-lg rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all hover:-translate-y-1 mt-4"
-                >
-                  {isPending ? "Submitting..." : (
-                    <span className="flex items-center gap-2">
-                      Check Eligibility <ArrowRight className="w-5 h-5" />
-                    </span>
-                  )}
-                </Button>
-                
-                <p className="text-xs text-center text-slate-400 mt-4">
-                  By submitting this form, you agree to our Terms of Service and Privacy Policy. 
-                  Your data is encrypted and secure.
-                </p>
-              </form>
-            </Form>
-          </motion.div>
-        </div>
+                    <div className="bg-slate-50 rounded-xl p-6 space-y-4">
+                      <div className="flex items-start gap-3">
+                        <Stethoscope className="w-5 h-5 text-primary mt-0.5" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900">Telehealth Consultation</h4>
+                          <p className="text-sm text-slate-600">
+                            I understand that I will receive a telehealth consultation with a licensed healthcare provider who will review my medical history and determine my eligibility for treatment.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Shield className="w-5 h-5 text-primary mt-0.5" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900">Privacy & HIPAA Compliance</h4>
+                          <p className="text-sm text-slate-600">
+                            My personal health information will be kept confidential and handled in accordance with HIPAA regulations.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="consentGiven"
+                      render={({ field }) => (
+                        <FormItem className="flex items-start space-x-3 space-y-0 p-4 rounded-xl border border-gray-200">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value === "yes"}
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked ? "yes" : "");
+                              }}
+                              data-testid="checkbox-consent"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="font-medium">
+                              I agree to the terms and conditions
+                            </FormLabel>
+                            <p className="text-sm text-slate-500">
+                              By checking this box, I confirm that the information provided is accurate and I consent to telehealth services.
+                            </p>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Additional Comments (Optional)</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Is there anything else you'd like us to know?" 
+                              className="min-h-[80px] rounded-xl resize-none"
+                              data-testid="textarea-message"
+                              {...field} 
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex justify-between gap-4 mt-8 pt-6 border-t">
+                {currentStep > 1 ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={prevStep}
+                    className="h-12 px-6 rounded-xl"
+                    data-testid="button-prev-step"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </Button>
+                ) : (
+                  <div />
+                )}
+
+                {currentStep < TOTAL_STEPS ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    className="h-12 px-8 rounded-xl"
+                    data-testid="button-next-step"
+                  >
+                    Continue
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isPending || form.watch("consentGiven") !== "yes"}
+                    className="h-12 px-8 rounded-xl"
+                    data-testid="button-submit-form"
+                  >
+                    {isPending ? "Submitting..." : "Submit Application"}
+                    <CheckCircle2 className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
+              </div>
+            </form>
+          </Form>
+        </motion.div>
+
+        <p className="text-xs text-center text-slate-400 mt-6">
+          Your information is encrypted and secure. We never share your data with third parties.
+        </p>
       </div>
     </div>
   );

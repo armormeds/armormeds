@@ -18,8 +18,30 @@ export const leads = pgTable("leads", {
   phone: text("phone"),
   medicationInterest: text("medication_interest"),
   message: text("message"),
-  status: text("status").notNull().default("new"), // "new", "contacted", "completed", "archived"
+  status: text("status").notNull().default("new"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  // Extended medical intake fields
+  goals: jsonb("goals").$type<string[]>(),
+  state: text("state"),
+  patientType: text("patient_type"),
+  previousTreatments: text("previous_treatments"),
+  solutionTypes: jsonb("solution_types").$type<string[]>(),
+  medicalConditions: jsonb("medical_conditions").$type<string[]>(),
+  currentMedications: text("current_medications"),
+  allergies: text("allergies"),
+  dateOfBirth: text("date_of_birth"),
+  heightFeet: text("height_feet"),
+  heightInches: text("height_inches"),
+  weight: text("weight"),
+  sex: text("sex"),
+  hasPancreatitis: text("has_pancreatitis"),
+  hasThyroidCancer: text("has_thyroid_cancer"),
+  hasKidneyIssues: text("has_kidney_issues"),
+  hasDiabetes: text("has_diabetes"),
+  isPregnant: text("is_pregnant"),
+  previousGlp: text("previous_glp"),
+  glpDetails: text("glp_details"),
+  consentGiven: text("consent_given"),
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
