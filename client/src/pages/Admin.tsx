@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead, Product } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
@@ -48,6 +48,16 @@ function LeadCard({ lead, onStatusChange }: { lead: Lead; onStatusChange: (id: n
             <div className="text-sm">
               <span className="font-medium">Interested in:</span>{" "}
               <span className="text-muted-foreground" data-testid={`text-lead-medication-${lead.id}`}>{lead.medicationInterest}</span>
+            </div>
+          )}
+
+          {lead.documentPaths && lead.documentPaths.length > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <FileText className="h-4 w-4 text-primary" />
+              <span className="font-medium">Documents:</span>{" "}
+              <span className="text-muted-foreground" data-testid={`text-lead-docs-${lead.id}`}>
+                {lead.documentPaths.length} file{lead.documentPaths.length !== 1 ? 's' : ''} uploaded
+              </span>
             </div>
           )}
 

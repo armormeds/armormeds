@@ -12,9 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, ArrowRight, ArrowLeft, Shield, Clock, Stethoscope } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, ArrowRight, ArrowLeft, Shield, Clock, Stethoscope, Upload, FileText, X, Lock } from "lucide-react";
+import { useState, useCallback } from "react";
 import { z } from "zod";
+import { useUpload } from "@/hooks/use-upload";
+import { Card, CardContent } from "@/components/ui/card";
 
 const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
@@ -76,16 +78,37 @@ const formSchema = insertLeadSchema.extend({
   previousGlp: z.string().optional(),
   glpDetails: z.string().optional(),
   consentGiven: z.string().optional(),
+  documentPaths: z.array(z.string()).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
-const TOTAL_STEPS = 6;
+interface UploadedFile {
+  name: string;
+  path: string;
+  size: number;
+}
+
+const TOTAL_STEPS = 7;
+const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function GetStarted() {
   const { mutate, isPending } = useCreateLead();
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const { uploadFile } = useUpload({
+    onSuccess: (response) => {
+      const newFile: UploadedFile = {
+        name: response.metadata.name,
+        path: response.objectPath,
+        size: response.metadata.size,
+      };
+      setUploadedFiles(prev => [...prev, newFile]);
+    },
+  });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -116,13 +139,54 @@ export default function GetStarted() {
       previousGlp: "",
       glpDetails: "",
       consentGiven: "",
+      documentPaths: [],
     }
   });
 
   const onSubmit = (data: FormData) => {
-    mutate(data as InsertLead, {
+    const submitData = {
+      ...data,
+      documentPaths: uploadedFiles.map(f => f.path),
+    };
+    mutate(submitData as InsertLead, {
       onSuccess: () => setIsSuccess(true)
     });
+  };
+
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    for (const file of Array.from(files)) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        alert(`File type not allowed: ${file.name}. Please upload PDF, JPEG, or PNG files only.`);
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`File too large: ${file.name}. Maximum size is 10MB.`);
+        continue;
+      }
+
+      setIsUploading(true);
+      try {
+        await uploadFile(file);
+      } catch (error) {
+        console.error("Upload failed:", error);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+    e.target.value = "";
+  }, [uploadFile]);
+
+  const removeFile = (path: string) => {
+    setUploadedFiles(prev => prev.filter(f => f.path !== path));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   const getFieldsForStep = (step: number): (keyof FormData)[] => {
@@ -133,6 +197,7 @@ export default function GetStarted() {
       case 4: return [];
       case 5: return [];
       case 6: return [];
+      case 7: return [];
       default: return [];
     }
   };
@@ -836,6 +901,110 @@ export default function GetStarted() {
                 {currentStep === 6 && (
                   <motion.div
                     key="step6"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Secure Document Upload</h2>
+                      <p className="text-slate-600">Upload any relevant medical documents (optional)</p>
+                    </div>
+
+                    <Card className="border-2 border-dashed border-gray-200 hover:border-primary/50 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-3 mb-4">
+                          <Lock className="w-5 h-5 text-primary mt-0.5" />
+                          <div>
+                            <h4 className="font-semibold text-slate-900">HIPAA-Compliant Storage</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Your documents are encrypted and securely stored. Only authorized healthcare providers can access them.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-center py-6">
+                          <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Upload photo ID, lab results, or other medical documents
+                          </p>
+                          <div className="flex justify-center">
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                multiple
+                                onChange={handleFileUpload}
+                                disabled={isUploading}
+                                data-testid="input-file-upload"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                disabled={isUploading}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                  input?.click();
+                                }}
+                                data-testid="button-upload-files"
+                              >
+                                {isUploading ? "Uploading..." : "Select Files"}
+                              </Button>
+                            </label>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-3">
+                            Accepted formats: PDF, JPEG, PNG (max 10MB each)
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {uploadedFiles.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm text-slate-700">Uploaded Documents</h4>
+                        {uploadedFiles.map((file) => (
+                          <div
+                            key={file.path}
+                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                            data-testid={`file-item-${file.path}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-5 h-5 text-primary" />
+                              <div>
+                                <p className="text-sm font-medium text-slate-700">{file.name}</p>
+                                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeFile(file.path)}
+                              data-testid={`button-remove-file-${file.path}`}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="bg-blue-50 rounded-xl p-4 flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-blue-800">
+                          Document upload is optional. You can skip this step and submit documents later via email if preferred.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 7 && (
+                  <motion.div
+                    key="step7"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}

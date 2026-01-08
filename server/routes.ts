@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -10,6 +11,9 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Seed data on startup
   await storage.seedProducts();
+
+  // Register object storage routes for secure file uploads
+  registerObjectStorageRoutes(app);
 
   app.get(api.products.list.path, async (req, res) => {
     const products = await storage.getProducts();

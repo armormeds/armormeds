@@ -42,6 +42,8 @@ export const leads = pgTable("leads", {
   previousGlp: text("previous_glp"),
   glpDetails: text("glp_details"),
   consentGiven: text("consent_given"),
+  // Document uploads (stored as JSON array of document paths)
+  documentPaths: jsonb("document_paths").$type<string[]>(),
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
