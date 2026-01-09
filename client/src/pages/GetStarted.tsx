@@ -225,13 +225,14 @@ export default function GetStarted() {
 
   const getFieldsForStep = (step: number): (keyof FormData)[] => {
     switch (step) {
-      case 1: return [];
-      case 2: return ["email"];
-      case 3: return ["name"];
-      case 4: return [];
-      case 5: return [];
-      case 6: return [];
-      case 7: return [];
+      case 1: return []; // Medication selection - validated by selectedPriceId
+      case 2: return []; // Goals
+      case 3: return ["email"]; // Contact info
+      case 4: return ["name"]; // Personal info
+      case 5: return []; // Medical history
+      case 6: return []; // GLP-1 questions
+      case 7: return []; // Documents
+      case 8: return []; // Review & consent
       default: return [];
     }
   };
@@ -323,10 +324,116 @@ export default function GetStarted() {
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
+              {currentStep > 1 && selectedPriceId && (() => {
+                const selectedProduct = stripeProducts.find(p => 
+                  p.prices.some(price => price.id === selectedPriceId)
+                );
+                const selectedPrice = selectedProduct?.prices.find(p => p.id === selectedPriceId);
+                if (selectedProduct && selectedPrice) {
+                  return (
+                    <div className="mb-6 bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                          <CreditCard className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{selectedProduct.name}</p>
+                          <p className="text-xs text-slate-500">Selected Plan</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-primary">{formatPrice(selectedPrice.unit_amount)}</p>
+                        <p className="text-xs text-slate-500">per {selectedPrice.recurring?.interval}</p>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <motion.div
                     key="step1"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Choose Your Treatment Plan</h2>
+                      <p className="text-slate-600">Select your preferred medication to get started</p>
+                    </div>
+
+                    {isProductsLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />
+                        ))}
+                      </div>
+                    ) : stripeProducts.length === 0 ? (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800">
+                        No treatment plans available at this time. Please contact support.
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {stripeProducts.map((product) => {
+                          const price = product.prices.find(p => p.active && p.recurring);
+                          if (!price) return null;
+                          return (
+                            <Card 
+                              key={product.id}
+                              className={`cursor-pointer transition-all ${
+                                selectedPriceId === price.id 
+                                  ? 'ring-2 ring-primary border-primary' 
+                                  : 'hover:border-primary/50'
+                              }`}
+                              onClick={() => setSelectedPriceId(price.id)}
+                              data-testid={`card-product-${product.id}`}
+                            >
+                              <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-4">
+                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                      selectedPriceId === price.id 
+                                        ? 'border-primary bg-primary' 
+                                        : 'border-gray-300'
+                                    }`}>
+                                      {selectedPriceId === price.id && (
+                                        <div className="w-2 h-2 bg-white rounded-full" />
+                                      )}
+                                    </div>
+                                    <div>
+                                      <h3 className="font-semibold text-lg text-slate-900">{product.name}</h3>
+                                      <p className="text-sm text-slate-600">{product.description}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-2xl font-bold text-primary">{formatPrice(price.unit_amount)}</p>
+                                    <p className="text-sm text-slate-500">per {price.recurring?.interval}</p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="bg-green-50 rounded-xl p-4 flex items-start gap-3">
+                      <CreditCard className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-green-900">Secure Payment</h4>
+                        <p className="text-sm text-green-800">
+                          Your payment is processed securely through Stripe. Cancel anytime with no hidden fees.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 2 && (
+                  <motion.div
+                    key="step2-goals"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -383,9 +490,9 @@ export default function GetStarted() {
                   </motion.div>
                 )}
 
-                {currentStep === 2 && (
+                {currentStep === 3 && (
                   <motion.div
-                    key="step2"
+                    key="step3"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -493,9 +600,9 @@ export default function GetStarted() {
                   </motion.div>
                 )}
 
-                {currentStep === 3 && (
+                {currentStep === 4 && (
                   <motion.div
-                    key="step3"
+                    key="step4"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -643,9 +750,9 @@ export default function GetStarted() {
                   </motion.div>
                 )}
 
-                {currentStep === 4 && (
+                {currentStep === 5 && (
                   <motion.div
-                    key="step4"
+                    key="step5"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -748,9 +855,9 @@ export default function GetStarted() {
                   </motion.div>
                 )}
 
-                {currentStep === 5 && (
+                {currentStep === 6 && (
                   <motion.div
-                    key="step5"
+                    key="step6"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -932,9 +1039,9 @@ export default function GetStarted() {
                   </motion.div>
                 )}
 
-                {currentStep === 6 && (
+                {currentStep === 7 && (
                   <motion.div
-                    key="step6"
+                    key="step7"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -1030,86 +1137,6 @@ export default function GetStarted() {
                       <div>
                         <p className="text-sm text-blue-800">
                           Document upload is optional. You can skip this step and submit documents later via email if preferred.
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {currentStep === 7 && (
-                  <motion.div
-                    key="step7"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    <div className="text-center mb-6">
-                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Choose Your Treatment Plan</h2>
-                      <p className="text-slate-600">Select your preferred medication to proceed with payment</p>
-                    </div>
-
-                    {isProductsLoading ? (
-                      <div className="space-y-4">
-                        {[1, 2].map((i) => (
-                          <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />
-                        ))}
-                      </div>
-                    ) : stripeProducts.length === 0 ? (
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800">
-                        No treatment plans available at this time. Please contact support.
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {stripeProducts.map((product) => {
-                          const price = product.prices.find(p => p.active && p.recurring);
-                          if (!price) return null;
-                          return (
-                            <Card 
-                              key={product.id}
-                              className={`cursor-pointer transition-all ${
-                                selectedPriceId === price.id 
-                                  ? 'ring-2 ring-primary border-primary' 
-                                  : 'hover:border-primary/50'
-                              }`}
-                              onClick={() => setSelectedPriceId(price.id)}
-                              data-testid={`card-product-${product.id}`}
-                            >
-                              <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-4">
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                      selectedPriceId === price.id 
-                                        ? 'border-primary bg-primary' 
-                                        : 'border-gray-300'
-                                    }`}>
-                                      {selectedPriceId === price.id && (
-                                        <div className="w-2 h-2 bg-white rounded-full" />
-                                      )}
-                                    </div>
-                                    <div>
-                                      <h3 className="font-semibold text-lg text-slate-900">{product.name}</h3>
-                                      <p className="text-sm text-slate-600">{product.description}</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-2xl font-bold text-primary">{formatPrice(price.unit_amount)}</p>
-                                    <p className="text-sm text-slate-500">per {price.recurring?.interval}</p>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    <div className="bg-green-50 rounded-xl p-4 flex items-start gap-3">
-                      <CreditCard className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-semibold text-green-900">Secure Payment</h4>
-                        <p className="text-sm text-green-800">
-                          Your payment is processed securely through Stripe. Cancel anytime with no hidden fees.
                         </p>
                       </div>
                     </div>
@@ -1237,7 +1264,7 @@ export default function GetStarted() {
                   <div />
                 )}
 
-                {currentStep === 7 ? (
+                {currentStep === 1 ? (
                   <Button
                     type="button"
                     onClick={nextStep}
@@ -1245,7 +1272,7 @@ export default function GetStarted() {
                     className="h-12 px-8 rounded-xl"
                     data-testid="button-next-step"
                   >
-                    Continue to Review
+                    Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 ) : currentStep === 8 ? (
