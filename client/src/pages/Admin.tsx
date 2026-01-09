@@ -3,16 +3,21 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead, Product } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 const statusColors: Record<string, string> = {
   new: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -329,15 +334,217 @@ function LeadCard({ lead, onStatusChange }: { lead: Lead; onStatusChange: (id: n
   );
 }
 
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  image: string;
+  benefits: string;
+}
+
+function ProductForm({ 
+  product, 
+  onSubmit, 
+  onCancel,
+  isSubmitting 
+}: { 
+  product?: Product; 
+  onSubmit: (data: ProductFormData) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}) {
+  const { register, handleSubmit, formState: { errors } } = useForm<ProductFormData>({
+    defaultValues: product ? {
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      benefits: Array.isArray(product.benefits) ? product.benefits.join('\n') : '',
+    } : {
+      name: '',
+      description: '',
+      price: '',
+      image: '',
+      benefits: '',
+    }
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Product Name</Label>
+        <Input 
+          id="name" 
+          {...register("name", { required: "Name is required" })} 
+          placeholder="e.g., Semaglutide"
+          data-testid="input-product-name"
+        />
+        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea 
+          id="description" 
+          {...register("description", { required: "Description is required" })} 
+          placeholder="Describe the medication..."
+          rows={3}
+          data-testid="input-product-description"
+        />
+        {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="price">Price</Label>
+        <Input 
+          id="price" 
+          {...register("price", { required: "Price is required" })} 
+          placeholder="e.g., Starts at $299/mo"
+          data-testid="input-product-price"
+        />
+        {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="image">Image URL</Label>
+        <Input 
+          id="image" 
+          {...register("image", { required: "Image URL is required" })} 
+          placeholder="https://..."
+          data-testid="input-product-image"
+        />
+        {errors.image && <p className="text-sm text-destructive">{errors.image.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="benefits">Benefits (one per line)</Label>
+        <Textarea 
+          id="benefits" 
+          {...register("benefits", { required: "At least one benefit is required" })} 
+          placeholder="Reduces appetite&#10;Supports weight loss&#10;Weekly injection"
+          rows={4}
+          data-testid="input-product-benefits"
+        />
+        {errors.benefits && <p className="text-sm text-destructive">{errors.benefits.message}</p>}
+      </div>
+
+      <DialogFooter className="gap-2">
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel-product">
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting} data-testid="button-save-product">
+          {isSubmitting ? "Saving..." : (product ? "Update Product" : "Add Product")}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+function ProductCard({ 
+  product, 
+  onEdit, 
+  onDelete 
+}: { 
+  product: Product; 
+  onEdit: (product: Product) => void;
+  onDelete: (id: number) => void;
+}) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  return (
+    <Card data-testid={`card-product-${product.id}`}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-4">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-20 h-20 object-cover rounded-md flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h3 className="font-semibold text-lg" data-testid={`text-product-name-${product.id}`}>{product.name}</h3>
+                <p className="text-primary font-medium" data-testid={`text-product-price-${product.id}`}>{product.price}</p>
+              </div>
+              <div className="flex gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => onEdit(product)}
+                  data-testid={`button-edit-product-${product.id}`}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-destructive hover:text-destructive"
+                      data-testid={`button-delete-product-${product.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Delete Product</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-muted-foreground">
+                      Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                    </p>
+                    <DialogFooter className="gap-2">
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button 
+                        variant="destructive" 
+                        onClick={() => {
+                          onDelete(product.id);
+                          setShowDeleteConfirm(false);
+                        }}
+                        data-testid={`button-confirm-delete-${product.id}`}
+                      >
+                        Delete
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{product.description}</p>
+            {Array.isArray(product.benefits) && product.benefits.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {product.benefits.slice(0, 3).map((benefit, idx) => (
+                  <Badge key={idx} variant="secondary" className="text-xs no-default-hover-elevate no-default-active-elevate">
+                    {benefit}
+                  </Badge>
+                ))}
+                {product.benefits.length > 3 && (
+                  <Badge variant="outline" className="text-xs no-default-hover-elevate no-default-active-elevate">
+                    +{product.benefits.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Admin() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"leads" | "products">("leads");
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const { data: leads, isLoading: leadsLoading, refetch: refetchLeads } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
   });
 
-  const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
+  const { data: products, isLoading: productsLoading, refetch: refetchProducts } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
@@ -362,8 +569,104 @@ export default function Admin() {
     },
   });
 
+  const createProductMutation = useMutation({
+    mutationFn: async (data: { name: string; description: string; price: string; image: string; benefits: string[] }) => {
+      return apiRequest("POST", "/api/products", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setShowProductDialog(false);
+      toast({
+        title: "Product created",
+        description: "New product has been added successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create product.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, ...data }: { id: number; name: string; description: string; price: string; image: string; benefits: string[] }) => {
+      const url = buildUrl("/api/products/:id", { id });
+      return apiRequest("PATCH", url, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setShowProductDialog(false);
+      setEditingProduct(null);
+      toast({
+        title: "Product updated",
+        description: "Product has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update product.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const url = buildUrl("/api/products/:id", { id });
+      return apiRequest("DELETE", url);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Product deleted",
+        description: "Product has been removed successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete product.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleStatusChange = (id: number, status: string) => {
     updateLeadMutation.mutate({ id, status });
+  };
+
+  const handleProductSubmit = (data: ProductFormData) => {
+    const benefits = data.benefits.split('\n').map(b => b.trim()).filter(b => b.length > 0);
+    const productData = {
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      image: data.image,
+      benefits,
+    };
+
+    if (editingProduct) {
+      updateProductMutation.mutate({ id: editingProduct.id, ...productData });
+    } else {
+      createProductMutation.mutate(productData);
+    }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setShowProductDialog(true);
+  };
+
+  const handleDeleteProduct = (id: number) => {
+    deleteProductMutation.mutate(id);
+  };
+
+  const handleCloseDialog = () => {
+    setShowProductDialog(false);
+    setEditingProduct(null);
   };
 
   const newLeadsCount = leads?.filter((l) => l.status === "new").length ?? 0;
@@ -383,7 +686,7 @@ export default function Admin() {
               <p className="text-muted-foreground">Manage leads and products</p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => refetchLeads()} data-testid="button-refresh-leads">
+          <Button variant="outline" onClick={() => activeTab === "leads" ? refetchLeads() : refetchProducts()} data-testid="button-refresh">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -454,10 +757,34 @@ export default function Admin() {
           <div className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Products
-                </CardTitle>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Products
+                  </CardTitle>
+                  <Dialog open={showProductDialog} onOpenChange={(open) => {
+                    if (!open) handleCloseDialog();
+                    else setShowProductDialog(true);
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button data-testid="button-add-product">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Product
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
+                      </DialogHeader>
+                      <ProductForm 
+                        product={editingProduct || undefined}
+                        onSubmit={handleProductSubmit}
+                        onCancel={handleCloseDialog}
+                        isSubmitting={createProductMutation.isPending || updateProductMutation.isPending}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent>
                 {productsLoading ? (
@@ -469,28 +796,18 @@ export default function Admin() {
                 ) : products && products.length > 0 ? (
                   <div className="grid gap-4">
                     {products.map((product) => (
-                      <Card key={product.id} data-testid={`card-product-${product.id}`}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-4">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-16 h-16 object-cover rounded-md"
-                            />
-                            <div className="flex-1">
-                              <h3 className="font-semibold" data-testid={`text-product-name-${product.id}`}>{product.name}</h3>
-                              <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
-                              <p className="text-sm font-medium text-primary mt-1" data-testid={`text-product-price-${product.id}`}>{product.price}</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <ProductCard 
+                        key={product.id} 
+                        product={product}
+                        onEdit={handleEditProduct}
+                        onDelete={handleDeleteProduct}
+                      />
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No products found.</p>
+                    <p>No products found. Click "Add Product" to create one.</p>
                   </div>
                 )}
               </CardContent>

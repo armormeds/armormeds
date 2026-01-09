@@ -50,6 +50,7 @@ export const insertProductSchema = createInsertSchema(products).omit({ id: true 
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, status: true, createdAt: true });
 
 export type Product = typeof products.$inferSelect;
+export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type UpdateLeadRequest = {
@@ -57,4 +58,11 @@ export type UpdateLeadRequest = {
   name?: string;
   email?: string;
   phone?: string | null;
+};
+export type UpdateProductRequest = {
+  name?: string;
+  description?: string;
+  price?: string;
+  image?: string;
+  benefits?: string[];
 };

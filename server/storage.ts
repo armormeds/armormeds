@@ -1,11 +1,13 @@
-import { products, leads, type Product, type InsertLead, type Lead, type UpdateLeadRequest } from "@shared/schema";
+import { products, leads, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
-  updateProduct(id: number, updates: Partial<Product>): Promise<Product>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, updates: UpdateProductRequest): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<boolean>;
   getLeads(): Promise<Lead[]>;
   createLead(lead: InsertLead): Promise<Lead>;
   updateLead(id: number, updates: UpdateLeadRequest): Promise<Lead>;
@@ -22,9 +24,19 @@ export class DatabaseStorage implements IStorage {
     return product;
   }
 
-  async updateProduct(id: number, updates: Partial<Product>): Promise<Product> {
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const [created] = await db.insert(products).values(product as any).returning();
+    return created;
+  }
+
+  async updateProduct(id: number, updates: UpdateProductRequest): Promise<Product | undefined> {
     const [updated] = await db.update(products).set(updates).where(eq(products.id, id)).returning();
     return updated;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    const result = await db.delete(products).where(eq(products.id, id)).returning();
+    return result.length > 0;
   }
 
   async getLeads(): Promise<Lead[]> {
