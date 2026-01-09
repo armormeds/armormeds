@@ -5,18 +5,18 @@
 @tailwind utilities;
 
 :root {
-  /* Royal Purple Palette - Premium, Luxury, Elegant */
-  /* Primary: Deep Royal Purple */
-  --primary: 270 60% 45%;
+  /* Emerald Green Palette - Natural, Organic, Fresh */
+  /* Primary: Deep Emerald Green */
+  --primary: 160 84% 30%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: Soft Lavender */
-  --secondary: 270 30% 95%;
-  --secondary-foreground: 270 60% 30%;
+  /* Secondary: Soft Mint */
+  --secondary: 160 40% 94%;
+  --secondary-foreground: 160 70% 22%;
 
-  /* Accent: Rich Gold */
-  --accent: 45 90% 55%;
-  --accent-foreground: 270 60% 20%;
+  /* Accent: Warm Amber */
+  --accent: 38 92% 55%;
+  --accent-foreground: 160 70% 15%;
 
   /* Neutral tones */
   --background: 210 20% 99%; /* Very light blue-grey tint */
@@ -36,7 +36,7 @@
 
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 270 60% 45%;
+  --ring: 160 84% 30%;
 
   --radius: 1rem;
   
@@ -65,7 +65,7 @@
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-teal-400;
 }
 
 .card-hover {
