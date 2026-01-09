@@ -109,8 +109,9 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/stripe/products', async (req, res) => {
+  app.get('/api/stripe/products/:category?', async (req, res) => {
     try {
+      const category = req.params.category;
       const result = await db.execute(sql`
         SELECT 
           p.id as product_id,
@@ -154,7 +155,14 @@ export async function registerRoutes(
         }
       }
 
-      res.json({ data: Array.from(productsMap.values()) });
+      let products = Array.from(productsMap.values());
+      
+      // Filter by category if provided
+      if (category) {
+        products = products.filter((p: any) => p.metadata?.category === category);
+      }
+
+      res.json({ data: products });
     } catch (error) {
       console.error('Error fetching Stripe products:', error);
       res.status(500).json({ error: 'Failed to fetch products' });

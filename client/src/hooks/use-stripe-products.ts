@@ -26,19 +26,17 @@ interface StripeProductsResponse {
 }
 
 export function useStripeProducts(category?: string) {
+  const queryKey = category 
+    ? ["/api/stripe/products", category]
+    : ["/api/stripe/products"];
+    
   const query = useQuery<StripeProductsResponse>({
-    queryKey: ["/api/stripe/products", category],
+    queryKey,
     staleTime: 1000 * 60 * 5,
   });
 
-  const products = query.data?.data || [];
-  
-  const filteredProducts = category 
-    ? products.filter(p => p.metadata?.category === category)
-    : products;
-
   return {
-    products: filteredProducts,
+    products: query.data?.data || [],
     isLoading: query.isLoading,
     error: query.error,
   };
