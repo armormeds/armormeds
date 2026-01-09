@@ -10,6 +10,7 @@ import {
 import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, BadgeCheck, Stethoscope, Package, HeartPulse } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
+import heroImage from "@assets/stock_images/healthy_fit_woman_sm_77ce0180.jpg";
 
 export default function Home() {
   const { data: products } = useProducts();
@@ -189,7 +190,7 @@ export default function Home() {
                 <div className="rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/20 aspect-[4/5] relative">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
                   <img 
-                    src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" 
+                    src={heroImage} 
                     alt="Healthy lifestyle" 
                     className="w-full h-full object-cover"
                   />
