@@ -5,18 +5,18 @@
 @tailwind utilities;
 
 :root {
-  /* Medical/Wellness Palette - Clean, Trustworthy, Modern */
-  /* Primary: Deep Teal/Blue - Trust */
-  --primary: 188 86% 35%;
+  /* Royal Purple Palette - Premium, Luxury, Elegant */
+  /* Primary: Deep Royal Purple */
+  --primary: 270 60% 45%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: Soft Sage Green - Growth/Health */
-  --secondary: 154 39% 93%;
-  --secondary-foreground: 166 76% 22%;
+  /* Secondary: Soft Lavender */
+  --secondary: 270 30% 95%;
+  --secondary-foreground: 270 60% 30%;
 
-  /* Accent: Vibrant Coral - Action/Energy */
-  --accent: 12 87% 68%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent: Rich Gold */
+  --accent: 45 90% 55%;
+  --accent-foreground: 270 60% 20%;
 
   /* Neutral tones */
   --background: 210 20% 99%; /* Very light blue-grey tint */
@@ -36,7 +36,7 @@
 
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 188 86% 35%;
+  --ring: 270 60% 45%;
 
   --radius: 1rem;
   
@@ -65,7 +65,7 @@
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-emerald-500;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400;
 }
 
 .card-hover {
