@@ -10,7 +10,9 @@ export function Navigation() {
 
   const links = [
     { href: "/", label: "Home" },
-    { href: "/medications", label: "Medications" },
+    { href: "/medications", label: "Weight Loss" },
+    { href: "/hair-loss", label: "Hair Loss" },
+    { href: "/sexual-health", label: "Sexual Health" },
     { href: "/about", label: "About Us" },
   ];
 

@@ -10,6 +10,8 @@ import { useLocation } from "wouter";
 
 import Home from "@/pages/Home";
 import Medications from "@/pages/Medications";
+import HairLoss from "@/pages/HairLoss";
+import SexualHealth from "@/pages/SexualHealth";
 import GetStarted from "@/pages/GetStarted";
 import About from "@/pages/About";
 import Admin from "@/pages/Admin";
@@ -37,6 +39,8 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/medications" component={Medications} />
+          <Route path="/hair-loss" component={HairLoss} />
+          <Route path="/sexual-health" component={SexualHealth} />
           <Route path="/get-started" component={GetStarted} />
           <Route path="/about" component={About} />
           <Route path="/admin" component={Admin} />

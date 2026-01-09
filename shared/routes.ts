@@ -41,6 +41,7 @@ export const api = {
         price: z.string().optional(),
         image: z.string().optional(),
         benefits: z.array(z.string()).optional(),
+        category: z.string().optional(),
       }),
       responses: {
         200: z.custom<typeof products.$inferSelect>(),

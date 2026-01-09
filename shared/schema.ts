@@ -9,6 +9,7 @@ export const products = pgTable("products", {
   price: text("price").notNull(),
   image: text("image").notNull(),
   benefits: jsonb("benefits").$type<string[]>().notNull(),
+  category: text("category").notNull().default("weight-loss"),
 });
 
 export const leads = pgTable("leads", {
@@ -65,4 +66,5 @@ export type UpdateProductRequest = {
   price?: string;
   image?: string;
   benefits?: string[];
+  category?: string;
 };

@@ -4,7 +4,8 @@ import { Link } from "wouter";
 import { Check, Info, Shield } from "lucide-react";
 
 export default function Medications() {
-  const { data: products, isLoading } = useProducts();
+  const { data: allProducts, isLoading } = useProducts();
+  const products = allProducts?.filter(p => p.category === "weight-loss");
 
   return (
     <div className="min-h-screen bg-slate-50 pt-32 pb-24">

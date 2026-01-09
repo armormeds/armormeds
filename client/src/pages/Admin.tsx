@@ -340,6 +340,7 @@ interface ProductFormData {
   price: string;
   image: string;
   benefits: string;
+  category: string;
 }
 
 function ProductForm({ 
@@ -353,15 +354,17 @@ function ProductForm({
   onCancel: () => void;
   isSubmitting: boolean;
 }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<ProductFormData>({
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProductFormData>({
     defaultValues: product ? {
       name: product.name,
       description: product.description,
       price: product.price,
       image: product.image,
       benefits: Array.isArray(product.benefits) ? product.benefits.join('\n') : '',
+      category: product.category || 'weight-loss',
     } : {
       name: '',
+      category: 'weight-loss',
       description: '',
       price: '',
       image: '',
@@ -428,6 +431,21 @@ function ProductForm({
         {errors.benefits && <p className="text-sm text-destructive">{errors.benefits.message}</p>}
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="category">Category</Label>
+        <input type="hidden" {...register("category")} />
+        <Select value={watch("category")} onValueChange={(val) => setValue("category", val, { shouldValidate: true })}>
+          <SelectTrigger data-testid="select-product-category">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="weight-loss">Weight Loss</SelectItem>
+            <SelectItem value="hair-loss">Hair Loss</SelectItem>
+            <SelectItem value="sexual-health">Sexual Health</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <DialogFooter className="gap-2">
         <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel-product">
           Cancel
@@ -463,7 +481,12 @@ function ProductCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h3 className="font-semibold text-lg" data-testid={`text-product-name-${product.id}`}>{product.name}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-lg" data-testid={`text-product-name-${product.id}`}>{product.name}</h3>
+                  <Badge variant="outline" className="text-xs no-default-hover-elevate no-default-active-elevate capitalize" data-testid={`badge-category-${product.id}`}>
+                    {product.category?.replace('-', ' ')}
+                  </Badge>
+                </div>
                 <p className="text-primary font-medium" data-testid={`text-product-price-${product.id}`}>{product.price}</p>
               </div>
               <div className="flex gap-1">
@@ -646,6 +669,7 @@ export default function Admin() {
       price: data.price,
       image: data.image,
       benefits,
+      category: data.category,
     };
 
     if (editingProduct) {
