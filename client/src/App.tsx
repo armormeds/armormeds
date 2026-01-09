@@ -19,6 +19,8 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import RefundPolicy from "@/pages/RefundPolicy";
 import Providers from "@/pages/Providers";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import CheckoutCancel from "@/pages/CheckoutCancel";
 import NotFound from "@/pages/not-found";
 
 // Helper to scroll to top on route change
@@ -48,6 +50,8 @@ function Router() {
           <Route path="/terms" component={TermsOfService} />
           <Route path="/refund-policy" component={RefundPolicy} />
           <Route path="/providers" component={Providers} />
+          <Route path="/checkout/success" component={CheckoutSuccess} />
+          <Route path="/checkout/cancel" component={CheckoutCancel} />
           <Route component={NotFound} />
         </Switch>
       </main>
