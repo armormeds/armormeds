@@ -12,11 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, ArrowRight, ArrowLeft, Shield, Clock, Stethoscope, Upload, FileText, X, Lock } from "lucide-react";
+import { CheckCircle2, ArrowRight, ArrowLeft, Shield, Clock, Stethoscope, Upload, FileText, X, Lock, CreditCard } from "lucide-react";
 import { useState, useCallback } from "react";
 import { z } from "zod";
 import { useUpload } from "@/hooks/use-upload";
 import { Card, CardContent } from "@/components/ui/card";
+import { useCheckout } from "@/hooks/use-checkout";
+import { useStripeProducts } from "@/hooks/use-stripe-products";
 
 const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
@@ -89,7 +91,7 @@ interface UploadedFile {
   size: number;
 }
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -99,6 +101,9 @@ export default function GetStarted() {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
+  const { checkout, isLoading: isCheckoutLoading } = useCheckout();
+  const { products: stripeProducts, isLoading: isProductsLoading } = useStripeProducts("weight-loss");
   const { uploadFile } = useUpload({
     onSuccess: (response) => {
       const newFile: UploadedFile = {
@@ -151,6 +156,35 @@ export default function GetStarted() {
     mutate(submitData as InsertLead, {
       onSuccess: () => setIsSuccess(true)
     });
+  };
+
+  const handleCheckout = () => {
+    if (!selectedPriceId) return;
+    
+    const formData = form.getValues();
+    const submitData = {
+      ...formData,
+      documentPaths: uploadedFiles.map(f => f.path),
+    };
+    
+    sessionStorage.setItem('pendingLeadData', JSON.stringify(submitData));
+    
+    const selectedProduct = stripeProducts.find(p => 
+      p.prices.some(price => price.id === selectedPriceId)
+    );
+    
+    checkout({
+      priceId: selectedPriceId,
+      productName: selectedProduct?.name,
+      customerEmail: formData.email,
+    });
+  };
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount / 100);
   };
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1011,9 +1045,107 @@ export default function GetStarted() {
                     className="space-y-6"
                   >
                     <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Choose Your Treatment Plan</h2>
+                      <p className="text-slate-600">Select your preferred medication to proceed with payment</p>
+                    </div>
+
+                    {isProductsLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {stripeProducts.map((product) => {
+                          const price = product.prices.find(p => p.active && p.recurring);
+                          if (!price) return null;
+                          return (
+                            <Card 
+                              key={product.id}
+                              className={`cursor-pointer transition-all ${
+                                selectedPriceId === price.id 
+                                  ? 'ring-2 ring-primary border-primary' 
+                                  : 'hover:border-primary/50'
+                              }`}
+                              onClick={() => setSelectedPriceId(price.id)}
+                              data-testid={`card-product-${product.id}`}
+                            >
+                              <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-4">
+                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                      selectedPriceId === price.id 
+                                        ? 'border-primary bg-primary' 
+                                        : 'border-gray-300'
+                                    }`}>
+                                      {selectedPriceId === price.id && (
+                                        <div className="w-2 h-2 bg-white rounded-full" />
+                                      )}
+                                    </div>
+                                    <div>
+                                      <h3 className="font-semibold text-lg text-slate-900">{product.name}</h3>
+                                      <p className="text-sm text-slate-600">{product.description}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-2xl font-bold text-primary">{formatPrice(price.unit_amount)}</p>
+                                    <p className="text-sm text-slate-500">per {price.recurring?.interval}</p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="bg-green-50 rounded-xl p-4 flex items-start gap-3">
+                      <CreditCard className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-green-900">Secure Payment</h4>
+                        <p className="text-sm text-green-800">
+                          Your payment is processed securely through Stripe. Cancel anytime with no hidden fees.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {currentStep === 8 && (
+                  <motion.div
+                    key="step8"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-center mb-6">
                       <h2 className="text-2xl font-bold text-slate-900 mb-2">Review & Consent</h2>
                       <p className="text-slate-600">Almost done! Please review and agree to our terms.</p>
                     </div>
+
+                    {(() => {
+                      const selectedProduct = stripeProducts.find(p => 
+                        p.prices.some(price => price.id === selectedPriceId)
+                      );
+                      const selectedPrice = selectedProduct?.prices.find(p => p.id === selectedPriceId);
+                      if (selectedProduct && selectedPrice) {
+                        return (
+                          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
+                            <div>
+                              <h4 className="font-semibold text-slate-900">Your Selected Plan</h4>
+                              <p className="text-sm text-slate-600">{selectedProduct.name}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xl font-bold text-primary">{formatPrice(selectedPrice.unit_amount)}</p>
+                              <p className="text-sm text-slate-500">per {selectedPrice.recurring?.interval}</p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
 
                     <div className="bg-slate-50 rounded-xl p-6 space-y-4">
                       <div className="flex items-start gap-3">
@@ -1101,7 +1233,29 @@ export default function GetStarted() {
                   <div />
                 )}
 
-                {currentStep < TOTAL_STEPS ? (
+                {currentStep === 7 ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!selectedPriceId}
+                    className="h-12 px-8 rounded-xl"
+                    data-testid="button-next-step"
+                  >
+                    Continue to Review
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : currentStep === 8 ? (
+                  <Button
+                    type="button"
+                    onClick={handleCheckout}
+                    disabled={form.watch("consentGiven") !== "yes" || isCheckoutLoading}
+                    className="h-12 px-8 rounded-xl"
+                    data-testid="button-checkout"
+                  >
+                    {isCheckoutLoading ? "Processing..." : "Complete Purchase"}
+                    <CreditCard className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
                   <Button
                     type="button"
                     onClick={nextStep}
@@ -1110,16 +1264,6 @@ export default function GetStarted() {
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={isPending || form.watch("consentGiven") !== "yes"}
-                    className="h-12 px-8 rounded-xl"
-                    data-testid="button-submit-form"
-                  >
-                    {isPending ? "Submitting..." : "Submit Application"}
-                    <CheckCircle2 className="w-4 h-4 ml-2" />
                   </Button>
                 )}
               </div>
