@@ -26,13 +26,19 @@ interface StripeProductsResponse {
 }
 
 export function useStripeProducts(category?: string) {
-  const queryKey = category 
-    ? ["/api/stripe/products", category]
-    : ["/api/stripe/products"];
+  const url = category 
+    ? `/api/stripe/products/${category}`
+    : `/api/stripe/products`;
     
   const query = useQuery<StripeProductsResponse>({
-    queryKey,
-    staleTime: 1000 * 60 * 5,
+    queryKey: ["stripe-products", category],
+    queryFn: async () => {
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch products");
+      return res.json();
+    },
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   return {
