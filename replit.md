@@ -83,3 +83,10 @@ shared/           # Shared code between frontend and backend
 - **Vite**: Frontend build tool and dev server
 - **esbuild**: Backend bundling for production
 - **TypeScript**: Type checking across the entire codebase
+
+### Payment Processing
+- **Stripe**: Payment gateway for subscription billing
+- **stripe-replit-sync**: Replit integration for Stripe data synchronization
+- **Stripe Products**: 6 medications seeded (Semaglutide, Tirzepatide, Finasteride, Minoxidil, Sildenafil, Tadalafil)
+- **Checkout Flow**: `/api/stripe/checkout` for subscriptions, `/api/stripe/checkout-one-time` for one-time payments
+- **Webhook Handling**: Automatic sync of Stripe events to local PostgreSQL database
