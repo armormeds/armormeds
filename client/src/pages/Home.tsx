@@ -7,50 +7,37 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, BadgeCheck, Stethoscope, Package, HeartPulse, ChevronRight } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, BadgeCheck, Stethoscope, Package, HeartPulse } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
-
-import heroImage from "@assets/stock_images/healthy_woman_wellne_643b05e6.jpg";
-import lifestyleImage1 from "@assets/stock_images/healthy_woman_wellne_ced61cb2.jpg";
-import lifestyleImage2 from "@assets/stock_images/healthy_woman_wellne_55c1efc6.jpg";
-import medicationImage1 from "@assets/stock_images/medical_weight_loss__b996e716.jpg";
-import medicationImage2 from "@assets/stock_images/medical_weight_loss__0a6aa8a8.jpg";
-import healthyEating1 from "@assets/stock_images/happy_person_healthy_e1d4efb8.jpg";
-import healthyEating2 from "@assets/stock_images/happy_person_healthy_d1777f1e.jpg";
 
 export default function Home() {
   const { data: products } = useProducts();
 
   const steps = [
     {
-      number: "1",
-      icon: <Clock className="w-5 h-5" />,
-      title: "Complete Assessment",
-      description: "Answer a few questions about your health goals",
-      duration: "5 min"
+      number: "01",
+      icon: <Clock className="w-6 h-6 text-primary" />,
+      title: "Complete Health Assessment",
+      description: "Fill out a simple online questionnaire about your health history and weight loss goals in just 5 minutes."
     },
     {
-      number: "2",
-      icon: <Stethoscope className="w-5 h-5" />,
+      number: "02",
+      icon: <Stethoscope className="w-6 h-6 text-primary" />,
       title: "Provider Review",
-      description: "Licensed physician reviews your information",
-      duration: "24 hrs"
+      description: "A licensed healthcare provider reviews your information and determines if you're a good candidate within 24 hours."
     },
     {
-      number: "3",
-      icon: <Package className="w-5 h-5" />,
-      title: "Get Medication",
-      description: "Prescription shipped to your door",
-      duration: "2-3 days"
+      number: "03",
+      icon: <Package className="w-6 h-6 text-primary" />,
+      title: "Get Your Medication",
+      description: "If approved, your prescription is filled and shipped directly to your door with all supplies included."
     },
     {
-      number: "4",
-      icon: <HeartPulse className="w-5 h-5" />,
-      title: "Ongoing Care",
-      description: "Continuous support from your care team",
-      duration: "Always"
+      number: "04",
+      icon: <HeartPulse className="w-6 h-6 text-primary" />,
+      title: "Ongoing Support",
+      description: "Receive continuous care with check-ins, dosage adjustments, and access to your care team."
     }
   ];
 
@@ -58,60 +45,77 @@ export default function Home() {
     {
       name: "Sarah M.",
       location: "Austin, TX",
-      image: healthyEating1,
       rating: 5,
-      text: "I've lost 32 pounds in 3 months! The process was so simple and the support team is amazing.",
+      text: "I've lost 32 pounds in 3 months! The process was so simple and the support team is amazing. I finally feel like myself again.",
       weightLoss: "32 lbs",
-      verified: true
+      timeframe: "3 months"
     },
     {
       name: "Michael R.",
       location: "Phoenix, AZ",
-      image: lifestyleImage1,
       rating: 5,
-      text: "After trying every diet out there, this finally worked. Down 45 pounds and feeling great!",
+      text: "After trying every diet out there, this finally worked. The medication helped control my appetite and the doctors are very thorough.",
       weightLoss: "45 lbs",
-      verified: true
+      timeframe: "4 months"
     },
     {
       name: "Jennifer K.",
       location: "Denver, CO",
-      image: healthyEating2,
       rating: 5,
-      text: "The convenience of telehealth combined with effective medication changed my life.",
+      text: "The convenience of telehealth combined with effective medication changed my life. Down 28 pounds and counting!",
       weightLoss: "28 lbs",
-      verified: true
+      timeframe: "2.5 months"
     }
+  ];
+
+  const stats = [
+    { value: "50,000+", label: "Happy Patients", icon: <Users className="w-6 h-6" /> },
+    { value: "15%", label: "Avg. Weight Loss", icon: <Award className="w-6 h-6" /> },
+    { value: "4.9/5", label: "Patient Rating", icon: <Star className="w-6 h-6 fill-current" /> },
+    { value: "24hr", label: "Provider Review", icon: <Clock className="w-6 h-6" /> }
   ];
 
   const faqs = [
     {
-      question: "How do GLP-1 medications work?",
-      answer: "GLP-1 medications mimic a natural hormone that regulates appetite and blood sugar. They help you feel full longer and reduce cravings, leading to sustainable weight loss."
+      question: "How do GLP-1 medications work for weight loss?",
+      answer: "GLP-1 medications like Semaglutide and Tirzepatide work by mimicking a hormone that regulates appetite and blood sugar. They help you feel full longer, reduce cravings, and can lead to significant weight loss when combined with diet and exercise."
     },
     {
-      question: "Am I a good candidate?",
-      answer: "Generally, candidates have a BMI of 27+ with weight-related conditions, or BMI of 30+. Our providers review your complete health history to determine eligibility."
+      question: "Am I a good candidate for this treatment?",
+      answer: "Generally, candidates have a BMI of 27+ with weight-related health conditions, or a BMI of 30+. Our licensed providers will review your complete health history to determine if this treatment is right for you."
     },
     {
-      question: "What results can I expect?",
-      answer: "Clinical studies show 15-20% body weight loss. Our patients average 15% loss over 6-12 months when following their treatment plan."
+      question: "What are the common side effects?",
+      answer: "The most common side effects are mild and temporary, including nausea, constipation, and decreased appetite. These typically improve as your body adjusts to the medication. Our providers will discuss all potential side effects during your consultation."
     },
     {
-      question: "Do I need insurance?",
-      answer: "No insurance required. We offer transparent, affordable pricing with no hidden fees and payment plans available."
+      question: "How much weight can I expect to lose?",
+      answer: "Results vary by individual, but clinical studies show patients can lose 15-20% of their body weight. Our patients report an average of 15% body weight loss over 6-12 months when following their treatment plan."
     },
     {
-      question: "How fast is shipping?",
-      answer: "Once approved, medication ships within 1-2 business days. Most patients receive their order within 3-5 days with free shipping."
+      question: "Do I need insurance to use WellnessMeds?",
+      answer: "No insurance is required. We offer transparent, affordable pricing with no hidden fees. Our medications are competitively priced, and payment plans may be available."
+    },
+    {
+      question: "How long does shipping take?",
+      answer: "Once approved, your medication is typically shipped within 1-2 business days. Most patients receive their order within 3-5 business days, with free expedited shipping included."
     }
+  ];
+
+  const trustBadges = [
+    { icon: <ShieldCheck className="w-8 h-8" />, label: "HIPAA Compliant" },
+    { icon: <BadgeCheck className="w-8 h-8" />, label: "Licensed Providers" },
+    { icon: <Truck className="w-8 h-8" />, label: "Free Shipping" },
+    { icon: <Award className="w-8 h-8" />, label: "FDA-Registered Labs" }
   ];
 
   const container = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
+      transition: {
+        staggerChildren: 0.15
+      }
     }
   };
 
@@ -121,343 +125,269 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section - Split Layout */}
-      <section className="relative min-h-screen flex items-center">
-        <div className="absolute inset-0 lg:inset-y-0 lg:right-0 lg:w-1/2">
-          <img 
-            src={heroImage} 
-            alt="Healthy lifestyle" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent lg:from-background lg:via-background/60 lg:to-transparent" />
-        </div>
+    <div className="min-h-screen bg-white dark:bg-background">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/50 via-white to-white dark:from-secondary/20 dark:via-background dark:to-background -z-10" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 -z-10" />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
-          <div className="lg:w-1/2 lg:pr-12">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-medium mb-6">
-                <BadgeCheck className="w-4 h-4" />
-                <span>FDA-Approved Medications</span>
-              </div>
-              
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-foreground leading-tight mb-6">
-                Lose Weight With
-                <span className="block text-primary">Medical Support</span>
-              </h1>
-              
-              <p className="text-lg text-muted-foreground mb-8 max-w-lg leading-relaxed">
-                Access GLP-1 medications like Semaglutide and Tirzepatide from licensed providers. 
-                No insurance needed, delivered to your door.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Link href="/get-started">
-                  <Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base" data-testid="button-hero-start">
-                    Start Free Assessment
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-                </Link>
-                <Link href="/medications">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base" data-testid="button-hero-medications">
-                    View Medications
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border">
-                <div>
-                  <p className="text-3xl font-display font-bold text-foreground">50K+</p>
-                  <p className="text-sm text-muted-foreground">Patients Treated</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-display font-bold text-foreground">15%</p>
-                  <p className="text-sm text-muted-foreground">Avg Weight Loss</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-display font-bold text-foreground">4.9</p>
-                  <p className="text-sm text-muted-foreground">Patient Rating</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Bar */}
-      <section className="py-6 bg-muted/50 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-primary" />
-              <span className="font-medium">HIPAA Compliant</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <BadgeCheck className="w-5 h-5 text-primary" />
-              <span className="font-medium">Licensed Providers</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Truck className="w-5 h-5 text-primary" />
-              <span className="font-medium">Free Shipping</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-primary" />
-              <span className="font-medium">FDA-Registered Labs</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works - Timeline Style */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">How It Works</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get started in minutes with our simple 4-step process
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step, idx) => (
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+            <div className="flex-1 text-center lg:text-left">
               <motion.div
-                key={idx}
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
               >
-                <Card className="h-full hover:shadow-md transition-shadow relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-primary" style={{ opacity: 0.2 + (idx * 0.2) }} />
-                  <CardContent className="pt-6 pb-5 px-5">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                          {step.number}
-                        </div>
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                          {step.icon}
-                        </div>
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
-                        {step.duration}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-bold text-foreground mb-2">{step.title}</h3>
-                    <p className="text-sm text-muted-foreground">{step.description}</p>
-                  </CardContent>
-                </Card>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold text-sm mb-6">
+                  <Star className="w-4 h-4 fill-primary" />
+                  <span>Trusted by 50,000+ Patients</span>
+                </div>
+                <h1 className="text-5xl lg:text-7xl font-display font-bold text-slate-900 dark:text-foreground leading-[1.1] mb-6">
+                  Weight Loss, <br/>
+                  <span className="text-gradient">Simplified.</span>
+                </h1>
+                <p className="text-xl text-slate-600 dark:text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                  Get access to revolutionary GLP-1 medications like Semaglutide and Tirzepatide. 
+                  No insurance needed. 100% online.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link href="/get-started">
+                    <Button className="h-14 px-8 text-lg rounded-full bg-primary hover:bg-primary/90 shadow-xl shadow-primary/25 hover:-translate-y-1 transition-all" data-testid="button-hero-start">
+                      Start Your Journey
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/medications">
+                    <Button variant="outline" className="h-14 px-8 text-lg rounded-full border-2 hover:bg-slate-50 dark:hover:bg-muted" data-testid="button-hero-medications">
+                      View Medications
+                    </Button>
+                  </Link>
+                </div>
+                
+                <div className="mt-12 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-slate-500 dark:text-muted-foreground font-medium">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-green-500" /> No Insurance Needed
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-green-500" /> FDA-Approved Labs
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-green-500" /> Licensed Providers
+                  </div>
+                </div>
               </motion.div>
-            ))}
-          </div>
-
-          <div className="text-center mt-10">
-            <Link href="/get-started">
-              <Button size="lg" data-testid="button-steps-start">
-                Begin Your Journey
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Medications Section - Card Grid */}
-      <section className="py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-2">Our Medications</h2>
-              <p className="text-muted-foreground">FDA-approved GLP-1 treatments for lasting results</p>
             </div>
-            <Link href="/medications">
-              <Button variant="ghost" className="text-primary" data-testid="link-view-all-meds">
-                View All
-                <ChevronRight className="ml-1 w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {products ? products.slice(0, 2).map((product, idx) => (
+            
+            <div className="flex-1 relative w-full max-w-xl lg:max-w-none">
               <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="relative z-10"
               >
-                <Link href="/medications">
-                  <Card className="group cursor-pointer hover:shadow-lg transition-all h-full overflow-hidden">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="md:w-2/5 aspect-square md:aspect-auto relative bg-gradient-to-br from-primary/5 to-primary/10">
-                        <img 
-                          src={idx === 0 ? medicationImage1 : medicationImage2} 
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <CardContent className="flex-1 p-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
-                            {product.name}
-                          </h3>
-                          <span className="text-lg font-bold text-primary">{product.price}</span>
-                        </div>
-                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{product.description}</p>
-                        <ul className="space-y-2">
-                          {Array.isArray(product.benefits) && product.benefits.slice(0, 3).map((benefit, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                              <span>{benefit}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="mt-4 pt-4 border-t border-border">
-                          <span className="text-primary text-sm font-medium group-hover:underline">
-                            Learn more
-                            <ArrowRight className="inline ml-1 w-3 h-3" />
-                          </span>
-                        </div>
-                      </CardContent>
-                    </div>
-                  </Card>
-                </Link>
-              </motion.div>
-            )) : (
-              [1, 2].map((i) => (
-                <Card key={i} className="h-64 animate-pulse" />
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Results Section - Image + Content */}
-      <section className="py-20 bg-background overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="order-2 lg:order-1"
-            >
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-6">
-                Real Results,<br />Real Transformations
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Our patients see significant, lasting weight loss with the support of licensed providers and proven medications. Join thousands who have transformed their health.
-              </p>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="bg-muted/50 rounded-xl p-5">
-                  <p className="text-3xl font-display font-bold text-primary mb-1">15-20%</p>
-                  <p className="text-sm text-muted-foreground">Average body weight loss</p>
-                </div>
-                <div className="bg-muted/50 rounded-xl p-5">
-                  <p className="text-3xl font-display font-bold text-primary mb-1">93%</p>
-                  <p className="text-sm text-muted-foreground">Patient satisfaction rate</p>
-                </div>
-              </div>
-
-              <Link href="/get-started">
-                <Button size="lg" data-testid="button-results-start">
-                  Start Your Transformation
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="order-1 lg:order-2"
-            >
-              <div className="relative">
-                <div className="rounded-2xl overflow-hidden shadow-2xl">
+                <div className="rounded-[2.5rem] overflow-hidden shadow-2xl shadow-primary/20 aspect-[4/5] relative">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
                   <img 
-                    src={lifestyleImage2} 
-                    alt="Healthy lifestyle transformation" 
-                    className="w-full aspect-[4/3] object-cover"
+                    src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" 
+                    alt="Healthy lifestyle" 
+                    className="w-full h-full object-cover"
                   />
-                </div>
-                <div className="absolute -bottom-6 -left-6 bg-card rounded-xl shadow-lg p-4 border border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                      <Award className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground">Clinically Proven</p>
-                      <p className="text-sm text-muted-foreground">FDA-approved treatments</p>
+                  
+                  <div className="absolute bottom-8 left-8 right-8 z-20 bg-white/95 dark:bg-card/95 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/20">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+                        <Star className="w-6 h-6 text-green-600 fill-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900 dark:text-foreground text-lg">Clinically Proven</p>
+                        <p className="text-slate-600 dark:text-muted-foreground">Average 15% body weight loss</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials - Horizontal Cards */}
-      <section className="py-20 bg-muted/30">
+      {/* Trust Badges Bar */}
+      <section className="py-8 bg-slate-50 dark:bg-muted/30 border-y border-slate-100 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">What Our Patients Say</h2>
-            <p className="text-lg text-muted-foreground">Real stories from real people</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {trustBadges.map((badge, idx) => (
+              <div key={idx} className="flex items-center justify-center gap-3 text-slate-600 dark:text-muted-foreground">
+                <div className="text-primary">{badge.icon}</div>
+                <span className="font-semibold text-sm">{badge.label}</span>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <motion.div
+      {/* Stats Section */}
+      <section className="py-16 bg-white dark:bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
             variants={container}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-8"
+          >
+            {stats.map((stat, idx) => (
+              <motion.div key={idx} variants={item} className="text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary mb-4">
+                  {stat.icon}
+                </div>
+                <p className="text-4xl font-display font-bold text-slate-900 dark:text-foreground mb-1">{stat.value}</p>
+                <p className="text-slate-600 dark:text-muted-foreground font-medium">{stat.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How It Works - Enhanced */}
+      <section className="py-24 bg-slate-50 dark:bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-4xl font-display font-bold mb-6 text-slate-900 dark:text-foreground">How It Works</h2>
+            <p className="text-xl text-slate-600 dark:text-muted-foreground">
+              Get started in minutes. Our simple 4-step process makes getting treatment easy.
+            </p>
+          </div>
+          
+          <motion.div 
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            {steps.map((step, idx) => (
+              <motion.div key={idx} variants={item} className="relative">
+                <Card className="h-full hover:shadow-lg transition-shadow">
+                  <CardContent className="pt-8 pb-6 px-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="text-5xl font-display font-bold text-primary/20">{step.number}</span>
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        {step.icon}
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-foreground">{step.title}</h3>
+                    <p className="text-slate-600 dark:text-muted-foreground leading-relaxed">{step.description}</p>
+                  </CardContent>
+                </Card>
+                {idx < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                    <ArrowRight className="w-8 h-8 text-primary/30" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <div className="text-center mt-12">
+            <Link href="/get-started">
+              <Button size="lg" className="h-14 px-10 text-lg rounded-full" data-testid="button-how-it-works-start">
+                Get Started Now
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Medications */}
+      <section className="py-24 bg-white dark:bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-16">
+            <div>
+              <h2 className="text-4xl font-display font-bold mb-4 text-slate-900 dark:text-foreground">Our Medications</h2>
+              <p className="text-lg text-slate-600 dark:text-muted-foreground">Clinically proven GLP-1 treatments for lasting weight loss.</p>
+            </div>
+            <Link href="/medications" className="hidden md:flex items-center text-primary font-semibold hover:gap-2 transition-all">
+              View All <ArrowRight className="ml-1 w-5 h-5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {products ? products.slice(0, 2).map((product) => (
+              <Link key={product.id} href={`/medications`}>
+                <div className="group bg-white dark:bg-card rounded-3xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-border hover:border-primary/20 h-full cursor-pointer flex flex-col md:flex-row gap-8 items-center">
+                  <div className="w-full md:w-1/3 aspect-square rounded-2xl overflow-hidden bg-slate-100 dark:bg-muted">
+                    <img src={product.image} alt={product.name} className="w-full h-full object-cover mix-blend-multiply dark:mix-blend-normal" />
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-foreground">{product.name}</h3>
+                    <p className="text-primary font-bold text-lg mb-4">{product.price}</p>
+                    <p className="text-slate-600 dark:text-muted-foreground mb-6 line-clamp-2">{product.description}</p>
+                    <ul className="space-y-2 mb-6">
+                      {Array.isArray(product.benefits) && product.benefits.slice(0, 2).map((benefit, i) => (
+                        <li key={i} className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-slate-700 dark:text-muted-foreground">
+                          <Check className="w-4 h-4 text-green-500 shrink-0" />
+                          {benefit}
+                        </li>
+                      ))}
+                    </ul>
+                    <span className="text-primary font-semibold group-hover:underline">Learn more</span>
+                  </div>
+                </div>
+              </Link>
+            )) : (
+              [1, 2].map((i) => (
+                <div key={i} className="bg-white dark:bg-card rounded-3xl p-8 h-64 animate-pulse"></div>
+              ))
+            )}
+          </div>
+          
+          <div className="mt-12 text-center md:hidden">
+            <Link href="/medications">
+              <Button variant="outline" className="w-full">View All Medications</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 bg-slate-50 dark:bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-4xl font-display font-bold mb-6 text-slate-900 dark:text-foreground">Real Results from Real Patients</h2>
+            <p className="text-xl text-slate-600 dark:text-muted-foreground">
+              See what our patients are saying about their weight loss journey with WellnessMeds.
+            </p>
+          </div>
+
+          <motion.div 
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
           >
             {testimonials.map((testimonial, idx) => (
               <motion.div key={idx} variants={item}>
-                <Card className="h-full overflow-hidden">
-                  <div className="aspect-[16/9] relative">
-                    <img 
-                      src={testimonial.image} 
-                      alt={`${testimonial.name}'s wellness journey`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                        ))}
-                      </div>
-                      {testimonial.verified && (
-                        <span className="text-xs text-green-400 font-medium flex items-center gap-1 bg-black/30 px-2 py-1 rounded-full">
-                          <BadgeCheck className="w-3 h-3" /> Verified
-                        </span>
-                      )}
+                <Card className="h-full">
+                  <CardContent className="pt-8 pb-6 px-6">
+                    <div className="flex items-center gap-1 mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                      ))}
                     </div>
-                  </div>
-                  <CardContent className="p-5">
-                    <p className="text-muted-foreground mb-4 leading-relaxed text-sm">"{testimonial.text}"</p>
-                    
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-semibold text-foreground text-sm">{testimonial.name}</p>
-                          <p className="text-xs text-muted-foreground">{testimonial.location}</p>
-                        </div>
+                    <p className="text-slate-700 dark:text-muted-foreground mb-6 leading-relaxed italic">
+                      "{testimonial.text}"
+                    </p>
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-border">
+                      <div>
+                        <p className="font-bold text-slate-900 dark:text-foreground">{testimonial.name}</p>
+                        <p className="text-sm text-slate-500 dark:text-muted-foreground">{testimonial.location}</p>
                       </div>
-                      <div className="bg-primary/10 text-primary font-bold px-3 py-1.5 rounded-full text-sm">
-                        -{testimonial.weightLoss}
+                      <div className="text-right">
+                        <p className="font-bold text-primary text-lg">-{testimonial.weightLoss}</p>
+                        <p className="text-sm text-slate-500 dark:text-muted-foreground">{testimonial.timeframe}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -469,77 +399,58 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-background">
+      <section className="py-24 bg-white dark:bg-background">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-4">Common Questions</h2>
-            <p className="text-muted-foreground">Everything you need to know about our program</p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-display font-bold mb-6 text-slate-900 dark:text-foreground">Frequently Asked Questions</h2>
+            <p className="text-xl text-slate-600 dark:text-muted-foreground">
+              Get answers to common questions about our weight loss program.
+            </p>
           </div>
 
-          <Accordion type="single" collapsible className="w-full space-y-3">
+          <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, idx) => (
-              <AccordionItem 
-                key={idx} 
-                value={`item-${idx}`} 
-                className="bg-card border border-border rounded-lg px-6 data-[state=open]:shadow-sm"
-              >
-                <AccordionTrigger className="text-left font-semibold text-foreground hover:text-primary py-5" data-testid={`faq-trigger-${idx}`}>
+              <AccordionItem key={idx} value={`item-${idx}`} className="border-b border-slate-200 dark:border-border">
+                <AccordionTrigger className="text-left text-lg font-semibold text-slate-900 dark:text-foreground hover:text-primary py-6" data-testid={`faq-trigger-${idx}`}>
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-slate-600 dark:text-muted-foreground leading-relaxed pb-6">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
 
-          <div className="text-center mt-10">
-            <p className="text-muted-foreground mb-4">Have more questions?</p>
+          <div className="text-center mt-12">
+            <p className="text-slate-600 dark:text-muted-foreground mb-4">Still have questions?</p>
             <Link href="/about">
-              <Button variant="outline" data-testid="button-faq-contact">Contact Support</Button>
+              <Button variant="outline" data-testid="button-faq-contact">Contact Our Team</Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20 bg-primary">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-primary-foreground mb-6">
-              Ready to Start Your Weight Loss Journey?
-            </h2>
-            <p className="text-lg text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-              Join over 50,000 patients who have achieved their health goals with our medically supervised program.
-            </p>
-            
+      {/* CTA Section */}
+      <section className="py-24 bg-primary text-white overflow-hidden relative">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <h2 className="text-4xl font-display font-bold mb-8">Ready to Transform Your Life?</h2>
+          <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
+            Join over 50,000 patients who have successfully reached their weight loss goals with our medically supervised program.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Link href="/get-started">
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 h-14 px-10 text-lg"
-                data-testid="button-final-cta"
-              >
-                Get Started Today
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-10 py-8 h-auto rounded-full shadow-xl" data-testid="button-cta-start">
+                Start Your Consultation
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-
-            <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-primary-foreground/70">
-              <span className="flex items-center gap-2">
-                <Check className="w-4 h-4" /> Free consultation
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="w-4 h-4" /> No insurance required
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="w-4 h-4" /> Cancel anytime
-              </span>
-            </div>
-          </motion.div>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6 text-sm text-primary-foreground/80">
+            <span className="flex items-center gap-2"><Check className="w-4 h-4" /> No commitment required</span>
+            <span className="flex items-center gap-2"><Check className="w-4 h-4" /> Cancel anytime</span>
+            <span className="flex items-center gap-2"><Check className="w-4 h-4" /> Free shipping</span>
+          </div>
         </div>
       </section>
     </div>
