@@ -1055,6 +1055,10 @@ export default function GetStarted() {
                           <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />
                         ))}
                       </div>
+                    ) : stripeProducts.length === 0 ? (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800">
+                        No treatment plans available at this time. Please contact support.
+                      </div>
                     ) : (
                       <div className="space-y-4">
                         {stripeProducts.map((product) => {
