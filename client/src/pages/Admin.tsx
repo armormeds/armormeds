@@ -11,9 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play } from "lucide-react";
 import { Link } from "wouter";
-import type { Lead, Product, Prescription } from "@shared/schema";
+import type { Lead, Product, Prescription, Appointment, CallNote } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
 import { useState, useRef } from "react";
@@ -24,6 +24,15 @@ const statusColors: Record<string, string> = {
   contacted: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
   completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   archived: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
+  "follow-up": "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+};
+
+const appointmentStatusColors: Record<string, string> = {
+  scheduled: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  "in-progress": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  cancelled: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  "no-show": "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
 };
 
 function InfoRow({ icon: Icon, label, value, testId }: { icon: typeof Mail; label: string; value: string | null | undefined; testId?: string }) {
@@ -329,7 +338,266 @@ function PrescriptionView({ prescription, onClose }: { prescription: Prescriptio
   );
 }
 
-function LeadCard({ lead, onStatusChange, onCreatePrescription }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void }) {
+interface AppointmentFormData {
+  doctorName: string;
+  reason: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  duration: string;
+  videoLink: string;
+}
+
+function AppointmentForm({ 
+  lead, 
+  onSubmit, 
+  onCancel,
+  isSubmitting 
+}: { 
+  lead: Lead;
+  onSubmit: (data: AppointmentFormData) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}) {
+  const { register, handleSubmit, formState: { errors } } = useForm<AppointmentFormData>({
+    defaultValues: {
+      doctorName: '',
+      reason: '',
+      scheduledDate: '',
+      scheduledTime: '',
+      duration: '30',
+      videoLink: '',
+    }
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2 p-3 bg-muted/30 rounded-md">
+          <h4 className="font-medium text-sm mb-2">Patient Information</h4>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div><span className="font-medium">Name:</span> {lead.name}</div>
+            <div><span className="font-medium">Email:</span> {lead.email}</div>
+            <div><span className="font-medium">Phone:</span> {lead.phone || 'N/A'}</div>
+            <div><span className="font-medium">Medication:</span> {lead.medicationInterest || 'N/A'}</div>
+          </div>
+        </div>
+
+        <div className="col-span-2 space-y-2">
+          <Label htmlFor="doctorName">Doctor Name</Label>
+          <Input 
+            id="doctorName" 
+            {...register("doctorName", { required: "Doctor name is required" })} 
+            placeholder="Dr. John Smith"
+            data-testid="input-appt-doctor"
+          />
+          {errors.doctorName && <p className="text-sm text-destructive">{errors.doctorName.message}</p>}
+        </div>
+
+        <div className="col-span-2 space-y-2">
+          <Label htmlFor="reason">Reason for Call</Label>
+          <Textarea 
+            id="reason" 
+            {...register("reason", { required: "Reason is required" })} 
+            placeholder="Review medical intake form, discuss treatment options..."
+            rows={2}
+            data-testid="input-appt-reason"
+          />
+          {errors.reason && <p className="text-sm text-destructive">{errors.reason.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="scheduledDate">Date</Label>
+          <Input 
+            id="scheduledDate" 
+            type="date"
+            {...register("scheduledDate", { required: "Date is required" })} 
+            data-testid="input-appt-date"
+          />
+          {errors.scheduledDate && <p className="text-sm text-destructive">{errors.scheduledDate.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="scheduledTime">Time</Label>
+          <Input 
+            id="scheduledTime" 
+            type="time"
+            {...register("scheduledTime", { required: "Time is required" })} 
+            data-testid="input-appt-time"
+          />
+          {errors.scheduledTime && <p className="text-sm text-destructive">{errors.scheduledTime.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="duration">Duration (minutes)</Label>
+          <Select 
+            defaultValue="30"
+            onValueChange={(val) => {
+              const event = { target: { name: 'duration', value: val } };
+              register("duration").onChange(event as any);
+            }}
+          >
+            <SelectTrigger data-testid="select-appt-duration">
+              <SelectValue placeholder="Duration" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="15">15 minutes</SelectItem>
+              <SelectItem value="30">30 minutes</SelectItem>
+              <SelectItem value="45">45 minutes</SelectItem>
+              <SelectItem value="60">60 minutes</SelectItem>
+            </SelectContent>
+          </Select>
+          <input type="hidden" {...register("duration")} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="videoLink">Video Link (optional)</Label>
+          <Input 
+            id="videoLink" 
+            {...register("videoLink")} 
+            placeholder="https://zoom.us/j/..."
+            data-testid="input-appt-video-link"
+          />
+        </div>
+      </div>
+
+      <DialogFooter className="gap-2">
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel-appt">
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting} data-testid="button-schedule-appt">
+          {isSubmitting ? "Scheduling..." : "Schedule Appointment"}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+function AppointmentCard({ 
+  appointment, 
+  onStatusChange, 
+  onViewNotes 
+}: { 
+  appointment: Appointment; 
+  onStatusChange: (id: number, status: string) => void; 
+  onViewNotes: (appointment: Appointment) => void;
+}) {
+  return (
+    <Card data-testid={`card-appointment-${appointment.id}`}>
+      <CardContent className="p-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-2 flex-wrap">
+            <div>
+              <h3 className="font-semibold text-lg" data-testid={`text-appt-patient-${appointment.id}`}>
+                {appointment.patientName}
+              </h3>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                <Mail className="h-4 w-4" />
+                <span>{appointment.patientEmail}</span>
+              </div>
+              {appointment.patientPhone && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                  <Phone className="h-4 w-4" />
+                  <span>{appointment.patientPhone}</span>
+                </div>
+              )}
+            </div>
+            <Badge 
+              className={`${appointmentStatusColors[appointment.status] || appointmentStatusColors.scheduled} no-default-hover-elevate no-default-active-elevate`}
+              data-testid={`badge-appt-status-${appointment.id}`}
+            >
+              {appointment.status}
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">Doctor:</span>
+              <span className="text-muted-foreground">{appointment.doctorName}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">Duration:</span>
+              <span className="text-muted-foreground">{appointment.duration} min</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="h-4 w-4 text-primary" />
+            <span className="font-medium">Scheduled:</span>
+            <span className="text-muted-foreground">
+              {format(new Date(appointment.scheduledAt), "MMM d, yyyy 'at' h:mm a")}
+            </span>
+          </div>
+
+          <div className="text-sm">
+            <span className="font-medium">Reason:</span>
+            <p className="text-muted-foreground mt-1">{appointment.reason}</p>
+          </div>
+
+          {appointment.videoLink && (
+            <div className="flex items-center gap-2 text-sm">
+              <Video className="h-4 w-4 text-primary" />
+              <a 
+                href={appointment.videoLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline flex items-center gap-1"
+              >
+                Join Video Call <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-4 pt-2 border-t flex-wrap">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Created: {format(new Date(appointment.createdAt), "MMM d, yyyy")}</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onViewNotes(appointment)}
+                data-testid={`button-view-notes-${appointment.id}`}
+              >
+                <StickyNote className="h-4 w-4 mr-1" />
+                Notes
+              </Button>
+              {appointment.videoLink && appointment.status === 'scheduled' && (
+                <Button
+                  size="sm"
+                  onClick={() => onStatusChange(appointment.id, 'in-progress')}
+                  data-testid={`button-start-call-${appointment.id}`}
+                >
+                  <Play className="h-4 w-4 mr-1" />
+                  Start Call
+                </Button>
+              )}
+              <Select
+                value={appointment.status}
+                onValueChange={(value) => onStatusChange(appointment.id, value)}
+              >
+                <SelectTrigger className="w-[140px]" data-testid={`select-appt-status-${appointment.id}`}>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="no-show">No Show</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   
   const hasExtendedInfo = lead.goals || lead.state || lead.dateOfBirth || lead.weight || 
@@ -589,6 +857,15 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription }: { lead: Lead; 
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => onScheduleCall(lead)}
+                data-testid={`button-schedule-call-${lead.id}`}
+              >
+                <Video className="h-4 w-4 mr-1" />
+                Schedule Call
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => onCreatePrescription(lead)}
                 data-testid={`button-create-rx-${lead.id}`}
               >
@@ -605,6 +882,7 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription }: { lead: Lead; 
                 <SelectContent>
                   <SelectItem value="new">New</SelectItem>
                   <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="follow-up">Follow-up</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
@@ -842,12 +1120,17 @@ function ProductCard({
 
 export default function Admin() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"leads" | "products">("leads");
+  const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments">("leads");
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showPrescriptionDialog, setShowPrescriptionDialog] = useState(false);
   const [selectedLeadForRx, setSelectedLeadForRx] = useState<Lead | null>(null);
   const [createdPrescription, setCreatedPrescription] = useState<Prescription | null>(null);
+  const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
+  const [selectedLeadForAppt, setSelectedLeadForAppt] = useState<Lead | null>(null);
+  const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [selectedAppointmentForNotes, setSelectedAppointmentForNotes] = useState<Appointment | null>(null);
+  const [newNoteContent, setNewNoteContent] = useState("");
 
   const { data: leads, isLoading: leadsLoading, refetch: refetchLeads } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
@@ -855,6 +1138,21 @@ export default function Admin() {
 
   const { data: products, isLoading: productsLoading, refetch: refetchProducts } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+  });
+
+  const { data: appointments, isLoading: appointmentsLoading, refetch: refetchAppointments } = useQuery<Appointment[]>({
+    queryKey: ["/api/appointments"],
+  });
+
+  const { data: appointmentNotes, refetch: refetchNotes } = useQuery<CallNote[]>({
+    queryKey: ["/api/appointments", selectedAppointmentForNotes?.id, "notes"],
+    enabled: !!selectedAppointmentForNotes,
+    queryFn: async () => {
+      if (!selectedAppointmentForNotes) return [];
+      const response = await fetch(`/api/appointments/${selectedAppointmentForNotes.id}/notes`);
+      if (!response.ok) throw new Error("Failed to fetch notes");
+      return response.json();
+    },
   });
 
   const updateLeadMutation = useMutation({
@@ -1047,7 +1345,144 @@ export default function Admin() {
     setEditingProduct(null);
   };
 
+  // Appointment mutations
+  const createAppointmentMutation = useMutation({
+    mutationFn: async (data: {
+      leadId: number;
+      patientName: string;
+      patientEmail: string;
+      patientPhone?: string;
+      doctorName: string;
+      reason: string;
+      scheduledAt: string;
+      duration: number;
+      videoLink?: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/appointments", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
+      setShowAppointmentDialog(false);
+      setSelectedLeadForAppt(null);
+      toast({
+        title: "Appointment scheduled",
+        description: "Video call appointment has been scheduled successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to schedule appointment.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateAppointmentMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: number; status?: string; completedAt?: string }) => {
+      const response = await apiRequest("PATCH", `/api/appointments/${id}`, updates);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      toast({
+        title: "Appointment updated",
+        description: "Appointment status has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update appointment.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createNoteMutation = useMutation({
+    mutationFn: async (data: { appointmentId: number; authorName: string; noteType: string; content: string }) => {
+      const response = await apiRequest("POST", `/api/appointments/${data.appointmentId}/notes`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments", selectedAppointmentForNotes?.id, "notes"] });
+      setNewNoteContent("");
+      toast({
+        title: "Note added",
+        description: "Call documentation has been saved.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add note.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleScheduleCall = (lead: Lead) => {
+    setSelectedLeadForAppt(lead);
+    setShowAppointmentDialog(true);
+  };
+
+  const handleAppointmentSubmit = (data: AppointmentFormData) => {
+    if (!selectedLeadForAppt) return;
+    
+    const scheduledAt = new Date(`${data.scheduledDate}T${data.scheduledTime}`).toISOString();
+    
+    createAppointmentMutation.mutate({
+      leadId: selectedLeadForAppt.id,
+      patientName: selectedLeadForAppt.name,
+      patientEmail: selectedLeadForAppt.email,
+      patientPhone: selectedLeadForAppt.phone || undefined,
+      doctorName: data.doctorName,
+      reason: data.reason,
+      scheduledAt,
+      duration: parseInt(data.duration) || 30,
+      videoLink: data.videoLink || undefined,
+    });
+  };
+
+  const handleCloseAppointmentDialog = () => {
+    setShowAppointmentDialog(false);
+    setSelectedLeadForAppt(null);
+  };
+
+  const handleAppointmentStatusChange = (id: number, status: string) => {
+    const updates: { status: string; completedAt?: string } = { status };
+    if (status === 'completed') {
+      updates.completedAt = new Date().toISOString();
+    }
+    updateAppointmentMutation.mutate({ id, ...updates });
+  };
+
+  const handleViewNotes = (appointment: Appointment) => {
+    setSelectedAppointmentForNotes(appointment);
+    setShowNotesDialog(true);
+  };
+
+  const handleCloseNotesDialog = () => {
+    setShowNotesDialog(false);
+    setSelectedAppointmentForNotes(null);
+    setNewNoteContent("");
+  };
+
+  const handleAddNote = () => {
+    if (!selectedAppointmentForNotes || !newNoteContent.trim()) return;
+    
+    createNoteMutation.mutate({
+      appointmentId: selectedAppointmentForNotes.id,
+      authorName: selectedAppointmentForNotes.doctorName,
+      noteType: 'consultation',
+      content: newNoteContent.trim(),
+    });
+  };
+
   const newLeadsCount = leads?.filter((l) => l.status === "new").length ?? 0;
+  const upcomingAppointments = appointments?.filter((a) => a.status === "scheduled").length ?? 0;
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-12">
@@ -1064,13 +1499,17 @@ export default function Admin() {
               <p className="text-muted-foreground">Manage leads and products</p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => activeTab === "leads" ? refetchLeads() : refetchProducts()} data-testid="button-refresh">
+          <Button variant="outline" onClick={() => {
+            if (activeTab === "leads") refetchLeads();
+            else if (activeTab === "products") refetchProducts();
+            else refetchAppointments();
+          }} data-testid="button-refresh">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           <Button
             variant={activeTab === "leads" ? "default" : "outline"}
             onClick={() => setActiveTab("leads")}
@@ -1080,6 +1519,17 @@ export default function Admin() {
             Leads
             {newLeadsCount > 0 && (
               <Badge variant="secondary" className="ml-2">{newLeadsCount}</Badge>
+            )}
+          </Button>
+          <Button
+            variant={activeTab === "appointments" ? "default" : "outline"}
+            onClick={() => setActiveTab("appointments")}
+            data-testid="button-tab-appointments"
+          >
+            <Video className="h-4 w-4 mr-2" />
+            Appointments
+            {upcomingAppointments > 0 && (
+              <Badge variant="secondary" className="ml-2">{upcomingAppointments}</Badge>
             )}
           </Button>
           <Button
@@ -1118,6 +1568,7 @@ export default function Admin() {
                           lead={lead}
                           onStatusChange={handleStatusChange}
                           onCreatePrescription={handleCreatePrescription}
+                          onScheduleCall={handleScheduleCall}
                         />
                       ))}
                   </div>
@@ -1193,6 +1644,137 @@ export default function Admin() {
             </Card>
           </div>
         )}
+
+        {activeTab === "appointments" && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Video className="h-5 w-5" />
+                  Scheduled Video Consultations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {appointmentsLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-32 w-full" />
+                    ))}
+                  </div>
+                ) : appointments && appointments.length > 0 ? (
+                  <div className="grid gap-4">
+                    {appointments.map((appointment) => (
+                      <AppointmentCard
+                        key={appointment.id}
+                        appointment={appointment}
+                        onStatusChange={handleAppointmentStatusChange}
+                        onViewNotes={handleViewNotes}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Video className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No scheduled appointments. Use "Schedule Call" from a lead's card to create one.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        <Dialog open={showAppointmentDialog} onOpenChange={(open) => {
+          if (!open) handleCloseAppointmentDialog();
+        }}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Video className="h-5 w-5" />
+                Schedule Video Consultation
+              </DialogTitle>
+            </DialogHeader>
+            {selectedLeadForAppt && (
+              <AppointmentForm
+                lead={selectedLeadForAppt}
+                onSubmit={handleAppointmentSubmit}
+                onCancel={handleCloseAppointmentDialog}
+                isSubmitting={createAppointmentMutation.isPending}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showNotesDialog} onOpenChange={(open) => {
+          if (!open) handleCloseNotesDialog();
+        }}>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <StickyNote className="h-5 w-5" />
+                Call Documentation
+              </DialogTitle>
+            </DialogHeader>
+            {selectedAppointmentForNotes && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted/30 rounded-md">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div><span className="font-medium">Patient:</span> {selectedAppointmentForNotes.patientName}</div>
+                    <div><span className="font-medium">Doctor:</span> {selectedAppointmentForNotes.doctorName}</div>
+                    <div><span className="font-medium">Date:</span> {format(new Date(selectedAppointmentForNotes.scheduledAt), "MMM d, yyyy 'at' h:mm a")}</div>
+                    <div><span className="font-medium">Status:</span> {selectedAppointmentForNotes.status}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Add Note</Label>
+                  <Textarea
+                    placeholder="Document the call discussion, findings, recommendations..."
+                    value={newNoteContent}
+                    onChange={(e) => setNewNoteContent(e.target.value)}
+                    rows={3}
+                    data-testid="input-note-content"
+                  />
+                  <Button
+                    onClick={handleAddNote}
+                    disabled={!newNoteContent.trim() || createNoteMutation.isPending}
+                    className="w-full"
+                    data-testid="button-add-note"
+                  >
+                    {createNoteMutation.isPending ? "Saving..." : "Add Note"}
+                  </Button>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4" />
+                    Previous Notes
+                  </h4>
+                  {appointmentNotes && appointmentNotes.length > 0 ? (
+                    <div className="space-y-3">
+                      {appointmentNotes.map((note) => (
+                        <div key={note.id} className="p-3 bg-muted/30 rounded-md">
+                          <div className="flex items-center justify-between mb-2 text-sm">
+                            <span className="font-medium">{note.authorName}</span>
+                            <span className="text-muted-foreground">{format(new Date(note.createdAt), "MMM d, yyyy h:mm a")}</span>
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">No notes yet for this appointment.</p>
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={handleCloseNotesDialog}>
+                    Close
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showPrescriptionDialog} onOpenChange={(open) => {
           if (!open) handleClosePrescriptionDialog();
