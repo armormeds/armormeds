@@ -93,11 +93,22 @@ export const callNotes = pgTable("call_notes", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const providerAvailability = pgTable("provider_availability", {
+  id: serial("id").primaryKey(),
+  doctorName: text("doctor_name").notNull(),
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at").notNull(),
+  status: text("status").notNull().default("available"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, status: true, createdAt: true });
 export const insertPrescriptionSchema = createInsertSchema(prescriptions).omit({ id: true, createdAt: true });
 export const insertAppointmentSchema = createInsertSchema(appointments).omit({ id: true, createdAt: true, completedAt: true });
 export const insertCallNoteSchema = createInsertSchema(callNotes).omit({ id: true, createdAt: true });
+export const insertProviderAvailabilitySchema = createInsertSchema(providerAvailability).omit({ id: true, createdAt: true });
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -109,6 +120,8 @@ export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
 export type CallNote = typeof callNotes.$inferSelect;
 export type InsertCallNote = z.infer<typeof insertCallNoteSchema>;
+export type ProviderAvailability = typeof providerAvailability.$inferSelect;
+export type InsertProviderAvailability = z.infer<typeof insertProviderAvailabilitySchema>;
 export type UpdateLeadRequest = {
   status?: string;
   name?: string;

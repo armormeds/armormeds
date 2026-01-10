@@ -1,6 +1,6 @@
-import { products, leads, prescriptions, appointments, callNotes, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote } from "@shared/schema";
+import { products, leads, prescriptions, appointments, callNotes, providerAvailability, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, gte, and } from "drizzle-orm";
 
 export interface IStorage {
   getProducts(): Promise<Product[]>;
@@ -9,6 +9,8 @@ export interface IStorage {
   updateProduct(id: number, updates: UpdateProductRequest): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<boolean>;
   getLeads(): Promise<Lead[]>;
+  getLead(id: number): Promise<Lead | undefined>;
+  getLeadByEmail(email: string): Promise<Lead | undefined>;
   createLead(lead: InsertLead): Promise<Lead>;
   updateLead(id: number, updates: UpdateLeadRequest): Promise<Lead>;
   getPrescriptions(): Promise<Prescription[]>;
@@ -22,6 +24,11 @@ export interface IStorage {
   updateAppointment(id: number, updates: Partial<Appointment>): Promise<Appointment | undefined>;
   getCallNotes(appointmentId: number): Promise<CallNote[]>;
   createCallNote(note: InsertCallNote): Promise<CallNote>;
+  getAvailableSlots(from?: Date): Promise<ProviderAvailability[]>;
+  getAvailabilitySlot(id: number): Promise<ProviderAvailability | undefined>;
+  createAvailabilitySlot(slot: InsertProviderAvailability): Promise<ProviderAvailability>;
+  updateAvailabilitySlot(id: number, updates: Partial<ProviderAvailability>): Promise<ProviderAvailability | undefined>;
+  deleteAvailabilitySlot(id: number): Promise<boolean>;
   seedProducts(): Promise<void>;
 }
 
@@ -52,6 +59,16 @@ export class DatabaseStorage implements IStorage {
 
   async getLeads(): Promise<Lead[]> {
     return await db.select().from(leads);
+  }
+
+  async getLead(id: number): Promise<Lead | undefined> {
+    const [lead] = await db.select().from(leads).where(eq(leads.id, id));
+    return lead;
+  }
+
+  async getLeadByEmail(email: string): Promise<Lead | undefined> {
+    const [lead] = await db.select().from(leads).where(eq(leads.email, email.toLowerCase()));
+    return lead;
   }
 
   async createLead(insertLead: InsertLead): Promise<Lead> {
@@ -115,6 +132,36 @@ export class DatabaseStorage implements IStorage {
   async createCallNote(note: InsertCallNote): Promise<CallNote> {
     const [created] = await db.insert(callNotes).values(note as any).returning();
     return created;
+  }
+
+  async getAvailableSlots(from?: Date): Promise<ProviderAvailability[]> {
+    const fromDate = from || new Date();
+    return await db.select().from(providerAvailability)
+      .where(and(
+        eq(providerAvailability.status, "available"),
+        gte(providerAvailability.startAt, fromDate)
+      ))
+      .orderBy(providerAvailability.startAt);
+  }
+
+  async getAvailabilitySlot(id: number): Promise<ProviderAvailability | undefined> {
+    const [slot] = await db.select().from(providerAvailability).where(eq(providerAvailability.id, id));
+    return slot;
+  }
+
+  async createAvailabilitySlot(slot: InsertProviderAvailability): Promise<ProviderAvailability> {
+    const [created] = await db.insert(providerAvailability).values(slot as any).returning();
+    return created;
+  }
+
+  async updateAvailabilitySlot(id: number, updates: Partial<ProviderAvailability>): Promise<ProviderAvailability | undefined> {
+    const [updated] = await db.update(providerAvailability).set(updates).where(eq(providerAvailability.id, id)).returning();
+    return updated;
+  }
+
+  async deleteAvailabilitySlot(id: number): Promise<boolean> {
+    const result = await db.delete(providerAvailability).where(eq(providerAvailability.id, id)).returning();
+    return result.length > 0;
   }
 
   async seedProducts(): Promise<void> {

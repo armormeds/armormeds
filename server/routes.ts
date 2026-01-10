@@ -522,5 +522,142 @@ export async function registerRoutes(
     }
   });
 
+  // Provider Availability routes (admin)
+  app.get('/api/availability', async (req, res) => {
+    try {
+      const from = req.query.from ? new Date(req.query.from as string) : undefined;
+      const slots = await storage.getAvailableSlots(from);
+      res.json(slots);
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+      res.status(500).json({ error: 'Failed to fetch availability' });
+    }
+  });
+
+  app.post('/api/availability', async (req, res) => {
+    try {
+      const { doctorName, startAt, endAt, notes } = req.body;
+      
+      if (!doctorName || typeof doctorName !== 'string' || doctorName.trim().length < 2) {
+        return res.status(400).json({ error: 'Doctor name is required' });
+      }
+      if (!startAt || !endAt) {
+        return res.status(400).json({ error: 'Start and end times are required' });
+      }
+
+      const slot = await storage.createAvailabilitySlot({
+        doctorName: doctorName.trim(),
+        startAt: new Date(startAt),
+        endAt: new Date(endAt),
+        status: 'available',
+        notes: notes?.trim() || null,
+      });
+
+      res.status(201).json(slot);
+    } catch (error) {
+      console.error('Error creating availability slot:', error);
+      res.status(500).json({ error: 'Failed to create availability slot' });
+    }
+  });
+
+  app.patch('/api/availability/:id', async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const updates = req.body;
+      
+      if (updates.startAt) updates.startAt = new Date(updates.startAt);
+      if (updates.endAt) updates.endAt = new Date(updates.endAt);
+
+      const updated = await storage.updateAvailabilitySlot(id, updates);
+      if (!updated) {
+        return res.status(404).json({ error: 'Availability slot not found' });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating availability slot:', error);
+      res.status(500).json({ error: 'Failed to update availability slot' });
+    }
+  });
+
+  app.delete('/api/availability/:id', async (req, res) => {
+    try {
+      const deleted = await storage.deleteAvailabilitySlot(Number(req.params.id));
+      if (!deleted) {
+        return res.status(404).json({ error: 'Availability slot not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting availability slot:', error);
+      res.status(500).json({ error: 'Failed to delete availability slot' });
+    }
+  });
+
+  // Patient self-scheduling endpoint
+  app.post('/api/appointments/self-schedule', async (req, res) => {
+    try {
+      const { slotId, patientEmail, patientName, patientPhone, reason } = req.body;
+      
+      if (!slotId || typeof slotId !== 'number') {
+        return res.status(400).json({ error: 'Valid slot ID is required' });
+      }
+      if (!patientEmail || typeof patientEmail !== 'string' || !patientEmail.includes('@')) {
+        return res.status(400).json({ error: 'Valid email is required' });
+      }
+      if (!patientName || typeof patientName !== 'string' || patientName.trim().length < 2) {
+        return res.status(400).json({ error: 'Patient name is required' });
+      }
+
+      // Get the slot
+      const slot = await storage.getAvailabilitySlot(slotId);
+      if (!slot) {
+        return res.status(404).json({ error: 'Time slot not found' });
+      }
+      if (slot.status !== 'available') {
+        return res.status(400).json({ error: 'This time slot is no longer available' });
+      }
+
+      // Find lead by email
+      const normalizedEmail = patientEmail.toLowerCase().trim();
+      let lead = await storage.getLeadByEmail(normalizedEmail);
+      
+      // If no lead exists, create one
+      if (!lead) {
+        lead = await storage.createLead({
+          name: patientName.trim(),
+          email: normalizedEmail,
+          phone: patientPhone?.trim() || null,
+          medicationInterest: null,
+          message: 'Self-scheduled telehealth consultation',
+        });
+      }
+
+      // Mark slot as booked
+      await storage.updateAvailabilitySlot(slotId, { status: 'booked' });
+
+      // Create appointment
+      const duration = Math.round((new Date(slot.endAt).getTime() - new Date(slot.startAt).getTime()) / 60000);
+      const appointment = await storage.createAppointment({
+        leadId: lead.id,
+        patientName: patientName.trim(),
+        patientEmail: normalizedEmail,
+        patientPhone: patientPhone?.trim() || null,
+        doctorName: slot.doctorName,
+        reason: reason?.trim() || 'Telehealth consultation',
+        scheduledAt: slot.startAt,
+        duration: duration || 30,
+        videoLink: null,
+        status: 'scheduled',
+      });
+
+      // Update lead status
+      await storage.updateLead(lead.id, { status: 'follow-up' });
+
+      res.status(201).json(appointment);
+    } catch (error) {
+      console.error('Error self-scheduling appointment:', error);
+      res.status(500).json({ error: 'Failed to schedule appointment' });
+    }
+  });
+
   return httpServer;
 }
