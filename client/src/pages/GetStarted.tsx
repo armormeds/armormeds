@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, ArrowRight, ArrowLeft, Shield, Clock, Stethoscope, Upload, FileText, X, Lock, CreditCard } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { z } from "zod";
 import { useUpload } from "@/hooks/use-upload";
 import { Card, CardContent } from "@/components/ui/card";
@@ -101,9 +101,23 @@ export default function GetStarted() {
   const [currentStep, setCurrentStep] = useState(1);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(() => {
+    // Initialize from sessionStorage if available
+    try {
+      return sessionStorage.getItem('selectedPriceId') || null;
+    } catch {
+      return null;
+    }
+  });
   const { checkout, isLoading: isCheckoutLoading } = useCheckout();
   const { products: stripeProducts, isLoading: isProductsLoading } = useStripeProducts("weight-loss");
+
+  // Persist selectedPriceId to sessionStorage
+  useEffect(() => {
+    if (selectedPriceId) {
+      sessionStorage.setItem('selectedPriceId', selectedPriceId);
+    }
+  }, [selectedPriceId]);
   const { uploadFile } = useUpload({
     onSuccess: (response) => {
       const newFile: UploadedFile = {
