@@ -100,6 +100,20 @@ shared/           # Shared code between frontend and backend
 - **Status Tracking**: Appointments track status (scheduled, in-progress, completed, cancelled, no-show)
 - **Call Notes**: Doctors can add timestamped notes during/after consultations for documentation
 - **Patient View**: Patients can view their appointments at `/my-appointments` by entering their email
+- **Patient Self-Scheduling**: Patients can book available slots at `/schedule` after completing payment
+- **Provider Availability**: Admin "Availability" tab for creating time slots patients can book
 - **Video Links**: Flexible video link support for any platform (Zoom, Daily.co, Google Meet, etc.)
 - **Email Normalization**: Patient emails are lowercased on storage for consistent lookup
 - **Security Note**: MVP implementation - production would require proper authentication for patient portal
+
+### Patient Flow
+1. **Complete Intake**: Patient fills 8-step medical intake form at `/get-started`
+2. **Make Payment**: Stripe checkout processes subscription or one-time payment
+3. **Provider Reviews Files**: Provider reviews submitted documents (no call required)
+4. **Prescription Generated**: When approved, lead status changes to completed, prescriptionStatus to ready
+5. **Email Notification**: TODO - Configure Resend or SendGrid for automated prescription ready emails
+6. **Optional Consultation**: Patient can optionally schedule a video call via `/schedule` if desired
+
+### Future Enhancements
+- **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated. The backend has placeholder code in `server/routes.ts` ready for email integration.
+- **Authentication**: Add proper patient authentication for secure access to appointments and prescriptions

@@ -20,6 +20,9 @@ export const leads = pgTable("leads", {
   medicationInterest: text("medication_interest"),
   message: text("message"),
   status: text("status").notNull().default("new"),
+  paymentStatus: text("payment_status").notNull().default("pending"),
+  prescriptionStatus: text("prescription_status").notNull().default("pending"),
+  prescriptionNotifiedAt: timestamp("prescription_notified_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // Extended medical intake fields
   goals: jsonb("goals").$type<string[]>(),
@@ -127,6 +130,9 @@ export type UpdateLeadRequest = {
   name?: string;
   email?: string;
   phone?: string | null;
+  paymentStatus?: string;
+  prescriptionStatus?: string;
+  prescriptionNotifiedAt?: Date | null;
 };
 export type UpdateProductRequest = {
   name?: string;

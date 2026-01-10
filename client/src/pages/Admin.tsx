@@ -632,6 +632,29 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall }
               <Badge className={`${statusColors[lead.status]} no-default-hover-elevate no-default-active-elevate`} data-testid={`badge-lead-status-${lead.id}`}>
                 {lead.status}
               </Badge>
+              {(lead as any).prescriptionStatus && (lead as any).prescriptionStatus !== "pending" && (
+                <Badge 
+                  variant="outline" 
+                  className={`no-default-hover-elevate no-default-active-elevate ${
+                    (lead as any).prescriptionStatus === "ready" 
+                      ? "text-green-600 border-green-600" 
+                      : "text-yellow-600 border-yellow-600"
+                  }`}
+                  data-testid={`badge-rx-status-${lead.id}`}
+                >
+                  {(lead as any).prescriptionStatus === "ready" ? (
+                    <>
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Rx Ready
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="h-3 w-3 mr-1" />
+                      Rx {(lead as any).prescriptionStatus}
+                    </>
+                  )}
+                </Badge>
+              )}
               {lead.consentGiven && (
                 <Badge 
                   variant="outline" 
@@ -855,13 +878,13 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall }
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => onScheduleCall(lead)}
                 data-testid={`button-schedule-call-${lead.id}`}
               >
                 <Video className="h-4 w-4 mr-1" />
-                Schedule Call
+                Schedule Call (Optional)
               </Button>
               <Button
                 variant="outline"

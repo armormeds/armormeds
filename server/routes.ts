@@ -342,8 +342,17 @@ export async function registerRoutes(
         status: "active",
       });
 
-      // Update lead status to completed
-      await storage.updateLead(leadId, { status: "completed" });
+      // Update lead status to completed and prescription status to ready
+      await storage.updateLead(leadId, { 
+        status: "completed", 
+        prescriptionStatus: "ready",
+        prescriptionNotifiedAt: new Date()
+      });
+
+      // TODO: Send email notification to patient when email service is configured
+      // The lead's email can be fetched from storage.getLead(leadId)
+      // Email should inform patient that prescription is ready, no call required,
+      // but they can optionally schedule a consultation if desired
 
       res.status(201).json(prescription);
     } catch (error) {
