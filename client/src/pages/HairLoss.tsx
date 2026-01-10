@@ -49,7 +49,7 @@ export default function HairLoss() {
               Start seeing results in as little as 3-6 months with our personalized approach.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/get-started">
+              <Link href="/get-started?category=hair-loss">
                 <Button size="lg" className="bg-white text-amber-900 hover:bg-white/90 rounded-full px-8 shadow-lg" data-testid="button-hero-cta">
                   Start Your Treatment
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -133,7 +133,7 @@ export default function HairLoss() {
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t">
                         <span className="text-lg font-bold text-primary" data-testid={`text-product-price-${product.id}`}>{product.price}</span>
-                        <Link href="/get-started">
+                        <Link href="/get-started?category=hair-loss">
                           <Button size="sm" className="rounded-full" data-testid={`button-get-started-${product.id}`}>
                             Get Started
                           </Button>
@@ -205,7 +205,7 @@ export default function HairLoss() {
               <span>Results in 3-6 Months</span>
             </div>
           </div>
-          <Link href="/get-started">
+          <Link href="/get-started?category=hair-loss">
             <Button size="lg" className="bg-white text-amber-700 hover:bg-white/90 rounded-full px-10 shadow-lg" data-testid="button-bottom-cta">
               Start Your Free Consultation
               <ArrowRight className="ml-2 h-5 w-5" />

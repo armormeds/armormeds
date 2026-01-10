@@ -49,7 +49,7 @@ export default function SexualHealth() {
               providers. Discreet packaging, free delivery, real results.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link href="/get-started">
+              <Link href="/get-started?category=sexual-health">
                 <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-8 shadow-lg" data-testid="button-hero-cta">
                   Get Started Now
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -133,7 +133,7 @@ export default function SexualHealth() {
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t">
                         <span className="text-lg font-bold text-primary" data-testid={`text-product-price-${product.id}`}>{product.price}</span>
-                        <Link href="/get-started">
+                        <Link href="/get-started?category=sexual-health">
                           <Button size="sm" className="rounded-full" data-testid={`button-get-started-${product.id}`}>
                             Get Started
                           </Button>
@@ -212,7 +212,7 @@ export default function SexualHealth() {
               <span>Free Discreet Shipping</span>
             </div>
           </div>
-          <Link href="/get-started">
+          <Link href="/get-started?category=sexual-health">
             <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-10 shadow-lg" data-testid="button-bottom-cta">
               Start Your Free Consultation
               <ArrowRight className="ml-2 h-5 w-5" />

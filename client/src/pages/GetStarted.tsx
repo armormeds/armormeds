@@ -13,12 +13,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, ArrowRight, ArrowLeft, Shield, Clock, Stethoscope, Upload, FileText, X, Lock, CreditCard } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
 import { useUpload } from "@/hooks/use-upload";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCheckout } from "@/hooks/use-checkout";
 import { useStripeProducts } from "@/hooks/use-stripe-products";
+import { useSearch } from "wouter";
 
 const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
@@ -31,12 +32,28 @@ const US_STATES = [
   "Wisconsin", "Wyoming"
 ];
 
-const GOALS = [
+const WEIGHT_LOSS_GOALS = [
   { id: "weight_loss", label: "Weight Loss" },
   { id: "energy", label: "Energy & Vitality" },
   { id: "metabolic_health", label: "Metabolic Health" },
   { id: "appetite_control", label: "Appetite Control" },
   { id: "blood_sugar", label: "Blood Sugar Management" },
+];
+
+const HAIR_LOSS_GOALS = [
+  { id: "stop_hair_loss", label: "Stop Hair Loss" },
+  { id: "regrow_hair", label: "Regrow Hair" },
+  { id: "thicken_hair", label: "Thicken Existing Hair" },
+  { id: "prevent_further_loss", label: "Prevent Further Loss" },
+  { id: "boost_confidence", label: "Boost Confidence" },
+];
+
+const SEXUAL_HEALTH_GOALS = [
+  { id: "improve_performance", label: "Improve Performance" },
+  { id: "maintain_erection", label: "Maintain Erection" },
+  { id: "increase_confidence", label: "Increase Confidence" },
+  { id: "spontaneous_intimacy", label: "More Spontaneous Intimacy" },
+  { id: "overall_wellness", label: "Overall Sexual Wellness" },
 ];
 
 const MEDICAL_CONDITIONS = [
@@ -102,7 +119,6 @@ export default function GetStarted() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(() => {
-    // Initialize from sessionStorage if available
     try {
       return sessionStorage.getItem('selectedPriceId') || null;
     } catch {
@@ -110,7 +126,76 @@ export default function GetStarted() {
     }
   });
   const { checkout, isLoading: isCheckoutLoading } = useCheckout();
-  const { products: stripeProducts, isLoading: isProductsLoading } = useStripeProducts("weight-loss");
+  
+  const searchString = useSearch();
+  const category = useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    return params.get('category') || 'weight-loss';
+  }, [searchString]);
+  
+  const { products: stripeProducts, isLoading: isProductsLoading } = useStripeProducts(category);
+  
+  const medicationOptions = useMemo(() => {
+    switch (category) {
+      case 'hair-loss':
+        return [
+          { value: 'finasteride', label: 'Finasteride' },
+          { value: 'minoxidil', label: 'Minoxidil' },
+          { value: 'unsure', label: 'Not sure / Need advice' },
+        ];
+      case 'sexual-health':
+        return [
+          { value: 'sildenafil', label: 'Sildenafil (Generic Viagra)' },
+          { value: 'tadalafil', label: 'Tadalafil (Generic Cialis)' },
+          { value: 'vardenafil', label: 'Vardenafil (Generic Levitra)' },
+          { value: 'unsure', label: 'Not sure / Need advice' },
+        ];
+      default:
+        return [
+          { value: 'semaglutide', label: 'Semaglutide' },
+          { value: 'tirzepatide', label: 'Tirzepatide' },
+          { value: 'unsure', label: 'Not sure / Need advice' },
+        ];
+    }
+  }, [category]);
+  
+  const categoryLabels = useMemo(() => {
+    switch (category) {
+      case 'hair-loss':
+        return {
+          programName: 'hair restoration program',
+          step6Title: 'Treatment-Specific Questions',
+          step6Subtitle: 'Help us understand your hair loss history',
+        };
+      case 'sexual-health':
+        return {
+          programName: 'sexual wellness program',
+          step6Title: 'Treatment-Specific Questions',
+          step6Subtitle: 'Help us understand your needs',
+        };
+      default:
+        return {
+          programName: 'weight management program',
+          step6Title: 'GLP-1 Specific Questions',
+          step6Subtitle: 'Important safety information',
+        };
+    }
+  }, [category]);
+  
+  const isWeightLoss = category === 'weight-loss';
+  const isHairLoss = category === 'hair-loss';
+  const isSexualHealth = category === 'sexual-health';
+  
+  const goals = useMemo(() => {
+    switch (category) {
+      case 'hair-loss':
+        return HAIR_LOSS_GOALS;
+      case 'sexual-health':
+        return SEXUAL_HEALTH_GOALS;
+      default:
+        return WEIGHT_LOSS_GOALS;
+    }
+  }, [category]);
 
   // Persist selectedPriceId to sessionStorage
   useEffect(() => {
@@ -329,7 +414,7 @@ export default function GetStarted() {
             Medical Intake Form
           </h1>
           <p className="text-slate-600">
-            Complete this form to see if you qualify for our weight management program.
+            Complete this form to see if you qualify for our {categoryLabels.programName}.
           </p>
         </motion.div>
 
@@ -474,7 +559,7 @@ export default function GetStarted() {
                       render={() => (
                         <FormItem>
                           <div className="grid gap-3">
-                            {GOALS.map((goal) => (
+                            {goals.map((goal) => (
                               <FormField
                                 key={goal.id}
                                 control={form.control}
@@ -707,70 +792,72 @@ export default function GetStarted() {
                       )}
                     />
 
-                    <div className="grid grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="heightFeet"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Height (ft)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                placeholder="5" 
-                                className="h-12 rounded-xl"
-                                data-testid="input-height-feet"
-                                {...field} 
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    {isWeightLoss && (
+                      <div className="grid grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="heightFeet"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Height (ft)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="5" 
+                                  className="h-12 rounded-xl"
+                                  data-testid="input-height-feet"
+                                  {...field} 
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name="heightInches"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Height (in)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                placeholder="8" 
-                                className="h-12 rounded-xl"
-                                data-testid="input-height-inches"
-                                {...field} 
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name="heightInches"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Height (in)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="8" 
+                                  className="h-12 rounded-xl"
+                                  data-testid="input-height-inches"
+                                  {...field} 
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name="weight"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Weight (lbs)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                placeholder="180" 
-                                className="h-12 rounded-xl"
-                                data-testid="input-weight"
-                                {...field} 
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                        <FormField
+                          control={form.control}
+                          name="weight"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Weight (lbs)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="180" 
+                                  className="h-12 rounded-xl"
+                                  data-testid="input-weight"
+                                  {...field} 
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -888,154 +975,178 @@ export default function GetStarted() {
                     className="space-y-6"
                   >
                     <div className="text-center mb-6">
-                      <h2 className="text-2xl font-bold text-slate-900 mb-2">GLP-1 Specific Questions</h2>
-                      <p className="text-slate-600">Important safety information</p>
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">{categoryLabels.step6Title}</h2>
+                      <p className="text-slate-600">{categoryLabels.step6Subtitle}</p>
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="hasPancreatitis"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Do you have pancreatitis or a history of pancreatitis?</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex gap-4"
-                            >
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" data-testid="radio-pancreatitis-yes" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="no" data-testid="radio-pancreatitis-no" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {isWeightLoss && (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="hasPancreatitis"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>Do you have pancreatitis or a history of pancreatitis?</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex gap-4"
+                                >
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="yes" data-testid="radio-pancreatitis-yes" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="no" data-testid="radio-pancreatitis-no" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="hasThyroidCancer"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Do you have medullary thyroid cancer or a family history of it?</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex gap-4"
-                            >
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" data-testid="radio-thyroid-yes" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="no" data-testid="radio-thyroid-no" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="hasThyroidCancer"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>Do you have medullary thyroid cancer or a family history of it?</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex gap-4"
+                                >
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="yes" data-testid="radio-thyroid-yes" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="no" data-testid="radio-thyroid-no" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="hasKidneyIssues"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Do you have renal (kidney) impairment?</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex gap-4"
-                            >
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" data-testid="radio-kidney-yes" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="no" data-testid="radio-kidney-no" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="hasKidneyIssues"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>Do you have renal (kidney) impairment?</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex gap-4"
+                                >
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="yes" data-testid="radio-kidney-yes" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="no" data-testid="radio-kidney-no" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="previousGlp"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Have you previously taken a GLP-1 medication (Ozempic, Wegovy, Mounjaro, etc.)?</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex gap-4"
-                            >
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" data-testid="radio-glp-yes" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                <FormControl>
-                                  <RadioGroupItem value="no" data-testid="radio-glp-no" />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="previousGlp"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>Have you previously taken a GLP-1 medication (Ozempic, Wegovy, Mounjaro, etc.)?</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex gap-4"
+                                >
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="yes" data-testid="radio-glp-yes" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                    <FormControl>
+                                      <RadioGroupItem value="no" data-testid="radio-glp-no" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    {form.watch("previousGlp") === "yes" && (
-                      <FormField
-                        control={form.control}
-                        name="glpDetails"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Please provide details about your previous GLP-1 experience</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Which medication did you take? What dosage? How long ago?" 
-                                className="min-h-[80px] rounded-xl resize-none"
-                                data-testid="textarea-glp-details"
-                                {...field} 
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                        {form.watch("previousGlp") === "yes" && (
+                          <FormField
+                            control={form.control}
+                            name="glpDetails"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Please provide details about your previous GLP-1 experience</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Which medication did you take? What dosage? How long ago?" 
+                                    className="min-h-[80px] rounded-xl resize-none"
+                                    data-testid="textarea-glp-details"
+                                    {...field} 
+                                    value={field.value || ""}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         )}
-                      />
+                      </>
+                    )}
+
+                    {isHairLoss && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                        <h4 className="font-semibold text-amber-900 mb-2">About Hair Loss Treatments</h4>
+                        <p className="text-sm text-amber-800">
+                          Our treatments target the root cause of male pattern baldness. Finasteride blocks DHT (the hormone that causes hair loss), 
+                          while Minoxidil stimulates hair follicles. Many patients see results in 3-6 months.
+                        </p>
+                      </div>
+                    )}
+
+                    {isSexualHealth && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                        <h4 className="font-semibold text-blue-900 mb-2">About ED Treatments</h4>
+                        <p className="text-sm text-blue-800">
+                          PDE5 inhibitors like Sildenafil and Tadalafil are safe and effective for most men. 
+                          They work by increasing blood flow. Your provider will help determine the right option for your needs.
+                        </p>
+                      </div>
                     )}
 
                     <FormField
@@ -1051,9 +1162,11 @@ export default function GetStarted() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="semaglutide">Semaglutide</SelectItem>
-                              <SelectItem value="tirzepatide">Tirzepatide</SelectItem>
-                              <SelectItem value="unsure">Not sure / Need advice</SelectItem>
+                              {medicationOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
