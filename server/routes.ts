@@ -352,5 +352,152 @@ export async function registerRoutes(
     }
   });
 
+  // Appointment routes
+  app.get('/api/appointments', async (req, res) => {
+    try {
+      const appointments = await storage.getAppointments();
+      res.json(appointments);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+      res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
+  });
+
+  app.get('/api/appointments/:id', async (req, res) => {
+    try {
+      const appointment = await storage.getAppointment(Number(req.params.id));
+      if (!appointment) {
+        return res.status(404).json({ error: 'Appointment not found' });
+      }
+      res.json(appointment);
+    } catch (error) {
+      console.error('Error fetching appointment:', error);
+      res.status(500).json({ error: 'Failed to fetch appointment' });
+    }
+  });
+
+  app.get('/api/leads/:leadId/appointments', async (req, res) => {
+    try {
+      const appointments = await storage.getAppointmentsByLead(Number(req.params.leadId));
+      res.json(appointments);
+    } catch (error) {
+      console.error('Error fetching lead appointments:', error);
+      res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
+  });
+
+  app.post('/api/appointments', async (req, res) => {
+    try {
+      const { leadId, patientName, patientEmail, patientPhone, doctorName, reason, scheduledAt, duration, videoLink } = req.body;
+      
+      if (!leadId || typeof leadId !== 'number') {
+        return res.status(400).json({ error: 'Valid lead ID is required' });
+      }
+      if (!patientName || typeof patientName !== 'string' || patientName.trim().length < 2) {
+        return res.status(400).json({ error: 'Patient name is required' });
+      }
+      if (!patientEmail || typeof patientEmail !== 'string' || !patientEmail.includes('@')) {
+        return res.status(400).json({ error: 'Valid patient email is required' });
+      }
+      if (!doctorName || typeof doctorName !== 'string' || doctorName.trim().length < 2) {
+        return res.status(400).json({ error: 'Doctor name is required' });
+      }
+      if (!reason || typeof reason !== 'string' || reason.trim().length < 5) {
+        return res.status(400).json({ error: 'Reason for appointment is required (minimum 5 characters)' });
+      }
+      if (!scheduledAt) {
+        return res.status(400).json({ error: 'Scheduled date/time is required' });
+      }
+
+      const appointment = await storage.createAppointment({
+        leadId,
+        patientName: patientName.trim(),
+        patientEmail: patientEmail.trim(),
+        patientPhone: patientPhone?.trim() || null,
+        doctorName: doctorName.trim(),
+        reason: reason.trim(),
+        scheduledAt: new Date(scheduledAt),
+        duration: duration || 30,
+        videoLink: videoLink?.trim() || null,
+        status: 'scheduled',
+      });
+
+      // Update lead status to indicate follow-up needed
+      await storage.updateLead(leadId, { status: 'follow-up' });
+
+      res.status(201).json(appointment);
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      res.status(500).json({ error: 'Failed to create appointment' });
+    }
+  });
+
+  app.patch('/api/appointments/:id', async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const updates = req.body;
+      
+      // Convert scheduledAt string to Date if present
+      if (updates.scheduledAt) {
+        updates.scheduledAt = new Date(updates.scheduledAt);
+      }
+      if (updates.completedAt) {
+        updates.completedAt = new Date(updates.completedAt);
+      }
+
+      const updated = await storage.updateAppointment(id, updates);
+      if (!updated) {
+        return res.status(404).json({ error: 'Appointment not found' });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      res.status(500).json({ error: 'Failed to update appointment' });
+    }
+  });
+
+  // Call notes routes
+  app.get('/api/appointments/:appointmentId/notes', async (req, res) => {
+    try {
+      const notes = await storage.getCallNotes(Number(req.params.appointmentId));
+      res.json(notes);
+    } catch (error) {
+      console.error('Error fetching call notes:', error);
+      res.status(500).json({ error: 'Failed to fetch call notes' });
+    }
+  });
+
+  app.post('/api/appointments/:appointmentId/notes', async (req, res) => {
+    try {
+      const appointmentId = Number(req.params.appointmentId);
+      const { authorName, noteType, content } = req.body;
+      
+      // Verify appointment exists
+      const appointment = await storage.getAppointment(appointmentId);
+      if (!appointment) {
+        return res.status(404).json({ error: 'Appointment not found' });
+      }
+
+      if (!authorName || typeof authorName !== 'string' || authorName.trim().length < 2) {
+        return res.status(400).json({ error: 'Author name is required' });
+      }
+      if (!content || typeof content !== 'string' || content.trim().length < 5) {
+        return res.status(400).json({ error: 'Note content is required (minimum 5 characters)' });
+      }
+
+      const note = await storage.createCallNote({
+        appointmentId,
+        authorName: authorName.trim(),
+        noteType: noteType || 'general',
+        content: content.trim(),
+      });
+
+      res.status(201).json(note);
+    } catch (error) {
+      console.error('Error creating call note:', error);
+      res.status(500).json({ error: 'Failed to create call note' });
+    }
+  });
+
   return httpServer;
 }
