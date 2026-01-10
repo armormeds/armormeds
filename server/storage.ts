@@ -1,6 +1,6 @@
-import { products, leads, prescriptions, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription } from "@shared/schema";
+import { products, leads, prescriptions, appointments, callNotes, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getProducts(): Promise<Product[]>;
@@ -14,6 +14,13 @@ export interface IStorage {
   getPrescriptions(): Promise<Prescription[]>;
   getPrescriptionsByLead(leadId: number): Promise<Prescription[]>;
   createPrescription(prescription: InsertPrescription): Promise<Prescription>;
+  getAppointments(): Promise<Appointment[]>;
+  getAppointment(id: number): Promise<Appointment | undefined>;
+  getAppointmentsByLead(leadId: number): Promise<Appointment[]>;
+  createAppointment(appointment: InsertAppointment): Promise<Appointment>;
+  updateAppointment(id: number, updates: Partial<Appointment>): Promise<Appointment | undefined>;
+  getCallNotes(appointmentId: number): Promise<CallNote[]>;
+  createCallNote(note: InsertCallNote): Promise<CallNote>;
   seedProducts(): Promise<void>;
 }
 
@@ -66,6 +73,38 @@ export class DatabaseStorage implements IStorage {
 
   async createPrescription(prescription: InsertPrescription): Promise<Prescription> {
     const [created] = await db.insert(prescriptions).values(prescription as any).returning();
+    return created;
+  }
+
+  async getAppointments(): Promise<Appointment[]> {
+    return await db.select().from(appointments).orderBy(desc(appointments.scheduledAt));
+  }
+
+  async getAppointment(id: number): Promise<Appointment | undefined> {
+    const [appointment] = await db.select().from(appointments).where(eq(appointments.id, id));
+    return appointment;
+  }
+
+  async getAppointmentsByLead(leadId: number): Promise<Appointment[]> {
+    return await db.select().from(appointments).where(eq(appointments.leadId, leadId)).orderBy(desc(appointments.scheduledAt));
+  }
+
+  async createAppointment(appointment: InsertAppointment): Promise<Appointment> {
+    const [created] = await db.insert(appointments).values(appointment as any).returning();
+    return created;
+  }
+
+  async updateAppointment(id: number, updates: Partial<Appointment>): Promise<Appointment | undefined> {
+    const [updated] = await db.update(appointments).set(updates).where(eq(appointments.id, id)).returning();
+    return updated;
+  }
+
+  async getCallNotes(appointmentId: number): Promise<CallNote[]> {
+    return await db.select().from(callNotes).where(eq(callNotes.appointmentId, appointmentId)).orderBy(desc(callNotes.createdAt));
+  }
+
+  async createCallNote(note: InsertCallNote): Promise<CallNote> {
+    const [created] = await db.insert(callNotes).values(note as any).returning();
     return created;
   }
 

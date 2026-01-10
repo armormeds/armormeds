@@ -68,9 +68,36 @@ export const prescriptions = pgTable("prescriptions", {
   status: text("status").notNull().default("active"),
 });
 
+export const appointments = pgTable("appointments", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").notNull(),
+  patientName: text("patient_name").notNull(),
+  patientEmail: text("patient_email").notNull(),
+  patientPhone: text("patient_phone"),
+  doctorName: text("doctor_name").notNull(),
+  reason: text("reason").notNull(),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  duration: integer("duration").notNull().default(30),
+  videoLink: text("video_link"),
+  status: text("status").notNull().default("scheduled"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const callNotes = pgTable("call_notes", {
+  id: serial("id").primaryKey(),
+  appointmentId: integer("appointment_id").notNull(),
+  authorName: text("author_name").notNull(),
+  noteType: text("note_type").notNull().default("general"),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, status: true, createdAt: true });
 export const insertPrescriptionSchema = createInsertSchema(prescriptions).omit({ id: true, createdAt: true });
+export const insertAppointmentSchema = createInsertSchema(appointments).omit({ id: true, createdAt: true, completedAt: true });
+export const insertCallNoteSchema = createInsertSchema(callNotes).omit({ id: true, createdAt: true });
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -78,6 +105,10 @@ export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type Prescription = typeof prescriptions.$inferSelect;
 export type InsertPrescription = z.infer<typeof insertPrescriptionSchema>;
+export type Appointment = typeof appointments.$inferSelect;
+export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
+export type CallNote = typeof callNotes.$inferSelect;
+export type InsertCallNote = z.infer<typeof insertCallNoteSchema>;
 export type UpdateLeadRequest = {
   status?: string;
   name?: string;
