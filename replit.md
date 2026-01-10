@@ -32,6 +32,9 @@ Preferred communication style: Simple, everyday language.
   - `products` - medication listings (name, description, price, image, benefits, category)
     - Categories: weight-loss, hair-loss, sexual-health
   - `leads` - customer inquiries (name, email, phone, medication interest, message, status, plus medical intake fields)
+  - `prescriptions` - e-prescriptions generated for patients (medication, dosage, quantity, provider info)
+  - `appointments` - video consultation scheduling (patient info, doctor, scheduled time, video link, status)
+  - `call_notes` - documentation for video consultations (author, note type, content, timestamps)
 
 ### Key Design Patterns
 - **Shared Types**: The `shared/` directory contains schema definitions and API route contracts used by both frontend and backend
@@ -90,3 +93,13 @@ shared/           # Shared code between frontend and backend
 - **Stripe Products**: 6 medications seeded (Semaglutide, Tirzepatide, Finasteride, Minoxidil, Sildenafil, Tadalafil)
 - **Checkout Flow**: `/api/stripe/checkout` for subscriptions, `/api/stripe/checkout-one-time` for one-time payments
 - **Webhook Handling**: Automatic sync of Stripe events to local PostgreSQL database
+
+### Call Scheduling Platform
+- **Admin Scheduling**: Admins can schedule video consultations from lead cards via "Schedule Call" button
+- **Appointment Management**: Admin dashboard has "Appointments" tab for viewing/managing all scheduled calls
+- **Status Tracking**: Appointments track status (scheduled, in-progress, completed, cancelled, no-show)
+- **Call Notes**: Doctors can add timestamped notes during/after consultations for documentation
+- **Patient View**: Patients can view their appointments at `/my-appointments` by entering their email
+- **Video Links**: Flexible video link support for any platform (Zoom, Daily.co, Google Meet, etc.)
+- **Email Normalization**: Patient emails are lowercased on storage for consistent lookup
+- **Security Note**: MVP implementation - production would require proper authentication for patient portal

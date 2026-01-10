@@ -386,6 +386,29 @@ export async function registerRoutes(
     }
   });
 
+  app.get('/api/appointments/patient/:email', async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const appointments = await storage.getAppointmentsByPatientEmail(email);
+      const sanitizedAppointments = appointments.map(apt => ({
+        id: apt.id,
+        patientName: apt.patientName,
+        doctorName: apt.doctorName,
+        reason: apt.reason,
+        scheduledAt: apt.scheduledAt,
+        duration: apt.duration,
+        status: apt.status,
+        videoLink: apt.videoLink,
+        completedAt: apt.completedAt,
+        createdAt: apt.createdAt,
+      }));
+      res.json(sanitizedAppointments);
+    } catch (error) {
+      console.error('Error fetching patient appointments:', error);
+      res.status(500).json({ error: 'Failed to fetch appointments' });
+    }
+  });
+
   app.post('/api/appointments', async (req, res) => {
     try {
       const { leadId, patientName, patientEmail, patientPhone, doctorName, reason, scheduledAt, duration, videoLink } = req.body;

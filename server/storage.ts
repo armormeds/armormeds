@@ -17,6 +17,7 @@ export interface IStorage {
   getAppointments(): Promise<Appointment[]>;
   getAppointment(id: number): Promise<Appointment | undefined>;
   getAppointmentsByLead(leadId: number): Promise<Appointment[]>;
+  getAppointmentsByPatientEmail(email: string): Promise<Appointment[]>;
   createAppointment(appointment: InsertAppointment): Promise<Appointment>;
   updateAppointment(id: number, updates: Partial<Appointment>): Promise<Appointment | undefined>;
   getCallNotes(appointmentId: number): Promise<CallNote[]>;
@@ -89,8 +90,16 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(appointments).where(eq(appointments.leadId, leadId)).orderBy(desc(appointments.scheduledAt));
   }
 
+  async getAppointmentsByPatientEmail(email: string): Promise<Appointment[]> {
+    return await db.select().from(appointments).where(eq(appointments.patientEmail, email.toLowerCase())).orderBy(desc(appointments.scheduledAt));
+  }
+
   async createAppointment(appointment: InsertAppointment): Promise<Appointment> {
-    const [created] = await db.insert(appointments).values(appointment as any).returning();
+    const normalizedAppointment = {
+      ...appointment,
+      patientEmail: appointment.patientEmail.toLowerCase(),
+    };
+    const [created] = await db.insert(appointments).values(normalizedAppointment as any).returning();
     return created;
   }
 
