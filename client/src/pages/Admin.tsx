@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play } from "lucide-react";
 import { Link } from "wouter";
-import type { Lead, Product, Prescription, Appointment, CallNote } from "@shared/schema";
+import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
 import { useState, useRef } from "react";
@@ -1120,7 +1120,7 @@ function ProductCard({
 
 export default function Admin() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments">("leads");
+  const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments" | "availability">("leads");
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showPrescriptionDialog, setShowPrescriptionDialog] = useState(false);
@@ -1131,6 +1131,11 @@ export default function Admin() {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [selectedAppointmentForNotes, setSelectedAppointmentForNotes] = useState<Appointment | null>(null);
   const [newNoteContent, setNewNoteContent] = useState("");
+  const [showAvailabilityDialog, setShowAvailabilityDialog] = useState(false);
+  const [newSlotDoctor, setNewSlotDoctor] = useState("");
+  const [newSlotDate, setNewSlotDate] = useState("");
+  const [newSlotStartTime, setNewSlotStartTime] = useState("");
+  const [newSlotEndTime, setNewSlotEndTime] = useState("");
 
   const { data: leads, isLoading: leadsLoading, refetch: refetchLeads } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
@@ -1153,6 +1158,10 @@ export default function Admin() {
       if (!response.ok) throw new Error("Failed to fetch notes");
       return response.json();
     },
+  });
+
+  const { data: availabilitySlots, isLoading: availabilityLoading, refetch: refetchAvailability } = useQuery<ProviderAvailability[]>({
+    queryKey: ["/api/availability"],
   });
 
   const updateLeadMutation = useMutation({
@@ -1423,6 +1432,66 @@ export default function Admin() {
     },
   });
 
+  const createAvailabilityMutation = useMutation({
+    mutationFn: async (data: { doctorName: string; startAt: string; endAt: string }) => {
+      const response = await apiRequest("POST", "/api/availability", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/availability"] });
+      setShowAvailabilityDialog(false);
+      setNewSlotDoctor("");
+      setNewSlotDate("");
+      setNewSlotStartTime("");
+      setNewSlotEndTime("");
+      toast({
+        title: "Availability added",
+        description: "New time slot has been created for patient scheduling.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create availability slot.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteAvailabilityMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/availability/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/availability"] });
+      toast({
+        title: "Slot deleted",
+        description: "Availability slot has been removed.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete availability slot.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateAvailability = () => {
+    if (!newSlotDoctor || !newSlotDate || !newSlotStartTime || !newSlotEndTime) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const startAt = new Date(`${newSlotDate}T${newSlotStartTime}`).toISOString();
+    const endAt = new Date(`${newSlotDate}T${newSlotEndTime}`).toISOString();
+    createAvailabilityMutation.mutate({ doctorName: newSlotDoctor, startAt, endAt });
+  };
+
   const handleScheduleCall = (lead: Lead) => {
     setSelectedLeadForAppt(lead);
     setShowAppointmentDialog(true);
@@ -1502,7 +1571,8 @@ export default function Admin() {
           <Button variant="outline" onClick={() => {
             if (activeTab === "leads") refetchLeads();
             else if (activeTab === "products") refetchProducts();
-            else refetchAppointments();
+            else if (activeTab === "appointments") refetchAppointments();
+            else refetchAvailability();
           }} data-testid="button-refresh">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -1539,6 +1609,17 @@ export default function Admin() {
           >
             <Package className="h-4 w-4 mr-2" />
             Products
+          </Button>
+          <Button
+            variant={activeTab === "availability" ? "default" : "outline"}
+            onClick={() => setActiveTab("availability")}
+            data-testid="button-tab-availability"
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            Availability
+            {availabilitySlots && availabilitySlots.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{availabilitySlots.length}</Badge>
+            )}
           </Button>
         </div>
 
@@ -1676,6 +1757,150 @@ export default function Admin() {
                   <div className="text-center py-12 text-muted-foreground">
                     <Video className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No scheduled appointments. Use "Schedule Call" from a lead's card to create one.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "availability" && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Provider Availability
+                  </CardTitle>
+                  <Dialog open={showAvailabilityDialog} onOpenChange={setShowAvailabilityDialog}>
+                    <DialogTrigger asChild>
+                      <Button data-testid="button-add-availability">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Time Slot
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[450px]">
+                      <DialogHeader>
+                        <DialogTitle>Add Availability Slot</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="slot-doctor">Doctor Name</Label>
+                          <Input
+                            id="slot-doctor"
+                            value={newSlotDoctor}
+                            onChange={(e) => setNewSlotDoctor(e.target.value)}
+                            placeholder="Dr. Smith"
+                            data-testid="input-slot-doctor"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="slot-date">Date</Label>
+                          <Input
+                            id="slot-date"
+                            type="date"
+                            value={newSlotDate}
+                            onChange={(e) => setNewSlotDate(e.target.value)}
+                            data-testid="input-slot-date"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="slot-start">Start Time</Label>
+                            <Input
+                              id="slot-start"
+                              type="time"
+                              value={newSlotStartTime}
+                              onChange={(e) => setNewSlotStartTime(e.target.value)}
+                              data-testid="input-slot-start"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="slot-end">End Time</Label>
+                            <Input
+                              id="slot-end"
+                              type="time"
+                              value={newSlotEndTime}
+                              onChange={(e) => setNewSlotEndTime(e.target.value)}
+                              data-testid="input-slot-end"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowAvailabilityDialog(false)}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleCreateAvailability}
+                          disabled={createAvailabilityMutation.isPending}
+                          data-testid="button-save-slot"
+                        >
+                          {createAvailabilityMutation.isPending ? "Saving..." : "Add Slot"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Set available time slots for patients to self-schedule telehealth consultations.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {availabilityLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : availabilitySlots && availabilitySlots.length > 0 ? (
+                  <div className="grid gap-3">
+                    {availabilitySlots.map((slot) => (
+                      <div 
+                        key={slot.id} 
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                        data-testid={`availability-slot-${slot.id}`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 rounded-full bg-primary/10">
+                            <Calendar className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium">{slot.doctorName}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(new Date(slot.startAt), "EEEE, MMM d, yyyy")}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(new Date(slot.startAt), "h:mm a")} - {format(new Date(slot.endAt), "h:mm a")}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            className={slot.status === "available" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}
+                          >
+                            {slot.status}
+                          </Badge>
+                          {slot.status === "available" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => deleteAvailabilityMutation.mutate(slot.id)}
+                              disabled={deleteAvailabilityMutation.isPending}
+                              data-testid={`button-delete-slot-${slot.id}`}
+                            >
+                              <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No availability slots set. Click "Add Time Slot" to let patients schedule consultations.</p>
                   </div>
                 )}
               </CardContent>
