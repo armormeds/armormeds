@@ -206,8 +206,9 @@ export class DatabaseStorage implements IStorage {
 
   async seedProducts(): Promise<void> {
     const existing = await this.getProducts();
-    if (existing.length === 0) {
-      await db.insert(products).values([
+    const existingCategories = new Set(existing.map(p => p.category));
+    
+    const allProducts = [
         {
           name: "Semaglutide",
           description: "A GLP-1 receptor agonist that mimics the GLP-1 hormone, which is released in the gastrointestinal tract in response to eating. It prompts the body to produce more insulin, which reduces blood sugar (glucose).",
@@ -272,7 +273,12 @@ export class DatabaseStorage implements IStorage {
           benefits: ["Fast-acting formula", "Works in 25 minutes", "Lasts 4-5 hours", "Alternative option"],
           category: "sexual-health"
         }
-      ]);
+    ];
+
+    const productsToInsert = allProducts.filter(p => !existingCategories.has(p.category));
+    
+    if (productsToInsert.length > 0) {
+      await db.insert(products).values(productsToInsert);
     }
   }
 }
