@@ -18,8 +18,10 @@ import {
   Search,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Plus
 } from "lucide-react";
+import { Link } from "wouter";
 import type { Appointment } from "@shared/schema";
 
 function AppointmentStatusBadge({ status }: { status: string }) {
@@ -201,12 +203,20 @@ export default function MyAppointments() {
                 <p className="text-sm text-muted-foreground">
                   Showing appointments for: <span className="font-medium text-foreground">{submittedEmail}</span>
                 </p>
-                <Button variant="outline" size="sm" onClick={() => {
-                  setSubmittedEmail("");
-                  setSearchEmail("");
-                }} data-testid="button-change-email">
-                  Change Email
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Link href="/schedule">
+                    <Button size="sm" data-testid="button-schedule-new">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Schedule New
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    setSubmittedEmail("");
+                    setSearchEmail("");
+                  }} data-testid="button-change-email">
+                    Change Email
+                  </Button>
+                </div>
               </div>
               
               {isLoading ? (
@@ -257,9 +267,19 @@ export default function MyAppointments() {
                   <CardContent className="py-12 text-center">
                     <Video className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p className="text-muted-foreground mb-4">No appointments found for this email address.</p>
-                    <Button variant="outline" asChild>
-                      <a href="/get-started">Get Started</a>
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Link href="/schedule">
+                        <Button data-testid="button-schedule-appointment">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Schedule Appointment
+                        </Button>
+                      </Link>
+                      <Link href="/get-started">
+                        <Button variant="outline" data-testid="button-get-started">
+                          Get Started
+                        </Button>
+                      </Link>
+                    </div>
                   </CardContent>
                 </Card>
               )}

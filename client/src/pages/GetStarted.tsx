@@ -295,13 +295,23 @@ export default function GetStarted() {
               <span>HIPAA Compliant</span>
             </div>
           </div>
-          <Button 
-            className="w-full h-12 rounded-xl"
-            onClick={() => window.location.href = '/'}
-            data-testid="button-return-home"
-          >
-            Return Home
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              className="w-full h-12 rounded-xl"
+              onClick={() => window.location.href = '/schedule'}
+              data-testid="button-schedule-consultation"
+            >
+              Schedule Consultation
+            </Button>
+            <Button 
+              variant="outline"
+              className="w-full h-12 rounded-xl"
+              onClick={() => window.location.href = '/'}
+              data-testid="button-return-home"
+            >
+              Return Home
+            </Button>
+          </div>
         </motion.div>
       </div>
     );
