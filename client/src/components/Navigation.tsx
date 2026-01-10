@@ -1,99 +1,111 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const links = [
     { href: "/", label: "Home" },
     { href: "/medications", label: "Weight Loss" },
     { href: "/hair-loss", label: "Hair Loss" },
     { href: "/sexual-health", label: "Sexual Health" },
-    { href: "/about", label: "About Us" },
+    { href: "/about", label: "About" },
   ];
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      scrolled 
+        ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50" 
+        : "bg-transparent"
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 cursor-pointer group">
-            <div className="bg-primary/10 p-2 rounded-lg group-hover:bg-primary/20 transition-colors">
-              <svg 
-                className="w-8 h-8 text-primary" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
+        <div className="flex justify-between h-16 lg:h-20 items-center">
+          <Link href="/" className="flex items-center gap-2.5 cursor-pointer group">
+            <div className="bg-primary p-2 rounded-xl group-hover:scale-105 transition-transform">
+              <Heart className="w-5 h-5 text-white fill-white" />
             </div>
-            <span className="font-display font-bold text-2xl tracking-tight text-slate-800">
+            <span className="font-display font-bold text-xl tracking-tight">
               Wellness<span className="text-primary">Meds</span>
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-1">
             {links.map((link) => (
               <Link 
                 key={link.href} 
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location === link.href ? "text-primary font-semibold" : "text-slate-600"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  location === link.href 
+                    ? "text-primary bg-primary/5" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
+          </div>
+
+          <div className="hidden lg:block">
             <Link href="/get-started">
-              <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5">
+              <Button className="rounded-full px-6 h-10 font-medium shadow-none" data-testid="button-nav-start">
                 Get Started
               </Button>
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button 
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-slate-600 hover:text-primary p-2"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            data-testid="button-mobile-menu"
+          >
+            {isOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t border-gray-100 overflow-hidden"
+            className="lg:hidden bg-white border-t border-border/50 overflow-hidden"
           >
-            <div className="px-4 py-6 space-y-4">
+            <div className="px-4 py-4 space-y-1">
               {links.map((link) => (
                 <Link 
                   key={link.href} 
                   href={link.href}
-                  className="block text-lg font-medium text-slate-700 hover:text-primary"
+                  className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                    location === link.href 
+                      ? "text-primary bg-primary/5" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
                   onClick={() => setIsOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              <Link href="/get-started" onClick={() => setIsOpen(false)}>
-                <Button className="w-full mt-4 bg-primary hover:bg-primary/90 text-white rounded-full h-12 text-lg">
-                  Get Started
-                </Button>
-              </Link>
+              <div className="pt-2">
+                <Link href="/get-started" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full rounded-full h-12 text-base font-medium" data-testid="button-mobile-start">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}

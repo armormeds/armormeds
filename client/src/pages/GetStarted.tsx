@@ -357,32 +357,30 @@ export default function GetStarted() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen pt-32 pb-20 bg-slate-50 flex items-center justify-center px-4">
+      <div className="min-h-screen pt-24 pb-16 bg-background flex items-center justify-center px-4">
         <motion.div 
-          initial={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-3xl p-12 max-w-lg w-full text-center shadow-xl border border-gray-100"
+          className="bg-card rounded-xl p-8 sm:p-10 max-w-md w-full text-center shadow-lg border border-border/50"
         >
-          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
-            <CheckCircle2 className="w-12 h-12 text-green-600" />
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-3xl font-display font-bold mb-4 text-slate-900" data-testid="text-success-title">Medical Form Submitted!</h2>
-          <p className="text-slate-600 mb-8 text-lg">
-            Thank you for completing your medical intake form. A licensed provider will review your information and contact you within 24-48 hours to discuss your treatment options.
+          <h2 className="text-2xl font-display font-bold mb-3" data-testid="text-success-title">Form Submitted!</h2>
+          <p className="text-muted-foreground mb-6">
+            A licensed provider will review your information within 24-48 hours.
           </p>
-          <div className="flex items-center justify-center gap-4 text-sm text-slate-500 mb-8">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>24-48 hour response</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span>HIPAA Compliant</span>
-            </div>
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mb-6">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" /> 24-48 hours
+            </span>
+            <span className="flex items-center gap-1">
+              <Shield className="w-3.5 h-3.5" /> HIPAA Compliant
+            </span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Button 
-              className="w-full h-12 rounded-xl"
+              className="w-full rounded-full"
               onClick={() => window.location.href = '/schedule'}
               data-testid="button-schedule-consultation"
             >
@@ -390,7 +388,7 @@ export default function GetStarted() {
             </Button>
             <Button 
               variant="outline"
-              className="w-full h-12 rounded-xl"
+              className="w-full rounded-full"
               onClick={() => window.location.href = '/'}
               data-testid="button-return-home"
             >
@@ -403,33 +401,33 @@ export default function GetStarted() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-28 pb-16">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background pt-24 pb-16">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
-          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">
+          <h1 className="text-3xl font-display font-bold mb-2">
             Medical Intake Form
           </h1>
-          <p className="text-slate-600">
+          <p className="text-muted-foreground">
             Complete this form to see if you qualify for our {categoryLabels.programName}.
           </p>
         </motion.div>
 
-        <div className="mb-8">
-          <div className="flex items-center justify-between text-sm text-slate-600 mb-2">
+        <div className="mb-6">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
             <span>Step {currentStep} of {TOTAL_STEPS}</span>
             <span>{Math.round(progress)}% Complete</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-1.5" />
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8"
+          className="bg-card rounded-xl shadow-md border border-border/50 p-6 sm:p-8"
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
