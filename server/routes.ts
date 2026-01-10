@@ -266,5 +266,91 @@ export async function registerRoutes(
     }
   });
 
+  // Prescription routes
+  app.get('/api/prescriptions', async (req, res) => {
+    try {
+      const prescriptions = await storage.getPrescriptions();
+      res.json(prescriptions);
+    } catch (error) {
+      console.error('Error fetching prescriptions:', error);
+      res.status(500).json({ error: 'Failed to fetch prescriptions' });
+    }
+  });
+
+  app.get('/api/prescriptions/lead/:leadId', async (req, res) => {
+    try {
+      const leadId = Number(req.params.leadId);
+      const prescriptions = await storage.getPrescriptionsByLead(leadId);
+      res.json(prescriptions);
+    } catch (error) {
+      console.error('Error fetching prescriptions for lead:', error);
+      res.status(500).json({ error: 'Failed to fetch prescriptions' });
+    }
+  });
+
+  app.post('/api/prescriptions', async (req, res) => {
+    try {
+      const { leadId, patientName, patientDob, patientAddress, patientPhone, medication, dosage, quantity, refills, instructions, providerName, providerNpi, providerLicense, providerSignature } = req.body;
+      
+      // Validate required fields
+      if (!leadId || typeof leadId !== 'number') {
+        return res.status(400).json({ error: 'Valid lead ID is required' });
+      }
+      if (!patientName || typeof patientName !== 'string' || patientName.trim().length < 2) {
+        return res.status(400).json({ error: 'Patient name is required (minimum 2 characters)' });
+      }
+      if (!patientAddress || typeof patientAddress !== 'string' || patientAddress.trim().length < 5) {
+        return res.status(400).json({ error: 'Patient address is required' });
+      }
+      if (!medication || typeof medication !== 'string' || medication.trim().length < 2) {
+        return res.status(400).json({ error: 'Medication name is required' });
+      }
+      if (!dosage || typeof dosage !== 'string') {
+        return res.status(400).json({ error: 'Dosage is required' });
+      }
+      if (!quantity || typeof quantity !== 'string') {
+        return res.status(400).json({ error: 'Quantity is required' });
+      }
+      if (!instructions || typeof instructions !== 'string' || instructions.trim().length < 5) {
+        return res.status(400).json({ error: 'Instructions are required (minimum 5 characters)' });
+      }
+      if (!providerName || typeof providerName !== 'string' || providerName.trim().length < 2) {
+        return res.status(400).json({ error: 'Provider name is required' });
+      }
+
+      // Generate unique prescription number using crypto-grade randomness
+      const crypto = await import('crypto');
+      const randomBytes = crypto.randomBytes(8).toString('hex').toUpperCase();
+      const prescriptionNumber = `RX-${Date.now()}-${randomBytes}`;
+
+      const prescription = await storage.createPrescription({
+        leadId,
+        patientName,
+        patientDob: patientDob || null,
+        patientAddress: patientAddress || null,
+        patientPhone: patientPhone || null,
+        medication,
+        dosage,
+        quantity,
+        refills: refills || "0",
+        instructions,
+        providerName,
+        providerNpi: providerNpi || null,
+        providerLicense: providerLicense || null,
+        providerSignature: providerSignature || null,
+        prescriptionNumber,
+        status: "active",
+      });
+
+      // Update lead status to completed
+      await storage.updateLead(leadId, { status: "completed" });
+
+      res.status(201).json(prescription);
+    } catch (error) {
+      console.error('Error creating prescription:', error);
+      res.status(500).json({ error: 'Failed to create prescription' });
+    }
+  });
+
   return httpServer;
 }

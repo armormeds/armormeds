@@ -11,12 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer } from "lucide-react";
 import { Link } from "wouter";
-import type { Lead, Product } from "@shared/schema";
+import type { Lead, Product, Prescription } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 
 const statusColors: Record<string, string> = {
@@ -57,7 +57,279 @@ function ArrayBadges({ items, testIdPrefix }: { items: string[] | null | undefin
   );
 }
 
-function LeadCard({ lead, onStatusChange }: { lead: Lead; onStatusChange: (id: number, status: string) => void }) {
+interface PrescriptionFormData {
+  patientAddress: string;
+  medication: string;
+  dosage: string;
+  quantity: string;
+  refills: string;
+  instructions: string;
+  providerName: string;
+  providerNpi: string;
+  providerLicense: string;
+}
+
+function PrescriptionForm({ 
+  lead, 
+  onSubmit, 
+  onCancel,
+  isSubmitting 
+}: { 
+  lead: Lead;
+  onSubmit: (data: PrescriptionFormData) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}) {
+  const { register, handleSubmit, formState: { errors } } = useForm<PrescriptionFormData>({
+    defaultValues: {
+      patientAddress: '',
+      medication: lead.medicationInterest || '',
+      dosage: '',
+      quantity: '30',
+      refills: '0',
+      instructions: '',
+      providerName: '',
+      providerNpi: '',
+      providerLicense: '',
+    }
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2 p-3 bg-muted/30 rounded-md space-y-3">
+          <h4 className="font-medium text-sm">Patient Information</h4>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div><span className="font-medium">Name:</span> {lead.name}</div>
+            <div><span className="font-medium">DOB:</span> {lead.dateOfBirth || 'N/A'}</div>
+            <div><span className="font-medium">Phone:</span> {lead.phone || 'N/A'}</div>
+            <div><span className="font-medium">State:</span> {lead.state || 'N/A'}</div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="patientAddress">Patient Address</Label>
+            <Input 
+              id="patientAddress" 
+              {...register("patientAddress", { required: "Patient address is required for prescriptions" })} 
+              placeholder="123 Main St, City, State ZIP"
+              data-testid="input-rx-patient-address"
+            />
+            {errors.patientAddress && <p className="text-sm text-destructive">{errors.patientAddress.message}</p>}
+          </div>
+        </div>
+
+        <div className="col-span-2 space-y-2">
+          <Label htmlFor="medication">Medication</Label>
+          <Input 
+            id="medication" 
+            {...register("medication", { required: "Medication is required" })} 
+            placeholder="e.g., Semaglutide"
+            data-testid="input-rx-medication"
+          />
+          {errors.medication && <p className="text-sm text-destructive">{errors.medication.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="dosage">Dosage</Label>
+          <Input 
+            id="dosage" 
+            {...register("dosage", { required: "Dosage is required" })} 
+            placeholder="e.g., 0.25mg weekly"
+            data-testid="input-rx-dosage"
+          />
+          {errors.dosage && <p className="text-sm text-destructive">{errors.dosage.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="quantity">Quantity</Label>
+          <Input 
+            id="quantity" 
+            {...register("quantity", { required: "Quantity is required" })} 
+            placeholder="e.g., 30"
+            data-testid="input-rx-quantity"
+          />
+          {errors.quantity && <p className="text-sm text-destructive">{errors.quantity.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="refills">Refills</Label>
+          <Input 
+            id="refills" 
+            {...register("refills")} 
+            placeholder="e.g., 3"
+            data-testid="input-rx-refills"
+          />
+        </div>
+
+        <div className="col-span-2 space-y-2">
+          <Label htmlFor="instructions">Sig (Instructions)</Label>
+          <Textarea 
+            id="instructions" 
+            {...register("instructions", { required: "Instructions are required" })} 
+            placeholder="Take as directed..."
+            rows={2}
+            data-testid="input-rx-instructions"
+          />
+          {errors.instructions && <p className="text-sm text-destructive">{errors.instructions.message}</p>}
+        </div>
+
+        <div className="col-span-2 border-t pt-4">
+          <h4 className="font-medium text-sm mb-3">Provider Information</h4>
+        </div>
+
+        <div className="col-span-2 space-y-2">
+          <Label htmlFor="providerName">Provider Name</Label>
+          <Input 
+            id="providerName" 
+            {...register("providerName", { required: "Provider name is required" })} 
+            placeholder="Dr. John Smith, MD"
+            data-testid="input-rx-provider-name"
+          />
+          {errors.providerName && <p className="text-sm text-destructive">{errors.providerName.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="providerNpi">NPI Number</Label>
+          <Input 
+            id="providerNpi" 
+            {...register("providerNpi")} 
+            placeholder="10-digit NPI"
+            data-testid="input-rx-provider-npi"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="providerLicense">License Number</Label>
+          <Input 
+            id="providerLicense" 
+            {...register("providerLicense")} 
+            placeholder="State license #"
+            data-testid="input-rx-provider-license"
+          />
+        </div>
+      </div>
+
+      <DialogFooter className="gap-2">
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel-rx">
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting} data-testid="button-generate-rx">
+          {isSubmitting ? "Generating..." : "Generate Prescription"}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+function PrescriptionView({ prescription, onClose }: { prescription: Prescription; onClose: () => void }) {
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    if (printRef.current) {
+      const printContent = printRef.current.innerHTML;
+      const printWindow = window.open('', '', 'width=800,height=600');
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Prescription - ${prescription.prescriptionNumber}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+              .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
+              .header h1 { margin: 0; font-size: 24px; }
+              .header p { margin: 5px 0; color: #666; }
+              .rx-symbol { font-size: 48px; font-weight: bold; color: #2563eb; }
+              .patient-info, .rx-info, .provider-info { margin-bottom: 20px; }
+              .section-title { font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; }
+              .info-row { display: flex; margin-bottom: 5px; }
+              .info-label { width: 120px; font-weight: bold; }
+              .rx-box { border: 2px solid #000; padding: 20px; margin: 20px 0; }
+              .medication { font-size: 20px; font-weight: bold; }
+              .sig { margin-top: 15px; }
+              .signature-line { border-top: 1px solid #000; margin-top: 40px; padding-top: 5px; width: 300px; }
+              .footer { margin-top: 40px; font-size: 12px; color: #666; text-align: center; }
+              @media print { body { padding: 20px; } }
+            </style>
+          </head>
+          <body>${printContent}</body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div ref={printRef} className="bg-white text-black p-6 rounded-lg border">
+        <div className="header text-center border-b-2 border-black pb-4 mb-4">
+          <h1 className="text-2xl font-bold">WellnessMeds</h1>
+          <p className="text-sm text-gray-600">Telehealth Medical Services</p>
+          <p className="text-xs text-gray-500">Licensed Healthcare Provider</p>
+        </div>
+
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <p className="text-sm"><span className="font-bold">Date:</span> {format(new Date(prescription.createdAt), "MMMM d, yyyy")}</p>
+            <p className="text-sm"><span className="font-bold">Rx #:</span> {prescription.prescriptionNumber}</p>
+          </div>
+          <div className="text-6xl font-bold text-blue-600">Rx</div>
+        </div>
+
+        <div className="patient-info mb-4">
+          <h3 className="font-bold border-b border-gray-300 pb-1 mb-2">Patient Information</h3>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <p><span className="font-bold">Name:</span> {prescription.patientName}</p>
+            <p><span className="font-bold">DOB:</span> {prescription.patientDob || 'N/A'}</p>
+            <p><span className="font-bold">Phone:</span> {prescription.patientPhone || 'N/A'}</p>
+            <p><span className="font-bold">Address:</span> {prescription.patientAddress || 'N/A'}</p>
+          </div>
+        </div>
+
+        <div className="rx-box border-2 border-black p-4 my-4">
+          <p className="medication text-xl font-bold">{prescription.medication}</p>
+          <p className="text-lg mt-2"><span className="font-bold">Dosage:</span> {prescription.dosage}</p>
+          <p><span className="font-bold">Quantity:</span> {prescription.quantity}</p>
+          <p><span className="font-bold">Refills:</span> {prescription.refills}</p>
+          <div className="sig mt-4 pt-2 border-t border-gray-300">
+            <p className="font-bold">Sig:</p>
+            <p className="mt-1">{prescription.instructions}</p>
+          </div>
+        </div>
+
+        <div className="provider-info mt-6">
+          <h3 className="font-bold border-b border-gray-300 pb-1 mb-2">Prescriber Information</h3>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <p><span className="font-bold">Provider:</span> {prescription.providerName}</p>
+            <p><span className="font-bold">NPI:</span> {prescription.providerNpi || 'N/A'}</p>
+            <p><span className="font-bold">License:</span> {prescription.providerLicense || 'N/A'}</p>
+          </div>
+          <div className="signature-line border-t border-black mt-8 pt-1 w-64">
+            <p className="text-sm">Prescriber Signature</p>
+          </div>
+        </div>
+
+        <div className="footer mt-8 text-xs text-center text-gray-500">
+          <p>This prescription is valid for controlled substances per applicable state and federal regulations.</p>
+          <p>For questions, contact support@wellnessmeds.com</p>
+        </div>
+      </div>
+
+      <DialogFooter className="gap-2">
+        <Button variant="outline" onClick={onClose} data-testid="button-close-rx-view">
+          Close
+        </Button>
+        <Button onClick={handlePrint} data-testid="button-print-rx">
+          <Printer className="h-4 w-4 mr-2" />
+          Print Prescription
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+function LeadCard({ lead, onStatusChange, onCreatePrescription }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   
   const hasExtendedInfo = lead.goals || lead.state || lead.dateOfBirth || lead.weight || 
@@ -313,20 +585,31 @@ function LeadCard({ lead, onStatusChange }: { lead: Lead; onStatusChange: (id: n
               <Calendar className="h-4 w-4" />
               <span data-testid={`text-lead-date-${lead.id}`}>{format(new Date(lead.createdAt), "MMM d, yyyy 'at' h:mm a")}</span>
             </div>
-            <Select
-              value={lead.status}
-              onValueChange={(value) => onStatusChange(lead.id, value)}
-            >
-              <SelectTrigger className="w-[140px]" data-testid={`select-lead-status-${lead.id}`}>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="contacted">Contacted</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onCreatePrescription(lead)}
+                data-testid={`button-create-rx-${lead.id}`}
+              >
+                <FileSignature className="h-4 w-4 mr-1" />
+                Generate Rx
+              </Button>
+              <Select
+                value={lead.status}
+                onValueChange={(value) => onStatusChange(lead.id, value)}
+              >
+                <SelectTrigger className="w-[140px]" data-testid={`select-lead-status-${lead.id}`}>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -562,6 +845,9 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<"leads" | "products">("leads");
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showPrescriptionDialog, setShowPrescriptionDialog] = useState(false);
+  const [selectedLeadForRx, setSelectedLeadForRx] = useState<Lead | null>(null);
+  const [createdPrescription, setCreatedPrescription] = useState<Prescription | null>(null);
 
   const { data: leads, isLoading: leadsLoading, refetch: refetchLeads } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
@@ -657,8 +943,76 @@ export default function Admin() {
     },
   });
 
+  const createPrescriptionMutation = useMutation({
+    mutationFn: async (data: {
+      leadId: number;
+      patientName: string;
+      patientDob?: string;
+      patientPhone?: string;
+      patientAddress: string;
+      medication: string;
+      dosage: string;
+      quantity: string;
+      refills: string;
+      instructions: string;
+      providerName: string;
+      providerNpi?: string;
+      providerLicense?: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/prescriptions", data);
+      return response.json();
+    },
+    onSuccess: (prescription: Prescription) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
+      setCreatedPrescription(prescription);
+      setSelectedLeadForRx(null);
+      toast({
+        title: "Prescription created",
+        description: `Prescription ${prescription.prescriptionNumber} has been generated.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create prescription.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleStatusChange = (id: number, status: string) => {
     updateLeadMutation.mutate({ id, status });
+  };
+
+  const handleCreatePrescription = (lead: Lead) => {
+    setSelectedLeadForRx(lead);
+    setShowPrescriptionDialog(true);
+  };
+
+  const handlePrescriptionSubmit = (data: PrescriptionFormData) => {
+    if (!selectedLeadForRx) return;
+    
+    createPrescriptionMutation.mutate({
+      leadId: selectedLeadForRx.id,
+      patientName: selectedLeadForRx.name,
+      patientDob: selectedLeadForRx.dateOfBirth || undefined,
+      patientPhone: selectedLeadForRx.phone || undefined,
+      patientAddress: data.patientAddress,
+      medication: data.medication,
+      dosage: data.dosage,
+      quantity: data.quantity,
+      refills: data.refills,
+      instructions: data.instructions,
+      providerName: data.providerName,
+      providerNpi: data.providerNpi || undefined,
+      providerLicense: data.providerLicense || undefined,
+    });
+  };
+
+  const handleClosePrescriptionDialog = () => {
+    setShowPrescriptionDialog(false);
+    setSelectedLeadForRx(null);
+    setCreatedPrescription(null);
   };
 
   const handleProductSubmit = (data: ProductFormData) => {
@@ -763,6 +1117,7 @@ export default function Admin() {
                           key={lead.id}
                           lead={lead}
                           onStatusChange={handleStatusChange}
+                          onCreatePrescription={handleCreatePrescription}
                         />
                       ))}
                   </div>
@@ -838,6 +1193,32 @@ export default function Admin() {
             </Card>
           </div>
         )}
+
+        <Dialog open={showPrescriptionDialog} onOpenChange={(open) => {
+          if (!open) handleClosePrescriptionDialog();
+        }}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileSignature className="h-5 w-5" />
+                {createdPrescription ? "Prescription Generated" : "Generate Prescription"}
+              </DialogTitle>
+            </DialogHeader>
+            {createdPrescription ? (
+              <PrescriptionView 
+                prescription={createdPrescription} 
+                onClose={handleClosePrescriptionDialog} 
+              />
+            ) : selectedLeadForRx ? (
+              <PrescriptionForm
+                lead={selectedLeadForRx}
+                onSubmit={handlePrescriptionSubmit}
+                onCancel={handleClosePrescriptionDialog}
+                isSubmitting={createPrescriptionMutation.isPending}
+              />
+            ) : null}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
