@@ -27,6 +27,8 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
+let stripeInitialized = false;
+
 async function initStripe() {
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -62,20 +64,16 @@ async function initStripe() {
     }
 
     log('Syncing Stripe data...', 'stripe');
-    stripeSync.syncBackfill()
-      .then(() => {
-        log('Stripe data synced', 'stripe');
-      })
-      .catch((err: any) => {
-        console.error('Error syncing Stripe data:', err);
-      });
+    await stripeSync.syncBackfill();
+    log('Stripe data synced', 'stripe');
+    stripeInitialized = true;
   } catch (error) {
     console.error('Failed to initialize Stripe:', error);
-    throw error;
+    stripeInitialized = true; // Allow app to start even if Stripe fails
   }
 }
 
-initStripe().catch(console.error);
+const stripeInitPromise = initStripe();
 
 app.post(
   '/api/stripe/webhook',
@@ -152,6 +150,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Wait for Stripe to initialize before serving
+  await stripeInitPromise;
+  
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
