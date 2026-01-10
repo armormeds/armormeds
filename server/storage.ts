@@ -29,6 +29,7 @@ export interface IStorage {
   createAvailabilitySlot(slot: InsertProviderAvailability): Promise<ProviderAvailability>;
   updateAvailabilitySlot(id: number, updates: Partial<ProviderAvailability>): Promise<ProviderAvailability | undefined>;
   deleteAvailabilitySlot(id: number): Promise<boolean>;
+  bookAvailabilitySlot(availabilityId: number, patientName: string, patientEmail: string, patientPhone?: string): Promise<{ appointment: Appointment; lead: Lead } | null>;
   seedProducts(): Promise<void>;
 }
 
@@ -162,6 +163,45 @@ export class DatabaseStorage implements IStorage {
   async deleteAvailabilitySlot(id: number): Promise<boolean> {
     const result = await db.delete(providerAvailability).where(eq(providerAvailability.id, id)).returning();
     return result.length > 0;
+  }
+
+  async bookAvailabilitySlot(availabilityId: number, patientName: string, patientEmail: string, patientPhone?: string): Promise<{ appointment: Appointment; lead: Lead } | null> {
+    const slot = await this.getAvailabilitySlot(availabilityId);
+    if (!slot || slot.status !== 'available') {
+      return null;
+    }
+
+    const normalizedEmail = patientEmail.toLowerCase();
+    
+    let lead: Lead | undefined = await db.select().from(leads).where(eq(leads.email, normalizedEmail)).then(rows => rows[0]);
+    
+    if (!lead) {
+      const [newLead] = await db.insert(leads).values({
+        name: patientName,
+        email: normalizedEmail,
+        phone: patientPhone || '',
+        medicationInterest: '',
+        message: 'Self-scheduled consultation',
+        status: 'new',
+      }).returning();
+      lead = newLead;
+    }
+
+    const [appointment] = await db.insert(appointments).values({
+      leadId: lead.id,
+      patientName,
+      patientEmail: normalizedEmail,
+      patientPhone: patientPhone || null,
+      doctorName: slot.doctorName,
+      reason: 'Telehealth Consultation',
+      scheduledAt: slot.startAt,
+      duration: Math.round((new Date(slot.endAt).getTime() - new Date(slot.startAt).getTime()) / 60000),
+      status: 'scheduled',
+    }).returning();
+
+    await this.updateAvailabilitySlot(availabilityId, { status: 'booked' });
+
+    return { appointment, lead };
   }
 
   async seedProducts(): Promise<void> {

@@ -593,6 +593,39 @@ export async function registerRoutes(
   });
 
   // Patient self-scheduling endpoint
+  app.post('/api/availability/book', async (req, res) => {
+    try {
+      const { availabilityId, patientName, patientEmail, patientPhone } = req.body;
+      
+      if (!availabilityId || typeof availabilityId !== 'number') {
+        return res.status(400).json({ error: 'Availability slot ID is required' });
+      }
+      if (!patientName || typeof patientName !== 'string' || patientName.trim().length < 2) {
+        return res.status(400).json({ error: 'Patient name is required' });
+      }
+      if (!patientEmail || typeof patientEmail !== 'string' || !patientEmail.includes('@')) {
+        return res.status(400).json({ error: 'Valid email is required' });
+      }
+
+      const result = await storage.bookAvailabilitySlot(
+        availabilityId,
+        patientName.trim(),
+        patientEmail.trim(),
+        patientPhone?.trim()
+      );
+
+      if (!result) {
+        return res.status(400).json({ error: 'This time slot is no longer available' });
+      }
+
+      res.status(201).json(result.appointment);
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      res.status(500).json({ error: 'Failed to book appointment' });
+    }
+  });
+
+  // Patient self-scheduling endpoint
   app.post('/api/appointments/self-schedule', async (req, res) => {
     try {
       const { slotId, patientEmail, patientName, patientPhone, reason } = req.body;
