@@ -39,6 +39,7 @@ export function useStripeProducts(category?: string) {
     },
     staleTime: 0,
     refetchOnMount: "always",
+    gcTime: 0,
   });
 
   return {
