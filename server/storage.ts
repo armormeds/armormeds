@@ -1,4 +1,4 @@
-import { products, leads, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest } from "@shared/schema";
+import { products, leads, prescriptions, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -11,6 +11,9 @@ export interface IStorage {
   getLeads(): Promise<Lead[]>;
   createLead(lead: InsertLead): Promise<Lead>;
   updateLead(id: number, updates: UpdateLeadRequest): Promise<Lead>;
+  getPrescriptions(): Promise<Prescription[]>;
+  getPrescriptionsByLead(leadId: number): Promise<Prescription[]>;
+  createPrescription(prescription: InsertPrescription): Promise<Prescription>;
   seedProducts(): Promise<void>;
 }
 
@@ -51,6 +54,19 @@ export class DatabaseStorage implements IStorage {
   async updateLead(id: number, updates: UpdateLeadRequest): Promise<Lead> {
     const [updated] = await db.update(leads).set(updates).where(eq(leads.id, id)).returning();
     return updated;
+  }
+
+  async getPrescriptions(): Promise<Prescription[]> {
+    return await db.select().from(prescriptions);
+  }
+
+  async getPrescriptionsByLead(leadId: number): Promise<Prescription[]> {
+    return await db.select().from(prescriptions).where(eq(prescriptions.leadId, leadId));
+  }
+
+  async createPrescription(prescription: InsertPrescription): Promise<Prescription> {
+    const [created] = await db.insert(prescriptions).values(prescription as any).returning();
+    return created;
   }
 
   async seedProducts(): Promise<void> {
