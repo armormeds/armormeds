@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CheckCircle, ArrowRight, Phone, Mail, Loader2 } from "lucide-react";
+import { CheckCircle, ArrowRight, Phone, Mail, Loader2, Video, Calendar, FileText } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,7 +83,7 @@ export default function CheckoutSuccess() {
                 <div>
                   <h3 className="font-semibold text-foreground">Provider Review</h3>
                   <p className="text-muted-foreground text-sm">
-                    A licensed healthcare provider will review your medical intake form within 24-48 hours.
+                    A licensed healthcare provider will review your medical intake form and documents within 24-48 hours.
                   </p>
                 </div>
               </div>
@@ -92,9 +92,9 @@ export default function CheckoutSuccess() {
                   <span className="text-primary font-semibold">2</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Prescription Approval</h3>
+                  <h3 className="font-semibold text-foreground">Prescription Generated</h3>
                   <p className="text-muted-foreground text-sm">
-                    If approved, your prescription will be sent to our partner pharmacy.
+                    If approved, you'll receive an email notification when your prescription is ready. No call required!
                   </p>
                 </div>
               </div>
@@ -112,7 +112,31 @@ export default function CheckoutSuccess() {
             </CardContent>
           </Card>
 
+          <Card className="mb-8 border-primary/20 bg-primary/5">
+            <CardContent className="py-6">
+              <div className="flex items-center gap-3 mb-3">
+                <Video className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold text-foreground">Want to Talk to a Provider? (Optional)</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                While a consultation is not required for your prescription, you can schedule a video call with a provider if you have questions or prefer to discuss your treatment.
+              </p>
+              <Link href="/schedule">
+                <Button variant="outline" className="w-full sm:w-auto" data-testid="button-schedule-optional">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Schedule Optional Consultation
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Link href="/my-appointments">
+              <Button size="lg" variant="outline" data-testid="button-view-appointments">
+                <FileText className="w-4 h-4 mr-2" />
+                View My Appointments
+              </Button>
+            </Link>
             <Link href="/">
               <Button size="lg" data-testid="button-back-home">
                 Back to Home
