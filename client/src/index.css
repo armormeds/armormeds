@@ -5,38 +5,38 @@
 @tailwind utilities;
 
 :root {
-  /* Luxury Bold Palette - Deep Navy + Gold */
-  /* Primary: Royal Purple */
-  --primary: 262 60% 48%;
+  /* Luxury Ivory + Gold Palette - Classic Elegance */
+  /* Primary: Rich Bronze */
+  --primary: 28 38% 36%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: Deep Slate */
-  --secondary: 230 14% 20%;
-  --secondary-foreground: 40 25% 92%;
+  /* Secondary: Soft Champagne */
+  --secondary: 38 25% 90%;
+  --secondary-foreground: 230 20% 20%;
 
-  /* Accent: Rich Gold */
-  --accent: 45 85% 55%;
+  /* Accent: Luxurious Gold */
+  --accent: 45 80% 55%;
   --accent-foreground: 230 25% 10%;
 
-  /* Dark luxury base tones */
-  --background: 230 22% 10%;
-  --foreground: 40 30% 96%;
+  /* Elegant ivory base tones */
+  --background: 40 33% 97%;
+  --foreground: 230 25% 12%;
   
-  --card: 230 20% 14%;
-  --card-foreground: 40 30% 96%;
+  --card: 40 30% 99%;
+  --card-foreground: 230 25% 12%;
   
-  --popover: 230 20% 12%;
-  --popover-foreground: 40 30% 96%;
+  --popover: 40 30% 99%;
+  --popover-foreground: 230 25% 12%;
   
-  --muted: 230 12% 22%;
-  --muted-foreground: 220 12% 70%;
+  --muted: 40 20% 92%;
+  --muted-foreground: 230 10% 45%;
   
   --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 230 12% 24%;
-  --input: 230 12% 24%;
-  --ring: 45 85% 55%;
+  --border: 40 18% 88%;
+  --input: 40 18% 88%;
+  --ring: 45 80% 55%;
 
   --radius: 0.75rem;
   
@@ -44,10 +44,10 @@
   --font-sans: 'DM Sans', sans-serif;
   --font-display: 'Outfit', sans-serif;
 
-  /* Custom shadows - more dramatic for dark theme */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  /* Elegant subtle shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
 }
 
 @layer base {
@@ -66,7 +66,7 @@
 
 /* Custom Utilities */
 .glass-panel {
-  @apply bg-background/70 backdrop-blur-lg border border-border/50 shadow-lg;
+  @apply bg-white/90 backdrop-blur-lg border border-border/50 shadow-lg;
 }
 
 .text-gradient {
