@@ -5,38 +5,38 @@
 @tailwind utilities;
 
 :root {
-  /* Luxury Ivory + Gold Palette - Classic Elegance */
-  /* Primary: Rich Bronze */
-  --primary: 28 38% 36%;
+  /* Emerald + Cream Palette - Bold Jewel Tones */
+  /* Primary: Rich Emerald */
+  --primary: 168 55% 28%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: Soft Champagne */
-  --secondary: 38 25% 90%;
-  --secondary-foreground: 230 20% 20%;
+  /* Secondary: Cool Light Gray */
+  --secondary: 220 12% 92%;
+  --secondary-foreground: 220 20% 22%;
 
-  /* Accent: Luxurious Gold */
-  --accent: 45 80% 55%;
-  --accent-foreground: 230 25% 10%;
+  /* Accent: Raspberry Jewel */
+  --accent: 350 65% 45%;
+  --accent-foreground: 0 0% 100%;
 
-  /* Elegant ivory base tones */
-  --background: 40 33% 97%;
-  --foreground: 230 25% 12%;
+  /* Warm cream base tones */
+  --background: 45 40% 96%;
+  --foreground: 220 25% 12%;
   
-  --card: 40 30% 99%;
-  --card-foreground: 230 25% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 25% 12%;
   
-  --popover: 40 30% 99%;
-  --popover-foreground: 230 25% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 25% 12%;
   
-  --muted: 40 20% 92%;
-  --muted-foreground: 230 10% 45%;
+  --muted: 45 20% 90%;
+  --muted-foreground: 220 10% 45%;
   
   --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 40 18% 88%;
-  --input: 40 18% 88%;
-  --ring: 45 80% 55%;
+  --border: 45 15% 86%;
+  --input: 45 15% 86%;
+  --ring: 168 55% 28%;
 
   --radius: 0.75rem;
   
