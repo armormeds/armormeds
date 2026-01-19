@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
 import medicationImage from "@assets/generated_images/elegant_medication_product_photography.png";
 
-const HERO_VIDEO_URL = "https://videos.pexels.com/video-files/5726699/5726699-hd_1920_1080_30fps.mp4";
+const HERO_VIDEO_URL = "https://cdn.pixabay.com/video/2020/07/30/45917-448013267_large.mp4";
 
 export default function Home() {
   const { data: products } = useProducts();
@@ -140,8 +140,8 @@ export default function Home() {
             muted
             loop
             playsInline
+            preload="auto"
             className="w-full h-full object-cover"
-            poster="https://images.pexels.com/photos/5726699/pexels-photo-5726699.jpeg?auto=compress&cs=tinysrgb&w=1920"
           >
             <source src={HERO_VIDEO_URL} type="video/mp4" />
           </video>
