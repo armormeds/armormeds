@@ -11,7 +11,7 @@ import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, Steth
 import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
 import medicationImage from "@assets/generated_images/elegant_medication_product_photography.png";
-import heroVideo from "@assets/generated_videos/pexels_diverse_jogging.mp4";
+import heroVideo from "@assets/generated_videos/pexels_aerial_jogging.mp4";
 
 export default function Home() {
   const { data: products } = useProducts();
