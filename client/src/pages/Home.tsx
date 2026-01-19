@@ -11,8 +11,7 @@ import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, Steth
 import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
 import medicationImage from "@assets/generated_images/elegant_medication_product_photography.png";
-
-const HERO_VIDEO_URL = "https://cdn.pixabay.com/video/2020/07/30/45917-448013267_large.mp4";
+import heroVideo from "@assets/generated_videos/wellness_lifestyle_jogging_video.mp4";
 
 export default function Home() {
   const { data: products } = useProducts();
@@ -142,9 +141,8 @@ export default function Home() {
             playsInline
             preload="auto"
             className="w-full h-full object-cover"
-          >
-            <source src={HERO_VIDEO_URL} type="video/mp4" />
-          </video>
+            src={heroVideo}
+          />
           {/* Dark overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
         </div>
