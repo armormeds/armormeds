@@ -7,10 +7,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, Stethoscope, Package, HeartPulse, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, Stethoscope, Package, HeartPulse, Sparkles, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
 import medicationImage from "@assets/generated_images/elegant_medication_product_photography.png";
+
+const HERO_VIDEO_URL = "https://videos.pexels.com/video-files/5726699/5726699-hd_1920_1080_30fps.mp4";
 
 export default function Home() {
   const { data: products } = useProducts();
@@ -101,85 +103,138 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-secondary via-background to-background -z-10" />
+      {/* Marquee Trust Banner */}
+      <div className="bg-primary text-primary-foreground py-2 overflow-hidden" data-testid="marquee-banner">
+        <div className="animate-marquee flex whitespace-nowrap">
+          {[...Array(2)].map((_, setIdx) => (
+            <div key={setIdx} className="flex items-center gap-6 sm:gap-8 mx-4 shrink-0">
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4" /> Trusted by over 50K patients
+              </span>
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4" /> 100% online process
+              </span>
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4" /> No membership required
+              </span>
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                <Award className="w-3 h-3 sm:w-4 sm:h-4" /> Licensed pharmacies
+              </span>
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                <Check className="w-3 h-3 sm:w-4 sm:h-4" /> Transparent pricing
+              </span>
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                <Stethoscope className="w-3 h-3 sm:w-4 sm:h-4" /> Board certified physicians
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Hero Section with Video Background */}
+      <section className="relative min-h-[90vh] sm:min-h-[85vh] flex items-center overflow-hidden" data-testid="hero-section">
+        {/* Video Background */}
+        <div className="absolute inset-0 z-0" aria-hidden="true">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+            poster="https://images.pexels.com/photos/5726699/pexels-photo-5726699.jpeg?auto=compress&cs=tinysrgb&w=1920"
+          >
+            <source src={HERO_VIDEO_URL} type="video/mp4" />
+          </video>
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+        </div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
+            {/* Hero Content */}
             <div className="flex-1 text-center lg:text-left">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Trusted by 50,000+ patients</span>
+                <div className="mb-4 sm:mb-6">
+                  <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-xs sm:text-sm font-medium border border-white/20">
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+                    Trusted by over 50,000 patients
+                  </span>
                 </div>
                 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6">
-                  Your health journey,{" "}
-                  <span className="text-gradient">simplified.</span>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight mb-4 sm:mb-6 text-white">
+                  We're simplifying the path to the{" "}
+                  <span className="text-primary">Good Life</span>
                 </h1>
                 
-                <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0">
-                  Access FDA-approved treatments for weight loss, hair loss, and sexual health. 
-                  Licensed providers. Delivered to your door.
+                <p className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                  Discover a healthier, more vibrant you. Access clinically proven treatments 
+                  for weight loss, hair restoration, and sexual health - all from the comfort of home.
                 </p>
                 
-                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                   <Link href="/get-started">
-                    <Button size="lg" className="h-12 px-8 rounded-full w-full sm:w-auto" data-testid="button-hero-start">
-                      Start Your Journey
+                    <Button size="lg" className="rounded-full w-full sm:w-auto" data-testid="button-hero-start">
+                      Find Your Treatment
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
                   </Link>
                   <Link href="/medications">
-                    <Button size="lg" variant="outline" className="h-12 px-8 rounded-full w-full sm:w-auto" data-testid="button-hero-medications">
+                    <Button size="lg" variant="outline" className="rounded-full w-full sm:w-auto bg-white/10 backdrop-blur-sm border-white/30 text-white" data-testid="button-hero-medications">
                       View Treatments
                     </Button>
                   </Link>
                 </div>
                 
-                <div className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-x-4 sm:gap-x-6 gap-y-2 text-xs sm:text-sm text-white/70">
                   <span className="flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-primary" /> No insurance needed
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> No insurance needed
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-primary" /> Free shipping
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> Free shipping
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-primary" /> Cancel anytime
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> Cancel anytime
                   </span>
                 </div>
               </motion.div>
             </div>
-            
+
+            {/* Floating Product Card */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="flex-1 w-full max-w-md lg:max-w-lg"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="hidden lg:block"
             >
-              <div className="relative">
-                <div className="rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 aspect-[4/3]">
-                  <img 
-                    src={medicationImage}
-                    alt="Prescription medications" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute -bottom-4 -right-4 bg-card p-4 rounded-xl shadow-lg border border-border/50">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      <Star className="w-5 h-5 text-primary fill-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">Clinically Proven</p>
-                      <p className="text-xs text-muted-foreground">15% avg. weight loss</p>
-                    </div>
+              <div className="bg-card rounded-2xl p-6 shadow-2xl border border-border/50 w-72" data-testid="floating-product-card">
+                <div className="relative mb-4">
+                  <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
+                    Most Popular
                   </div>
+                  <div className="bg-secondary/50 rounded-xl p-4 flex items-center justify-center h-40">
+                    <img 
+                      src={medicationImage}
+                      alt="Tirzepatide" 
+                      className="h-full object-contain"
+                    />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <span className="text-xs text-muted-foreground">Weight Loss</span>
+                  <h3 className="font-semibold text-lg">Compounded Tirzepatide</h3>
+                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded mt-1">Rx</span>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Link href="/medications" className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full rounded-full text-xs" data-testid="button-floating-learn">Learn more</Button>
+                  </Link>
+                  <Link href="/get-started" className="flex-1">
+                    <Button size="sm" className="w-full rounded-full text-xs" data-testid="button-floating-start">Get started</Button>
+                  </Link>
                 </div>
               </div>
             </motion.div>

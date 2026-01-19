@@ -100,3 +100,29 @@
 .card-clean {
   @apply bg-card border border-border/50 shadow-sm hover:shadow-md transition-shadow duration-200;
 }
+
+/* Marquee animation for trust badges */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Mobile-first responsive utilities */
+@media (max-width: 640px) {
+  .hero-text {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+}
