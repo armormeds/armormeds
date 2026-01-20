@@ -10,7 +10,6 @@ import {
 import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, Stethoscope, Package, HeartPulse, Sparkles, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
-import medicationImage from "@assets/generated_images/elegant_medication_product_photography.png";
 import heroVideo from "@assets/generated_videos/pexels_diverse_faces_running.mp4";
 
 export default function Home() {
@@ -201,41 +200,6 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Floating Product Card */}
-            <motion.div 
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="hidden lg:block"
-            >
-              <div className="bg-card rounded-2xl p-6 shadow-2xl border border-border/50 w-72" data-testid="floating-product-card">
-                <div className="relative mb-4">
-                  <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
-                    Most Popular
-                  </div>
-                  <div className="bg-secondary/50 rounded-xl p-4 flex items-center justify-center h-40">
-                    <img 
-                      src={medicationImage}
-                      alt="Tirzepatide" 
-                      className="h-full object-contain"
-                    />
-                  </div>
-                </div>
-                <div className="text-center">
-                  <span className="text-xs text-muted-foreground">Weight Loss</span>
-                  <h3 className="font-semibold text-lg">Compounded Tirzepatide</h3>
-                  <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded mt-1">Rx</span>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Link href="/medications" className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full rounded-full text-xs" data-testid="button-floating-learn">Learn more</Button>
-                  </Link>
-                  <Link href="/get-started" className="flex-1">
-                    <Button size="sm" className="w-full rounded-full text-xs" data-testid="button-floating-start">Get started</Button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </section>
