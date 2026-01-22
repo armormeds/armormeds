@@ -100,7 +100,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-16 lg:pt-20">
       {/* Marquee Trust Banner */}
       <div className="bg-primary text-primary-foreground py-3 overflow-hidden" data-testid="marquee-banner">
         <div className="animate-marquee flex items-center whitespace-nowrap">
