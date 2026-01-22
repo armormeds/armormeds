@@ -102,27 +102,27 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Marquee Trust Banner */}
-      <div className="bg-primary text-primary-foreground py-2 overflow-hidden" data-testid="marquee-banner">
-        <div className="animate-marquee flex whitespace-nowrap">
+      <div className="bg-primary text-primary-foreground py-3 overflow-hidden" data-testid="marquee-banner">
+        <div className="animate-marquee flex items-center whitespace-nowrap">
           {[...Array(2)].map((_, setIdx) => (
-            <div key={setIdx} className="flex items-center gap-6 sm:gap-8 mx-4 shrink-0">
-              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4" /> Trusted by over 50K patients
+            <div key={setIdx} className="flex items-center gap-8 sm:gap-10 mx-6 shrink-0">
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <ShieldCheck className="w-4 h-4 shrink-0" /> Trusted by over 50K patients
               </span>
-              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                <Clock className="w-3 h-3 sm:w-4 sm:h-4" /> 100% online process
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Clock className="w-4 h-4 shrink-0" /> 100% online process
               </span>
-              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                <Users className="w-3 h-3 sm:w-4 sm:h-4" /> No membership required
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Users className="w-4 h-4 shrink-0" /> No membership required
               </span>
-              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                <Award className="w-3 h-3 sm:w-4 sm:h-4" /> Licensed pharmacies
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Award className="w-4 h-4 shrink-0" /> Licensed pharmacies
               </span>
-              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                <Check className="w-3 h-3 sm:w-4 sm:h-4" /> Transparent pricing
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Check className="w-4 h-4 shrink-0" /> Transparent pricing
               </span>
-              <span className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                <Stethoscope className="w-3 h-3 sm:w-4 sm:h-4" /> Board certified physicians
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Stethoscope className="w-4 h-4 shrink-0" /> Board certified physicians
               </span>
             </div>
           ))}
