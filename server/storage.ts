@@ -1,4 +1,4 @@
-import { products, leads, prescriptions, appointments, callNotes, providerAvailability, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability } from "@shared/schema";
+import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, gte, and } from "drizzle-orm";
 
@@ -31,6 +31,14 @@ export interface IStorage {
   deleteAvailabilitySlot(id: number): Promise<boolean>;
   bookAvailabilitySlot(availabilityId: number, patientName: string, patientEmail: string, patientPhone?: string): Promise<{ appointment: Appointment; lead: Lead } | null>;
   seedProducts(): Promise<void>;
+  // Admin user management
+  getAdminUsers(): Promise<AdminUser[]>;
+  getAdminUser(id: number): Promise<AdminUser | undefined>;
+  getAdminUserByEmail(email: string): Promise<AdminUser | undefined>;
+  createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
+  updateAdminUser(id: number, updates: UpdateAdminUserRequest): Promise<AdminUser | undefined>;
+  deleteAdminUser(id: number): Promise<boolean>;
+  updateAdminUserLastLogin(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -202,6 +210,47 @@ export class DatabaseStorage implements IStorage {
     await this.updateAvailabilitySlot(availabilityId, { status: 'booked' });
 
     return { appointment, lead };
+  }
+
+  // Admin user management
+  async getAdminUsers(): Promise<AdminUser[]> {
+    return await db.select().from(adminUsers).orderBy(adminUsers.name);
+  }
+
+  async getAdminUser(id: number): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
+    return user;
+  }
+
+  async getAdminUserByEmail(email: string): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.email, email.toLowerCase()));
+    return user;
+  }
+
+  async createAdminUser(user: InsertAdminUser): Promise<AdminUser> {
+    const [created] = await db.insert(adminUsers).values({
+      ...user,
+      email: user.email.toLowerCase(),
+    } as any).returning();
+    return created;
+  }
+
+  async updateAdminUser(id: number, updates: UpdateAdminUserRequest): Promise<AdminUser | undefined> {
+    const updateData: any = { ...updates };
+    if (updates.email) {
+      updateData.email = updates.email.toLowerCase();
+    }
+    const [updated] = await db.update(adminUsers).set(updateData).where(eq(adminUsers.id, id)).returning();
+    return updated;
+  }
+
+  async deleteAdminUser(id: number): Promise<boolean> {
+    const result = await db.delete(adminUsers).where(eq(adminUsers.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async updateAdminUserLastLogin(id: number): Promise<void> {
+    await db.update(adminUsers).set({ lastLoginAt: new Date() }).where(eq(adminUsers.id, id));
   }
 
   async seedProducts(): Promise<void> {

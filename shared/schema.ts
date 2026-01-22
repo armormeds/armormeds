@@ -106,12 +106,37 @@ export const providerAvailability = pgTable("provider_availability", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Admin user roles: super_admin, provider, staff
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  role: text("role").notNull().default("staff"),
+  // Granular permissions stored as JSON
+  permissions: jsonb("permissions").$type<{
+    viewLeads: boolean;
+    editLeads: boolean;
+    viewPrescriptions: boolean;
+    createPrescriptions: boolean;
+    viewAppointments: boolean;
+    manageAppointments: boolean;
+    manageProducts: boolean;
+    manageUsers: boolean;
+    manageAvailability: boolean;
+  }>().notNull(),
+  isActive: text("is_active").notNull().default("true"),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, status: true, createdAt: true });
 export const insertPrescriptionSchema = createInsertSchema(prescriptions).omit({ id: true, createdAt: true });
 export const insertAppointmentSchema = createInsertSchema(appointments).omit({ id: true, createdAt: true, completedAt: true });
 export const insertCallNoteSchema = createInsertSchema(callNotes).omit({ id: true, createdAt: true });
 export const insertProviderAvailabilitySchema = createInsertSchema(providerAvailability).omit({ id: true, createdAt: true });
+export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({ id: true, createdAt: true, lastLoginAt: true });
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -125,6 +150,26 @@ export type CallNote = typeof callNotes.$inferSelect;
 export type InsertCallNote = z.infer<typeof insertCallNoteSchema>;
 export type ProviderAvailability = typeof providerAvailability.$inferSelect;
 export type InsertProviderAvailability = z.infer<typeof insertProviderAvailabilitySchema>;
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
+export type AdminPermissions = {
+  viewLeads: boolean;
+  editLeads: boolean;
+  viewPrescriptions: boolean;
+  createPrescriptions: boolean;
+  viewAppointments: boolean;
+  manageAppointments: boolean;
+  manageProducts: boolean;
+  manageUsers: boolean;
+  manageAvailability: boolean;
+};
+export type UpdateAdminUserRequest = {
+  name?: string;
+  email?: string;
+  role?: string;
+  permissions?: AdminPermissions;
+  isActive?: string;
+};
 export type UpdateLeadRequest = {
   status?: string;
   name?: string;
