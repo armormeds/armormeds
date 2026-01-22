@@ -455,7 +455,7 @@ export async function registerRoutes(
     res.json(product);
   });
 
-  app.post(api.products.create.path, requireAdminAuth, async (req, res) => {
+  app.post(api.products.create.path, requirePermission("manageProducts"), async (req, res) => {
     try {
       const input = api.products.create.input.parse(req.body);
       const product = await storage.createProduct(input);
@@ -468,7 +468,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch(api.products.update.path, requireAdminAuth, async (req, res) => {
+  app.patch(api.products.update.path, requirePermission("manageProducts"), async (req, res) => {
     try {
       const id = Number(req.params.id);
       const input = api.products.update.input.parse(req.body);
@@ -485,7 +485,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.products.delete.path, requireAdminAuth, async (req, res) => {
+  app.delete(api.products.delete.path, requirePermission("manageProducts"), async (req, res) => {
     const id = Number(req.params.id);
     const deleted = await storage.deleteProduct(id);
     if (!deleted) {
@@ -511,12 +511,12 @@ export async function registerRoutes(
     }
   });
 
-  app.get(api.leads.list.path, requireAdminAuth, async (req, res) => {
+  app.get(api.leads.list.path, requirePermission("viewLeads"), async (req, res) => {
     const allLeads = await storage.getLeads();
     res.json(allLeads);
   });
 
-  app.patch(api.leads.update.path, requireAdminAuth, async (req, res) => {
+  app.patch(api.leads.update.path, requirePermission("editLeads"), async (req, res) => {
     try {
       const id = Number(req.params.id);
       const input = api.leads.update.input.parse(req.body);
@@ -691,7 +691,7 @@ export async function registerRoutes(
   });
 
   // Prescription routes (admin only)
-  app.get('/api/prescriptions', requireAdminAuth, async (req, res) => {
+  app.get('/api/prescriptions', requirePermission("viewPrescriptions"), async (req, res) => {
     try {
       const prescriptions = await storage.getPrescriptions();
       res.json(prescriptions);
@@ -701,7 +701,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/prescriptions/lead/:leadId', requireAdminAuth, async (req, res) => {
+  app.get('/api/prescriptions/lead/:leadId', requirePermission("viewPrescriptions"), async (req, res) => {
     try {
       const leadId = Number(req.params.leadId);
       const prescriptions = await storage.getPrescriptionsByLead(leadId);
@@ -712,7 +712,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/prescriptions', requireAdminAuth, async (req, res) => {
+  app.post('/api/prescriptions', requirePermission("createPrescriptions"), async (req, res) => {
     try {
       const { leadId, patientName, patientDob, patientAddress, patientPhone, medication, dosage, quantity, refills, instructions, providerName, providerNpi, providerLicense, providerSignature } = req.body;
       
@@ -786,7 +786,7 @@ export async function registerRoutes(
   });
 
   // Appointment routes (admin list requires auth)
-  app.get('/api/appointments', requireAdminAuth, async (req, res) => {
+  app.get('/api/appointments', requirePermission("viewAppointments"), async (req, res) => {
     try {
       const appointments = await storage.getAppointments();
       res.json(appointments);
@@ -796,7 +796,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/appointments/:id', requireAdminAuth, async (req, res) => {
+  app.get('/api/appointments/:id', requirePermission("viewAppointments"), async (req, res) => {
     try {
       const appointment = await storage.getAppointment(Number(req.params.id));
       if (!appointment) {
@@ -809,7 +809,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/leads/:leadId/appointments', requireAdminAuth, async (req, res) => {
+  app.get('/api/leads/:leadId/appointments', requirePermission("viewAppointments"), async (req, res) => {
     try {
       const appointments = await storage.getAppointmentsByLead(Number(req.params.leadId));
       res.json(appointments);
@@ -842,7 +842,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/appointments', requireAdminAuth, async (req, res) => {
+  app.post('/api/appointments', requirePermission("manageAppointments"), async (req, res) => {
     try {
       const { leadId, patientName, patientEmail, patientPhone, doctorName, reason, scheduledAt, duration, videoLink } = req.body;
       
@@ -888,7 +888,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch('/api/appointments/:id', requireAdminAuth, async (req, res) => {
+  app.patch('/api/appointments/:id', requirePermission("manageAppointments"), async (req, res) => {
     try {
       const id = Number(req.params.id);
       const updates = req.body;
@@ -913,7 +913,7 @@ export async function registerRoutes(
   });
 
   // Call notes routes (admin only)
-  app.get('/api/appointments/:appointmentId/notes', requireAdminAuth, async (req, res) => {
+  app.get('/api/appointments/:appointmentId/notes', requirePermission("viewAppointments"), async (req, res) => {
     try {
       const notes = await storage.getCallNotes(Number(req.params.appointmentId));
       res.json(notes);
@@ -923,7 +923,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/appointments/:appointmentId/notes', requireAdminAuth, async (req, res) => {
+  app.post('/api/appointments/:appointmentId/notes', requirePermission("manageAppointments"), async (req, res) => {
     try {
       const appointmentId = Number(req.params.appointmentId);
       const { authorName, noteType, content } = req.body;
@@ -967,7 +967,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/availability', requireAdminAuth, async (req, res) => {
+  app.post('/api/availability', requirePermission("manageAvailability"), async (req, res) => {
     try {
       const { doctorName, startAt, endAt, notes } = req.body;
       
@@ -993,7 +993,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch('/api/availability/:id', requireAdminAuth, async (req, res) => {
+  app.patch('/api/availability/:id', requirePermission("manageAvailability"), async (req, res) => {
     try {
       const id = Number(req.params.id);
       const updates = req.body;
@@ -1012,7 +1012,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete('/api/availability/:id', requireAdminAuth, async (req, res) => {
+  app.delete('/api/availability/:id', requirePermission("manageAvailability"), async (req, res) => {
     try {
       const deleted = await storage.deleteAvailabilitySlot(Number(req.params.id));
       if (!deleted) {

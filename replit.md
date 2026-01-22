@@ -35,6 +35,8 @@ Preferred communication style: Simple, everyday language.
   - `prescriptions` - e-prescriptions generated for patients (medication, dosage, quantity, provider info)
   - `appointments` - video consultation scheduling (patient info, doctor, scheduled time, video link, status)
   - `call_notes` - documentation for video consultations (author, note type, content, timestamps)
+  - `provider_availability` - time slots for patient self-scheduling (doctor, start/end times, status)
+  - `admin_users` - admin user accounts with roles and permissions (email, password hash, role, permissions JSON)
 
 ### Key Design Patterns
 - **Shared Types**: The `shared/` directory contains schema definitions and API route contracts used by both frontend and backend
@@ -114,14 +116,19 @@ shared/           # Shared code between frontend and backend
 5. **Email Notification**: TODO - Configure Resend or SendGrid for automated prescription ready emails
 6. **Optional Consultation**: Patient can optionally schedule a video call via `/schedule` if desired
 
-### Admin Dashboard Security
-- **Password Protection**: Admin dashboard requires password authentication before access
-- **Encrypted Password**: Uses bcrypt for password hashing (ADMIN_PASSWORD env var, default: "admin123")
-- **Session Tokens**: Generated on successful login, stored in localStorage
-- **Logout**: Available from admin dashboard header
-- **To Change Password**: Set the ADMIN_PASSWORD environment variable to your desired password
+### Admin Dashboard Security & User Management
+- **Multi-User System**: Admin users are stored in the `admin_users` database table with bcrypt-encrypted passwords
+- **Role-Based Access Control (RBAC)**: Three roles with different permissions:
+  - **Super Admin**: Full access to all features including user management
+  - **Provider**: View/edit leads, create prescriptions, manage appointments and availability
+  - **Staff**: View leads, view prescriptions, manage appointments
+- **Permission-Based Routes**: All admin routes are protected with permission-based middleware
+- **Initial Setup**: First time accessing `/admin`, you'll be prompted to create the initial Super Admin account
+- **User Management**: Super Admins can create, edit, and delete other admin users from the "Users" tab
+- **Session Tokens**: Generated on login with 24-hour expiration, stored server-side
+- **Rate Limiting**: 5 login attempts per IP, 15-minute lockout after exceeding limit
+- **Logout**: Available from admin dashboard header, invalidates token server-side
 
 ### Future Enhancements
 - **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated. The backend has placeholder code in `server/routes.ts` ready for email integration.
 - **Patient Authentication**: Add proper patient authentication for secure access to appointments and prescriptions
-- **Admin User Management**: Replace single password with multi-user admin accounts stored in database

@@ -13,13 +13,33 @@ import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut } from "lucide-react";
 import { Link } from "wouter";
-import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability } from "@shared/schema";
+import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability, AdminPermissions } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 const ADMIN_TOKEN_KEY = "wellness_admin_token";
+const ADMIN_USER_KEY = "wellness_admin_user";
+
+interface AdminUserInfo {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  permissions: AdminPermissions;
+}
+
+interface AdminUserListItem {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  permissions: AdminPermissions;
+  isActive: string;
+  lastLoginAt: string | null;
+  createdAt: string;
+}
 
 const statusColors: Record<string, string> = {
   new: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -80,11 +100,250 @@ interface PrescriptionFormData {
   providerLicense: string;
 }
 
-function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
+function CreateUserForm({ 
+  onSubmit, 
+  onCancel, 
+  isSubmitting 
+}: { 
+  onSubmit: (data: { email: string; password: string; name: string; role: string }) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "staff",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="new-user-name">Full Name</Label>
+        <Input
+          id="new-user-name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="John Smith"
+          required
+          data-testid="input-new-user-name"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="new-user-email">Email</Label>
+        <Input
+          id="new-user-email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="john@example.com"
+          required
+          data-testid="input-new-user-email"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="new-user-password">Password</Label>
+        <Input
+          id="new-user-password"
+          type="password"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          placeholder="Create a password"
+          required
+          data-testid="input-new-user-password"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="new-user-role">Role</Label>
+        <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+          <SelectTrigger data-testid="select-new-user-role">
+            <SelectValue placeholder="Select role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="super_admin">Super Admin - Full access</SelectItem>
+            <SelectItem value="provider">Provider - Leads, prescriptions, appointments</SelectItem>
+            <SelectItem value="staff">Staff - View leads, manage appointments</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter className="gap-2">
+        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" disabled={isSubmitting} data-testid="button-submit-new-user">
+          {isSubmitting ? "Creating..." : "Create User"}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+function EditUserForm({ 
+  user,
+  currentUserId,
+  onSubmit, 
+  onDelete,
+  onCancel, 
+  isSubmitting,
+  isDeleting,
+}: { 
+  user: AdminUserListItem;
+  currentUserId: number;
+  onSubmit: (data: { name?: string; email?: string; role?: string; isActive?: string; password?: string }) => void;
+  onDelete: () => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+  isDeleting: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    isActive: user.isActive,
+    password: "",
+  });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updates: any = {
+      name: formData.name,
+      email: formData.email,
+      role: formData.role,
+      isActive: formData.isActive,
+    };
+    if (formData.password) {
+      updates.password = formData.password;
+    }
+    onSubmit(updates);
+  };
+
+  const isSelf = user.id === currentUserId;
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="edit-user-name">Full Name</Label>
+        <Input
+          id="edit-user-name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+          data-testid="input-edit-user-name"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="edit-user-email">Email</Label>
+        <Input
+          id="edit-user-email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          required
+          data-testid="input-edit-user-email"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="edit-user-password">New Password (leave blank to keep current)</Label>
+        <Input
+          id="edit-user-password"
+          type="password"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          placeholder="Enter new password"
+          data-testid="input-edit-user-password"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="edit-user-role">Role</Label>
+        <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+          <SelectTrigger data-testid="select-edit-user-role">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="super_admin">Super Admin - Full access</SelectItem>
+            <SelectItem value="provider">Provider - Leads, prescriptions, appointments</SelectItem>
+            <SelectItem value="staff">Staff - View leads, manage appointments</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="edit-user-active">Status</Label>
+        <Select value={formData.isActive} onValueChange={(value) => setFormData({ ...formData, isActive: value })}>
+          <SelectTrigger data-testid="select-edit-user-active">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="true">Active</SelectItem>
+            <SelectItem value="false">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter className="gap-2 flex-wrap">
+        {!isSelf && !showDeleteConfirm && (
+          <Button 
+            type="button" 
+            variant="destructive" 
+            onClick={() => setShowDeleteConfirm(true)}
+            data-testid="button-delete-user"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        )}
+        {showDeleteConfirm && (
+          <div className="flex gap-2 flex-1">
+            <Button type="button" variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={onDelete}
+              disabled={isDeleting}
+              data-testid="button-confirm-delete-user"
+            >
+              {isDeleting ? "Deleting..." : "Confirm Delete"}
+            </Button>
+          </div>
+        )}
+        {!showDeleteConfirm && (
+          <>
+            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+            <Button type="submit" disabled={isSubmitting} data-testid="button-submit-edit-user">
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
+          </>
+        )}
+      </DialogFooter>
+    </form>
+  );
+}
+
+function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo) => void }) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isSetupMode, setIsSetupMode] = useState(false);
+  const [setupName, setSetupName] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkSetup = async () => {
+      try {
+        const response = await fetch("/api/admin/setup-required");
+        const data = await response.json();
+        setIsSetupMode(data.setupRequired);
+      } catch {
+        // Ignore errors
+      }
+    };
+    checkSetup();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,23 +351,45 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
     setError("");
 
     try {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
-        onLogin(data.token);
-        toast({
-          title: "Welcome back",
-          description: "You have successfully logged in.",
+      if (isSetupMode) {
+        // Create initial admin
+        const response = await fetch("/api/admin/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name: setupName }),
         });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setIsSetupMode(false);
+          toast({
+            title: "Admin account created",
+            description: "Please log in with your new credentials.",
+          });
+          setPassword("");
+        } else {
+          setError(data.message || "Failed to create admin account");
+        }
       } else {
-        setError(data.message || "Invalid password");
+        // Normal login
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+          localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(data.user));
+          onLogin(data.token, data.user);
+          toast({
+            title: `Welcome back, ${data.user.name}`,
+            description: "You have successfully logged in.",
+          });
+        } else {
+          setError(data.message || "Invalid email or password");
+        }
       }
     } catch (err) {
       setError("Authentication failed. Please try again.");
@@ -124,19 +405,50 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Lock className="w-6 h-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
+          <CardTitle className="text-2xl">
+            {isSetupMode ? "Create Admin Account" : "Admin Login"}
+          </CardTitle>
           <p className="text-muted-foreground text-sm mt-2">
-            Enter your password to access the admin dashboard
+            {isSetupMode 
+              ? "Set up your first admin account to get started"
+              : "Enter your credentials to access the admin dashboard"
+            }
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSetupMode && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your name"
+                  value={setupName}
+                  onChange={(e) => setSetupName(e.target.value)}
+                  required
+                  data-testid="input-admin-name"
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                data-testid="input-admin-email"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter admin password"
+                placeholder={isSetupMode ? "Create a password" : "Enter your password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -155,7 +467,10 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
               disabled={isLoading}
               data-testid="button-admin-login"
             >
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading 
+                ? (isSetupMode ? "Creating account..." : "Logging in...") 
+                : (isSetupMode ? "Create Admin Account" : "Login")
+              }
             </Button>
           </form>
           <div className="mt-6 pt-4 border-t">
@@ -1238,7 +1553,8 @@ function ProductCard({
 export default function Admin() {
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments" | "availability">("leads");
+  const [currentUser, setCurrentUser] = useState<AdminUserInfo | null>(null);
+  const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments" | "availability" | "users">("leads");
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showPrescriptionDialog, setShowPrescriptionDialog] = useState(false);
@@ -1254,6 +1570,8 @@ export default function Admin() {
   const [newSlotDate, setNewSlotDate] = useState("");
   const [newSlotStartTime, setNewSlotStartTime] = useState("");
   const [newSlotEndTime, setNewSlotEndTime] = useState("");
+  const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
+  const [editingUser, setEditingUser] = useState<AdminUserListItem | null>(null);
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -1272,13 +1590,17 @@ export default function Admin() {
         });
         
         if (response.ok) {
+          const data = await response.json();
+          setCurrentUser(data.user);
           setIsAuthenticated(true);
         } else {
           localStorage.removeItem(ADMIN_TOKEN_KEY);
+          localStorage.removeItem(ADMIN_USER_KEY);
           setIsAuthenticated(false);
         }
       } catch {
         localStorage.removeItem(ADMIN_TOKEN_KEY);
+        localStorage.removeItem(ADMIN_USER_KEY);
         setIsAuthenticated(false);
       }
     };
@@ -1303,6 +1625,8 @@ export default function Admin() {
     }
     
     localStorage.removeItem(ADMIN_TOKEN_KEY);
+    localStorage.removeItem(ADMIN_USER_KEY);
+    setCurrentUser(null);
     setIsAuthenticated(false);
     toast({
       title: "Logged out",
@@ -1339,6 +1663,52 @@ export default function Admin() {
   const { data: availabilitySlots, isLoading: availabilityLoading, refetch: refetchAvailability } = useQuery<ProviderAvailability[]>({
     queryKey: ["/api/availability"],
     enabled: isAuthenticated === true,
+  });
+
+  const { data: adminUsers, isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUserListItem[]>({
+    queryKey: ["/api/admin/users"],
+    enabled: isAuthenticated === true && currentUser?.permissions?.manageUsers === true,
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: { email: string; password: string; name: string; role: string }) => {
+      return apiRequest("POST", "/api/admin/users", userData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setShowCreateUserDialog(false);
+      toast({ title: "User created", description: "New admin user has been created successfully." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Failed to create user", description: error?.message || "An error occurred", variant: "destructive" });
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: number; name?: string; email?: string; role?: string; isActive?: string; password?: string }) => {
+      return apiRequest("PATCH", `/api/admin/users/${id}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setEditingUser(null);
+      toast({ title: "User updated", description: "Admin user has been updated successfully." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Failed to update user", description: error?.message || "An error occurred", variant: "destructive" });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/admin/users/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({ title: "User deleted", description: "Admin user has been deleted." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Failed to delete user", description: error?.message || "An error occurred", variant: "destructive" });
+    },
   });
 
   const updateLeadMutation = useMutation({
@@ -1741,7 +2111,10 @@ export default function Admin() {
 
   // Show login if not authenticated
   if (!isAuthenticated) {
-    return <AdminLogin onLogin={() => setIsAuthenticated(true)} />;
+    return <AdminLogin onLogin={(token, user) => {
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+    }} />;
   }
 
   return (
@@ -1756,7 +2129,9 @@ export default function Admin() {
             </Link>
             <div>
               <h1 className="text-3xl font-display font-bold">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Manage leads and products</p>
+              <p className="text-muted-foreground">
+                {currentUser ? `Welcome, ${currentUser.name} (${currentUser.role.replace('_', ' ')})` : 'Manage leads and products'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -1764,6 +2139,7 @@ export default function Admin() {
               if (activeTab === "leads") refetchLeads();
               else if (activeTab === "products") refetchProducts();
               else if (activeTab === "appointments") refetchAppointments();
+              else if (activeTab === "users") refetchUsers();
               else refetchAvailability();
             }} data-testid="button-refresh">
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -1818,6 +2194,19 @@ export default function Admin() {
               <Badge variant="secondary" className="ml-2">{availabilitySlots.length}</Badge>
             )}
           </Button>
+          {currentUser?.permissions?.manageUsers && (
+            <Button
+              variant={activeTab === "users" ? "default" : "outline"}
+              onClick={() => setActiveTab("users")}
+              data-testid="button-tab-users"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Users
+              {adminUsers && adminUsers.length > 0 && (
+                <Badge variant="secondary" className="ml-2">{adminUsers.length}</Badge>
+              )}
+            </Button>
+          )}
         </div>
 
         {activeTab === "leads" && (
@@ -2098,6 +2487,113 @@ export default function Admin() {
                   <div className="text-center py-12 text-muted-foreground">
                     <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No availability slots set. Click "Add Time Slot" to let patients schedule consultations.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "users" && currentUser?.permissions?.manageUsers && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Admin Users
+                  </CardTitle>
+                  <Dialog open={showCreateUserDialog} onOpenChange={setShowCreateUserDialog}>
+                    <DialogTrigger asChild>
+                      <Button data-testid="button-add-user">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add User
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[450px]">
+                      <DialogHeader>
+                        <DialogTitle>Create Admin User</DialogTitle>
+                      </DialogHeader>
+                      <CreateUserForm 
+                        onSubmit={(data) => createUserMutation.mutate(data)}
+                        isSubmitting={createUserMutation.isPending}
+                        onCancel={() => setShowCreateUserDialog(false)}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {usersLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-20 w-full" />
+                    ))}
+                  </div>
+                ) : adminUsers && adminUsers.length > 0 ? (
+                  <div className="grid gap-4">
+                    {adminUsers.map((user) => (
+                      <Card key={user.id} className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{user.name}</div>
+                              <div className="text-sm text-muted-foreground">{user.email}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={user.isActive === "true" ? "default" : "secondary"}>
+                              {user.isActive === "true" ? "Active" : "Inactive"}
+                            </Badge>
+                            <Badge variant="outline" className="capitalize">
+                              {user.role.replace('_', ' ')}
+                            </Badge>
+                            <Dialog open={editingUser?.id === user.id} onOpenChange={(open) => !open && setEditingUser(null)}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => setEditingUser(user)}
+                                  data-testid={`button-edit-user-${user.id}`}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-[450px]">
+                                <DialogHeader>
+                                  <DialogTitle>Edit User</DialogTitle>
+                                </DialogHeader>
+                                {editingUser && (
+                                  <EditUserForm 
+                                    user={editingUser}
+                                    currentUserId={currentUser?.id || 0}
+                                    onSubmit={(data) => updateUserMutation.mutate({ id: editingUser.id, ...data })}
+                                    onDelete={() => deleteUserMutation.mutate(editingUser.id)}
+                                    isSubmitting={updateUserMutation.isPending}
+                                    isDeleting={deleteUserMutation.isPending}
+                                    onCancel={() => setEditingUser(null)}
+                                  />
+                                )}
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        </div>
+                        {user.lastLoginAt && (
+                          <div className="text-xs text-muted-foreground mt-2 ml-13">
+                            Last login: {format(new Date(user.lastLoginAt), "MMM d, yyyy 'at' h:mm a")}
+                          </div>
+                        )}
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No admin users yet</h3>
+                    <p className="text-muted-foreground mb-4">Create your first admin user to get started.</p>
                   </div>
                 )}
               </CardContent>
