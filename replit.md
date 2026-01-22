@@ -114,6 +114,14 @@ shared/           # Shared code between frontend and backend
 5. **Email Notification**: TODO - Configure Resend or SendGrid for automated prescription ready emails
 6. **Optional Consultation**: Patient can optionally schedule a video call via `/schedule` if desired
 
+### Admin Dashboard Security
+- **Password Protection**: Admin dashboard requires password authentication before access
+- **Encrypted Password**: Uses bcrypt for password hashing (ADMIN_PASSWORD env var, default: "admin123")
+- **Session Tokens**: Generated on successful login, stored in localStorage
+- **Logout**: Available from admin dashboard header
+- **To Change Password**: Set the ADMIN_PASSWORD environment variable to your desired password
+
 ### Future Enhancements
 - **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated. The backend has placeholder code in `server/routes.ts` ready for email integration.
-- **Authentication**: Add proper patient authentication for secure access to appointments and prescriptions
+- **Patient Authentication**: Add proper patient authentication for secure access to appointments and prescriptions
+- **Admin User Management**: Replace single password with multi-user admin accounts stored in database

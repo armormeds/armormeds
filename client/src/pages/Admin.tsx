@@ -11,13 +11,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
+
+const ADMIN_TOKEN_KEY = "wellness_admin_token";
 
 const statusColors: Record<string, string> = {
   new: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -76,6 +78,98 @@ interface PrescriptionFormData {
   providerName: string;
   providerNpi: string;
   providerLicense: string;
+}
+
+function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+        onLogin(data.token);
+        toast({
+          title: "Welcome back",
+          description: "You have successfully logged in.",
+        });
+      } else {
+        setError(data.message || "Invalid password");
+      }
+    } catch (err) {
+      setError("Authentication failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl">Admin Login</CardTitle>
+          <p className="text-muted-foreground text-sm mt-2">
+            Enter your password to access the admin dashboard
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter admin password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                data-testid="input-admin-password"
+              />
+            </div>
+            {error && (
+              <div className="text-destructive text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </div>
+            )}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+              data-testid="button-admin-login"
+            >
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+          <div className="mt-6 pt-4 border-t">
+            <Link href="/">
+              <Button variant="ghost" className="w-full" data-testid="button-back-home">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 function PrescriptionForm({ 
@@ -1143,6 +1237,7 @@ function ProductCard({
 
 export default function Admin() {
   const { toast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments" | "availability">("leads");
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -1160,21 +1255,79 @@ export default function Admin() {
   const [newSlotStartTime, setNewSlotStartTime] = useState("");
   const [newSlotEndTime, setNewSlotEndTime] = useState("");
 
+  // Check for existing authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/admin/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem(ADMIN_TOKEN_KEY);
+          setIsAuthenticated(false);
+        }
+      } catch {
+        localStorage.removeItem(ADMIN_TOKEN_KEY);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+    
+    // Invalidate token on server
+    if (token) {
+      try {
+        await fetch("/api/admin/logout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      } catch {
+        // Ignore logout errors - we'll clear local storage anyway
+      }
+    }
+    
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    setIsAuthenticated(false);
+    toast({
+      title: "Logged out",
+      description: "You have been logged out of the admin dashboard.",
+    });
+  };
+
   const { data: leads, isLoading: leadsLoading, refetch: refetchLeads } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
+    enabled: isAuthenticated === true,
   });
 
   const { data: products, isLoading: productsLoading, refetch: refetchProducts } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    enabled: isAuthenticated === true,
   });
 
   const { data: appointments, isLoading: appointmentsLoading, refetch: refetchAppointments } = useQuery<Appointment[]>({
     queryKey: ["/api/appointments"],
+    enabled: isAuthenticated === true,
   });
 
   const { data: appointmentNotes, refetch: refetchNotes } = useQuery<CallNote[]>({
     queryKey: ["/api/appointments", selectedAppointmentForNotes?.id, "notes"],
-    enabled: !!selectedAppointmentForNotes,
+    enabled: isAuthenticated === true && !!selectedAppointmentForNotes,
     queryFn: async () => {
       if (!selectedAppointmentForNotes) return [];
       const response = await fetch(`/api/appointments/${selectedAppointmentForNotes.id}/notes`);
@@ -1185,6 +1338,7 @@ export default function Admin() {
 
   const { data: availabilitySlots, isLoading: availabilityLoading, refetch: refetchAvailability } = useQuery<ProviderAvailability[]>({
     queryKey: ["/api/availability"],
+    enabled: isAuthenticated === true,
   });
 
   const updateLeadMutation = useMutation({
@@ -1576,6 +1730,20 @@ export default function Admin() {
   const newLeadsCount = leads?.filter((l) => l.status === "new").length ?? 0;
   const upcomingAppointments = appointments?.filter((a) => a.status === "scheduled").length ?? 0;
 
+  // Show loading while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated
+  if (!isAuthenticated) {
+    return <AdminLogin onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background pt-24 pb-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1591,15 +1759,21 @@ export default function Admin() {
               <p className="text-muted-foreground">Manage leads and products</p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => {
-            if (activeTab === "leads") refetchLeads();
-            else if (activeTab === "products") refetchProducts();
-            else if (activeTab === "appointments") refetchAppointments();
-            else refetchAvailability();
-          }} data-testid="button-refresh">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => {
+              if (activeTab === "leads") refetchLeads();
+              else if (activeTab === "products") refetchProducts();
+              else if (activeTab === "appointments") refetchAppointments();
+              else refetchAvailability();
+            }} data-testid="button-refresh">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+            <Button variant="ghost" onClick={handleLogout} data-testid="button-logout">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="flex gap-2 mb-6 flex-wrap">

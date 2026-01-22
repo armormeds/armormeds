@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
@@ -7,6 +7,47 @@ import { registerObjectStorageRoutes } from "./replit_integrations/object_storag
 import { getUncachableStripeClient } from "./stripeClient";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+
+// Admin password - in production, store hashed password in database
+// Default password is "admin123" - change this in production!
+const ADMIN_PASSWORD_HASH = bcrypt.hashSync(process.env.ADMIN_PASSWORD || "admin123", 10);
+
+// Server-side token storage with expiration (in-memory for MVP)
+const adminTokens = new Map<string, { createdAt: number; expiresAt: number }>();
+const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+// Rate limiting for login attempts
+const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
+function generateSecureToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function isValidAdminToken(token: string): boolean {
+  const session = adminTokens.get(token);
+  if (!session) return false;
+  if (Date.now() > session.expiresAt) {
+    adminTokens.delete(token);
+    return false;
+  }
+  return true;
+}
+
+// Middleware to protect admin-only routes
+function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  
+  if (!token || !isValidAdminToken(token)) {
+    return res.status(401).json({ message: "Unauthorized - admin authentication required" });
+  }
+  
+  next();
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -17,6 +58,82 @@ export async function registerRoutes(
 
   // Register object storage routes for secure file uploads
   registerObjectStorageRoutes(app);
+
+  // Admin authentication endpoint with rate limiting
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const attempts = loginAttempts.get(clientIp);
+      
+      // Check for rate limiting lockout
+      if (attempts && attempts.count >= MAX_LOGIN_ATTEMPTS) {
+        const timeSinceLastAttempt = Date.now() - attempts.lastAttempt;
+        if (timeSinceLastAttempt < LOCKOUT_DURATION_MS) {
+          const minutesRemaining = Math.ceil((LOCKOUT_DURATION_MS - timeSinceLastAttempt) / 60000);
+          return res.status(429).json({ 
+            message: `Too many login attempts. Please try again in ${minutesRemaining} minutes.` 
+          });
+        } else {
+          // Reset after lockout period
+          loginAttempts.delete(clientIp);
+        }
+      }
+      
+      const { password } = req.body;
+      
+      if (!password) {
+        return res.status(400).json({ message: "Password is required" });
+      }
+
+      const isValid = bcrypt.compareSync(password, ADMIN_PASSWORD_HASH);
+      
+      if (isValid) {
+        // Clear login attempts on successful login
+        loginAttempts.delete(clientIp);
+        
+        // Generate secure token and store server-side
+        const token = generateSecureToken();
+        const now = Date.now();
+        adminTokens.set(token, { 
+          createdAt: now, 
+          expiresAt: now + TOKEN_EXPIRY_MS 
+        });
+        
+        res.json({ success: true, token });
+      } else {
+        // Track failed login attempt
+        const current = loginAttempts.get(clientIp) || { count: 0, lastAttempt: 0 };
+        loginAttempts.set(clientIp, { 
+          count: current.count + 1, 
+          lastAttempt: Date.now() 
+        });
+        
+        res.status(401).json({ message: "Invalid password" });
+      }
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ message: "Authentication failed" });
+    }
+  });
+
+  // Admin token verification endpoint
+  app.post("/api/admin/verify", async (req, res) => {
+    const { token } = req.body;
+    if (token && typeof token === "string" && isValidAdminToken(token)) {
+      res.json({ valid: true });
+    } else {
+      res.status(401).json({ valid: false });
+    }
+  });
+  
+  // Admin logout endpoint
+  app.post("/api/admin/logout", async (req, res) => {
+    const { token } = req.body;
+    if (token) {
+      adminTokens.delete(token);
+    }
+    res.json({ success: true });
+  });
 
   app.get(api.products.list.path, async (req, res) => {
     const products = await storage.getProducts();
@@ -31,7 +148,7 @@ export async function registerRoutes(
     res.json(product);
   });
 
-  app.post(api.products.create.path, async (req, res) => {
+  app.post(api.products.create.path, requireAdminAuth, async (req, res) => {
     try {
       const input = api.products.create.input.parse(req.body);
       const product = await storage.createProduct(input);
@@ -44,7 +161,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch(api.products.update.path, async (req, res) => {
+  app.patch(api.products.update.path, requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       const input = api.products.update.input.parse(req.body);
@@ -61,7 +178,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.products.delete.path, async (req, res) => {
+  app.delete(api.products.delete.path, requireAdminAuth, async (req, res) => {
     const id = Number(req.params.id);
     const deleted = await storage.deleteProduct(id);
     if (!deleted) {
@@ -87,12 +204,12 @@ export async function registerRoutes(
     }
   });
 
-  app.get(api.leads.list.path, async (req, res) => {
+  app.get(api.leads.list.path, requireAdminAuth, async (req, res) => {
     const allLeads = await storage.getLeads();
     res.json(allLeads);
   });
 
-  app.patch(api.leads.update.path, async (req, res) => {
+  app.patch(api.leads.update.path, requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       const input = api.leads.update.input.parse(req.body);
@@ -266,8 +383,8 @@ export async function registerRoutes(
     }
   });
 
-  // Prescription routes
-  app.get('/api/prescriptions', async (req, res) => {
+  // Prescription routes (admin only)
+  app.get('/api/prescriptions', requireAdminAuth, async (req, res) => {
     try {
       const prescriptions = await storage.getPrescriptions();
       res.json(prescriptions);
@@ -277,7 +394,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/prescriptions/lead/:leadId', async (req, res) => {
+  app.get('/api/prescriptions/lead/:leadId', requireAdminAuth, async (req, res) => {
     try {
       const leadId = Number(req.params.leadId);
       const prescriptions = await storage.getPrescriptionsByLead(leadId);
@@ -288,7 +405,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/prescriptions', async (req, res) => {
+  app.post('/api/prescriptions', requireAdminAuth, async (req, res) => {
     try {
       const { leadId, patientName, patientDob, patientAddress, patientPhone, medication, dosage, quantity, refills, instructions, providerName, providerNpi, providerLicense, providerSignature } = req.body;
       
@@ -361,8 +478,8 @@ export async function registerRoutes(
     }
   });
 
-  // Appointment routes
-  app.get('/api/appointments', async (req, res) => {
+  // Appointment routes (admin list requires auth)
+  app.get('/api/appointments', requireAdminAuth, async (req, res) => {
     try {
       const appointments = await storage.getAppointments();
       res.json(appointments);
@@ -372,7 +489,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/appointments/:id', async (req, res) => {
+  app.get('/api/appointments/:id', requireAdminAuth, async (req, res) => {
     try {
       const appointment = await storage.getAppointment(Number(req.params.id));
       if (!appointment) {
@@ -385,7 +502,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get('/api/leads/:leadId/appointments', async (req, res) => {
+  app.get('/api/leads/:leadId/appointments', requireAdminAuth, async (req, res) => {
     try {
       const appointments = await storage.getAppointmentsByLead(Number(req.params.leadId));
       res.json(appointments);
@@ -418,7 +535,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/appointments', async (req, res) => {
+  app.post('/api/appointments', requireAdminAuth, async (req, res) => {
     try {
       const { leadId, patientName, patientEmail, patientPhone, doctorName, reason, scheduledAt, duration, videoLink } = req.body;
       
@@ -464,7 +581,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch('/api/appointments/:id', async (req, res) => {
+  app.patch('/api/appointments/:id', requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       const updates = req.body;
@@ -488,8 +605,8 @@ export async function registerRoutes(
     }
   });
 
-  // Call notes routes
-  app.get('/api/appointments/:appointmentId/notes', async (req, res) => {
+  // Call notes routes (admin only)
+  app.get('/api/appointments/:appointmentId/notes', requireAdminAuth, async (req, res) => {
     try {
       const notes = await storage.getCallNotes(Number(req.params.appointmentId));
       res.json(notes);
@@ -499,7 +616,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/appointments/:appointmentId/notes', async (req, res) => {
+  app.post('/api/appointments/:appointmentId/notes', requireAdminAuth, async (req, res) => {
     try {
       const appointmentId = Number(req.params.appointmentId);
       const { authorName, noteType, content } = req.body;
@@ -543,7 +660,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/availability', async (req, res) => {
+  app.post('/api/availability', requireAdminAuth, async (req, res) => {
     try {
       const { doctorName, startAt, endAt, notes } = req.body;
       
@@ -569,7 +686,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch('/api/availability/:id', async (req, res) => {
+  app.patch('/api/availability/:id', requireAdminAuth, async (req, res) => {
     try {
       const id = Number(req.params.id);
       const updates = req.body;
@@ -588,7 +705,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete('/api/availability/:id', async (req, res) => {
+  app.delete('/api/availability/:id', requireAdminAuth, async (req, res) => {
     try {
       const deleted = await storage.deleteAvailabilitySlot(Number(req.params.id));
       if (!deleted) {
