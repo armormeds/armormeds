@@ -270,6 +270,7 @@ export async function registerRoutes(
   
   // Check if initial setup is needed (no admin users exist)
   app.get("/api/admin/setup-required", async (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     const users = await storage.getAdminUsers();
     res.json({ setupRequired: users.length === 0 });
   });
