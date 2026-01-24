@@ -327,6 +327,7 @@ function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSetup, setIsCheckingSetup] = useState(true);
   const [error, setError] = useState("");
   const [isSetupMode, setIsSetupMode] = useState(false);
   const [setupName, setSetupName] = useState("");
@@ -335,11 +336,17 @@ function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo)
   useEffect(() => {
     const checkSetup = async () => {
       try {
-        const response = await fetch("/api/admin/setup-required");
+        const response = await fetch("/api/admin/setup-required", {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         const data = await response.json();
-        setIsSetupMode(data.setupRequired);
-      } catch {
-        // Ignore errors
+        console.log("Setup check result:", data);
+        setIsSetupMode(data.setupRequired === true);
+      } catch (err) {
+        console.error("Setup check error:", err);
+      } finally {
+        setIsCheckingSetup(false);
       }
     };
     checkSetup();
@@ -397,6 +404,19 @@ function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo)
       setIsLoading(false);
     }
   };
+
+  if (isCheckingSetup) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="py-12 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
