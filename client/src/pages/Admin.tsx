@@ -455,7 +455,7 @@ function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo)
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                type="email"
+                type="text"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

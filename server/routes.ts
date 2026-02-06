@@ -173,8 +173,10 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Email and password are required" });
       }
 
+      const trimmedEmail = email.trim().toLowerCase();
+
       // Look up user in database
-      const user = await storage.getAdminUserByEmail(email);
+      const user = await storage.getAdminUserByEmail(trimmedEmail);
       
       if (!user) {
         // Track failed login attempt
