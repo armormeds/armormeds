@@ -1,4 +1,4 @@
-import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest } from "@shared/schema";
+import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, leadActivities, leadNotes, leadTags, leadTasks, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest, type LeadActivity, type InsertLeadActivity, type LeadNote, type InsertLeadNote, type LeadTag, type InsertLeadTag, type LeadTask, type InsertLeadTask } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, gte, and } from "drizzle-orm";
 
@@ -39,6 +39,18 @@ export interface IStorage {
   updateAdminUser(id: number, updates: UpdateAdminUserRequest): Promise<AdminUser | undefined>;
   deleteAdminUser(id: number): Promise<boolean>;
   updateAdminUserLastLogin(id: number): Promise<void>;
+  getLeadActivities(leadId: number): Promise<LeadActivity[]>;
+  createLeadActivity(activity: InsertLeadActivity): Promise<LeadActivity>;
+  getLeadNotes(leadId: number): Promise<LeadNote[]>;
+  createLeadNote(note: InsertLeadNote): Promise<LeadNote>;
+  deleteLeadNote(id: number): Promise<boolean>;
+  getLeadTags(leadId: number): Promise<LeadTag[]>;
+  createLeadTag(tag: InsertLeadTag): Promise<LeadTag>;
+  deleteLeadTag(id: number): Promise<boolean>;
+  getLeadTasks(leadId: number): Promise<LeadTask[]>;
+  createLeadTask(task: InsertLeadTask): Promise<LeadTask>;
+  updateLeadTask(id: number, updates: Partial<LeadTask>): Promise<LeadTask | undefined>;
+  deleteLeadTask(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -251,6 +263,62 @@ export class DatabaseStorage implements IStorage {
 
   async updateAdminUserLastLogin(id: number): Promise<void> {
     await db.update(adminUsers).set({ lastLoginAt: new Date() }).where(eq(adminUsers.id, id));
+  }
+
+  async getLeadActivities(leadId: number): Promise<LeadActivity[]> {
+    return await db.select().from(leadActivities).where(eq(leadActivities.leadId, leadId)).orderBy(desc(leadActivities.createdAt));
+  }
+
+  async createLeadActivity(activity: InsertLeadActivity): Promise<LeadActivity> {
+    const [created] = await db.insert(leadActivities).values(activity as any).returning();
+    return created;
+  }
+
+  async getLeadNotes(leadId: number): Promise<LeadNote[]> {
+    return await db.select().from(leadNotes).where(eq(leadNotes.leadId, leadId)).orderBy(desc(leadNotes.createdAt));
+  }
+
+  async createLeadNote(note: InsertLeadNote): Promise<LeadNote> {
+    const [created] = await db.insert(leadNotes).values(note as any).returning();
+    return created;
+  }
+
+  async deleteLeadNote(id: number): Promise<boolean> {
+    const result = await db.delete(leadNotes).where(eq(leadNotes.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getLeadTags(leadId: number): Promise<LeadTag[]> {
+    return await db.select().from(leadTags).where(eq(leadTags.leadId, leadId)).orderBy(desc(leadTags.createdAt));
+  }
+
+  async createLeadTag(tag: InsertLeadTag): Promise<LeadTag> {
+    const [created] = await db.insert(leadTags).values(tag as any).returning();
+    return created;
+  }
+
+  async deleteLeadTag(id: number): Promise<boolean> {
+    const result = await db.delete(leadTags).where(eq(leadTags.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getLeadTasks(leadId: number): Promise<LeadTask[]> {
+    return await db.select().from(leadTasks).where(eq(leadTasks.leadId, leadId)).orderBy(desc(leadTasks.createdAt));
+  }
+
+  async createLeadTask(task: InsertLeadTask): Promise<LeadTask> {
+    const [created] = await db.insert(leadTasks).values(task as any).returning();
+    return created;
+  }
+
+  async updateLeadTask(id: number, updates: Partial<LeadTask>): Promise<LeadTask | undefined> {
+    const [updated] = await db.update(leadTasks).set(updates).where(eq(leadTasks.id, id)).returning();
+    return updated;
+  }
+
+  async deleteLeadTask(id: number): Promise<boolean> {
+    const result = await db.delete(leadTasks).where(eq(leadTasks.id, id)).returning();
+    return result.length > 0;
   }
 
   async seedProducts(): Promise<void> {

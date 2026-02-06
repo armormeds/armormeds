@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut, CreditCard, BarChart3, DollarSign, TrendingUp, Shield, Wallet, Globe } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability, AdminPermissions } from "@shared/schema";
+import { LeadCrmPanel } from "@/components/LeadCrmPanel";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
 import { useState, useRef, useEffect } from "react";
@@ -1026,7 +1027,7 @@ function AppointmentCard({
   );
 }
 
-function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, onSendSMS }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void; onSendSMS: (lead: Lead) => void }) {
+function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, onSendSMS, onOpenCRM }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void; onSendSMS: (lead: Lead) => void; onOpenCRM: (lead: Lead) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   
   const hasExtendedInfo = lead.goals || lead.state || lead.dateOfBirth || lead.weight || 
@@ -1306,6 +1307,15 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, 
               <span data-testid={`text-lead-date-${lead.id}`}>{format(new Date(lead.createdAt), "MMM d, yyyy 'at' h:mm a")}</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onOpenCRM(lead)}
+                data-testid={`button-open-crm-${lead.id}`}
+              >
+                <ClipboardList className="h-4 w-4 mr-1" />
+                CRM
+              </Button>
               {lead.phone && (
                 <Button
                   variant="ghost"
@@ -1605,6 +1615,8 @@ export default function Admin() {
   const [editingUser, setEditingUser] = useState<AdminUserListItem | null>(null);
   const [showSMSDialog, setShowSMSDialog] = useState(false);
   const [selectedLeadForSMS, setSelectedLeadForSMS] = useState<Lead | null>(null);
+  const [showCRMPanel, setShowCRMPanel] = useState(false);
+  const [selectedLeadForCRM, setSelectedLeadForCRM] = useState<Lead | null>(null);
   const [smsMessage, setSmsMessage] = useState("");
 
   // Check for existing authentication on mount
@@ -2142,6 +2154,11 @@ export default function Admin() {
     setShowSMSDialog(true);
   };
 
+  const handleOpenCRM = (lead: Lead) => {
+    setSelectedLeadForCRM(lead);
+    setShowCRMPanel(true);
+  };
+
   const sendSMSMutation = useMutation({
     mutationFn: async ({ phone, message }: { phone: string; message: string }) => {
       return apiRequest("POST", "/api/admin/send-sms", { phone, message });
@@ -2381,6 +2398,7 @@ export default function Admin() {
                           onCreatePrescription={handleCreatePrescription}
                           onScheduleCall={handleScheduleCall}
                           onSendSMS={handleSendSMS}
+                          onOpenCRM={handleOpenCRM}
                         />
                       ))}
                   </div>
@@ -3481,6 +3499,18 @@ export default function Admin() {
             )}
           </DialogContent>
         </Dialog>
+
+        {selectedLeadForCRM && (
+          <LeadCrmPanel
+            lead={selectedLeadForCRM}
+            open={showCRMPanel}
+            onOpenChange={(open) => {
+              setShowCRMPanel(open);
+              if (!open) setSelectedLeadForCRM(null);
+            }}
+            currentUserName={adminUser?.name || "Admin"}
+          />
+        )}
       </div>
     </div>
   );

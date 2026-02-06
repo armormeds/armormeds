@@ -539,9 +539,13 @@ export async function registerRoutes(
     try {
       const id = Number(req.params.id);
       const input = api.leads.update.input.parse(req.body);
+      const oldLead = await storage.getLead(id);
       const updated = await storage.updateLead(id, input);
       if (!updated) {
         return res.status(404).json({ message: "Lead not found" });
+      }
+      if (input.status && oldLead && input.status !== oldLead.status) {
+        storage.createLeadActivity({ leadId: id, type: 'status_change', summary: `Status changed from "${oldLead.status}" to "${input.status}"` }).catch(() => {});
       }
       res.json(updated);
     } catch (err) {
@@ -798,6 +802,8 @@ export async function registerRoutes(
         );
       }
 
+      storage.createLeadActivity({ leadId, type: 'prescription_created', summary: `Prescription created: ${medication} ${dosage}`, meta: { prescriptionId: prescription.id, medication, dosage } as any }).catch(() => {});
+
       res.status(201).json(prescription);
     } catch (error) {
       console.error('Error creating prescription:', error);
@@ -906,6 +912,8 @@ export async function registerRoutes(
           console.error('SMS notification failed for appointment:', err)
         );
       }
+
+      storage.createLeadActivity({ leadId, type: 'appointment_scheduled', summary: `Appointment scheduled with ${doctorName}`, meta: { appointmentId: appointment.id, doctorName, scheduledAt } as any }).catch(() => {});
 
       res.status(201).json(appointment);
     } catch (error) {
@@ -1362,7 +1370,7 @@ export async function registerRoutes(
 
   app.post('/api/admin/send-sms', requirePermission("editLeads"), async (req, res) => {
     try {
-      const { phone, message } = req.body;
+      const { phone, message, leadId } = req.body;
 
       if (!phone || typeof phone !== 'string') {
         return res.status(400).json({ error: "Phone number is required" });
@@ -1384,6 +1392,10 @@ export async function registerRoutes(
         return res.status(400).json({ error: result.error || "Failed to send SMS" });
       }
 
+      if (leadId) {
+        storage.createLeadActivity({ leadId: Number(leadId), type: 'sms_sent', summary: `SMS sent to ${phone}`, meta: { phone, messagePreview: message.trim().substring(0, 100) } as any }).catch(() => {});
+      }
+
       res.json({ success: true, sid: result.sid });
     } catch (error: any) {
       console.error('Error sending SMS:', error);
@@ -1393,6 +1405,187 @@ export async function registerRoutes(
 
   app.get('/api/admin/sms-status', requirePermission("viewLeads"), async (_req, res) => {
     res.json({ configured: isTwilioConfigured() });
+  });
+
+  // CRM: Lead Activities (timeline)
+  app.get('/api/leads/:id/activities', requirePermission("viewLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const activities = await storage.getLeadActivities(leadId);
+      res.json(activities);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to fetch activities" });
+    }
+  });
+
+  // CRM: Lead Timeline (combined activities + appointments + prescriptions)
+  app.get('/api/leads/:id/timeline', requirePermission("viewLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const [activities, appts, rxs, notes] = await Promise.all([
+        storage.getLeadActivities(leadId),
+        storage.getAppointmentsByLead(leadId),
+        storage.getPrescriptionsByLead(leadId),
+        storage.getLeadNotes(leadId),
+      ]);
+
+      const timeline: any[] = [];
+      activities.forEach(a => timeline.push({ ...a, timelineType: 'activity' }));
+      appts.forEach(a => timeline.push({ id: `appt-${a.id}`, leadId, type: 'appointment', summary: `Appointment with ${a.doctorName} - ${a.status}`, meta: { appointmentId: a.id, doctorName: a.doctorName, status: a.status, scheduledAt: a.scheduledAt, videoLink: a.videoLink }, createdAt: a.createdAt, timelineType: 'appointment' }));
+      rxs.forEach(r => timeline.push({ id: `rx-${r.id}`, leadId, type: 'prescription', summary: `${r.medication} ${r.dosage} prescribed by ${r.providerName}`, meta: { prescriptionId: r.id, medication: r.medication, dosage: r.dosage, status: r.status }, createdAt: r.createdAt, timelineType: 'prescription' }));
+      notes.forEach(n => timeline.push({ id: `note-${n.id}`, leadId, type: 'note', summary: n.content, authorName: n.authorName, createdAt: n.createdAt, timelineType: 'note' }));
+
+      timeline.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      res.json(timeline);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to fetch timeline" });
+    }
+  });
+
+  // CRM: Lead Notes
+  app.get('/api/leads/:id/notes', requirePermission("viewLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const notes = await storage.getLeadNotes(leadId);
+      res.json(notes);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to fetch notes" });
+    }
+  });
+
+  app.post('/api/leads/:id/notes', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const { content, authorName } = req.body;
+      if (!content || !authorName) {
+        return res.status(400).json({ error: "Content and author name are required" });
+      }
+      const note = await storage.createLeadNote({ leadId, content, authorName });
+      await storage.createLeadActivity({ leadId, type: 'note_added', summary: `Note added by ${authorName}`, authorName });
+      res.json(note);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to create note" });
+    }
+  });
+
+  app.delete('/api/leads/:id/notes/:noteId', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const noteId = parseInt(req.params.noteId);
+      const deleted = await storage.deleteLeadNote(noteId);
+      if (!deleted) return res.status(404).json({ error: "Note not found" });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to delete note" });
+    }
+  });
+
+  // CRM: Lead Tags
+  app.get('/api/leads/:id/tags', requirePermission("viewLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const tags = await storage.getLeadTags(leadId);
+      res.json(tags);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to fetch tags" });
+    }
+  });
+
+  app.post('/api/leads/:id/tags', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const { tag } = req.body;
+      if (!tag || typeof tag !== 'string' || tag.trim().length < 1) {
+        return res.status(400).json({ error: "Tag is required" });
+      }
+      const existing = await storage.getLeadTags(leadId);
+      if (existing.some(t => t.tag.toLowerCase() === tag.trim().toLowerCase())) {
+        return res.status(409).json({ error: "Tag already exists" });
+      }
+      const created = await storage.createLeadTag({ leadId, tag: tag.trim() });
+      await storage.createLeadActivity({ leadId, type: 'tag_added', summary: `Tag "${tag.trim()}" added` });
+      res.json(created);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to create tag" });
+    }
+  });
+
+  app.delete('/api/leads/:id/tags/:tagId', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const tagId = parseInt(req.params.tagId);
+      const deleted = await storage.deleteLeadTag(tagId);
+      if (!deleted) return res.status(404).json({ error: "Tag not found" });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to delete tag" });
+    }
+  });
+
+  // CRM: Lead Tasks
+  app.get('/api/leads/:id/tasks', requirePermission("viewLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const tasks = await storage.getLeadTasks(leadId);
+      res.json(tasks);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to fetch tasks" });
+    }
+  });
+
+  app.post('/api/leads/:id/tasks', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const leadId = parseInt(req.params.id);
+      const { title, dueAt, assignedTo, createdBy } = req.body;
+      if (!title || !createdBy) {
+        return res.status(400).json({ error: "Title and createdBy are required" });
+      }
+      const task = await storage.createLeadTask({
+        leadId,
+        title: title.trim(),
+        dueAt: dueAt ? new Date(dueAt) : null,
+        assignedTo: assignedTo || null,
+        createdBy,
+        status: 'pending',
+      });
+      await storage.createLeadActivity({ leadId, type: 'task_created', summary: `Task "${title.trim()}" created by ${createdBy}`, authorName: createdBy });
+      res.json(task);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to create task" });
+    }
+  });
+
+  app.patch('/api/leads/:id/tasks/:taskId', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      const leadId = parseInt(req.params.id);
+      const { status, title, dueAt, assignedTo } = req.body;
+      const updates: any = {};
+      if (status) {
+        updates.status = status;
+        if (status === 'completed') updates.completedAt = new Date();
+      }
+      if (title) updates.title = title;
+      if (dueAt !== undefined) updates.dueAt = dueAt ? new Date(dueAt) : null;
+      if (assignedTo !== undefined) updates.assignedTo = assignedTo;
+      const updated = await storage.updateLeadTask(taskId, updates);
+      if (!updated) return res.status(404).json({ error: "Task not found" });
+      if (status === 'completed') {
+        await storage.createLeadActivity({ leadId, type: 'task_completed', summary: `Task "${updated.title}" completed` });
+      }
+      res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to update task" });
+    }
+  });
+
+  app.delete('/api/leads/:id/tasks/:taskId', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      const deleted = await storage.deleteLeadTask(taskId);
+      if (!deleted) return res.status(404).json({ error: "Task not found" });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error?.message || "Failed to delete task" });
+    }
   });
 
   // Admin Reports endpoint - financial summaries

@@ -48,6 +48,7 @@ export const leads = pgTable("leads", {
   consentGiven: text("consent_given"),
   // Document uploads (stored as JSON array of document paths)
   documentPaths: jsonb("document_paths").$type<string[]>(),
+  leadSource: text("lead_source"),
 });
 
 export const prescriptions = pgTable("prescriptions", {
@@ -130,6 +131,43 @@ export const adminUsers = pgTable("admin_users", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const leadActivities = pgTable("lead_activities", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").notNull(),
+  type: text("type").notNull(),
+  summary: text("summary").notNull(),
+  meta: jsonb("meta").$type<Record<string, any>>(),
+  authorName: text("author_name"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const leadNotes = pgTable("lead_notes", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").notNull(),
+  authorName: text("author_name").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const leadTags = pgTable("lead_tags", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").notNull(),
+  tag: text("tag").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const leadTasks = pgTable("lead_tasks", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").notNull(),
+  title: text("title").notNull(),
+  dueAt: timestamp("due_at"),
+  status: text("status").notNull().default("pending"),
+  assignedTo: text("assigned_to"),
+  createdBy: text("created_by").notNull(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, status: true, createdAt: true });
 export const insertPrescriptionSchema = createInsertSchema(prescriptions).omit({ id: true, createdAt: true });
@@ -137,6 +175,10 @@ export const insertAppointmentSchema = createInsertSchema(appointments).omit({ i
 export const insertCallNoteSchema = createInsertSchema(callNotes).omit({ id: true, createdAt: true });
 export const insertProviderAvailabilitySchema = createInsertSchema(providerAvailability).omit({ id: true, createdAt: true });
 export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({ id: true, createdAt: true, lastLoginAt: true });
+export const insertLeadActivitySchema = createInsertSchema(leadActivities).omit({ id: true, createdAt: true });
+export const insertLeadNoteSchema = createInsertSchema(leadNotes).omit({ id: true, createdAt: true });
+export const insertLeadTagSchema = createInsertSchema(leadTags).omit({ id: true, createdAt: true });
+export const insertLeadTaskSchema = createInsertSchema(leadTasks).omit({ id: true, createdAt: true, completedAt: true });
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -178,7 +220,16 @@ export type UpdateLeadRequest = {
   paymentStatus?: string;
   prescriptionStatus?: string;
   prescriptionNotifiedAt?: Date | null;
+  leadSource?: string | null;
 };
+export type LeadActivity = typeof leadActivities.$inferSelect;
+export type InsertLeadActivity = z.infer<typeof insertLeadActivitySchema>;
+export type LeadNote = typeof leadNotes.$inferSelect;
+export type InsertLeadNote = z.infer<typeof insertLeadNoteSchema>;
+export type LeadTag = typeof leadTags.$inferSelect;
+export type InsertLeadTag = z.infer<typeof insertLeadTagSchema>;
+export type LeadTask = typeof leadTasks.$inferSelect;
+export type InsertLeadTask = z.infer<typeof insertLeadTaskSchema>;
 export type UpdateProductRequest = {
   name?: string;
   description?: string;

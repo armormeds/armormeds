@@ -81,6 +81,7 @@ export const api = {
         status: z.string().optional(),
         name: z.string().optional(),
         email: z.string().optional(),
+        leadSource: z.string().nullable().optional(),
       }),
       responses: {
         200: z.custom<typeof leads.$inferSelect>(),
