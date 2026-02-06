@@ -19,34 +19,40 @@ function getClient(): Twilio.Twilio | null {
 
 function formatPhone(phone: string): string | null {
   if (!phone) return null;
-  const digits = phone.replace(/\D/g, '');
+  const trimmed = phone.trim();
+  if (trimmed.startsWith('+') && trimmed.length >= 11) return trimmed;
+  const digits = trimmed.replace(/\D/g, '');
   if (digits.length === 10) return `+1${digits}`;
   if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
-  if (digits.startsWith('+')) return phone;
+  console.warn(`Invalid phone format: "${phone}" (${digits.length} digits)`);
   return null;
 }
 
 export async function sendSMS(to: string, body: string): Promise<{ success: boolean; sid?: string; error?: string }> {
+  console.log(`[SMS] Attempting to send SMS to: "${to}"`);
   const twilioClient = getClient();
   if (!twilioClient) {
+    console.warn('[SMS] Twilio client not available - skipping');
     return { success: false, error: 'Twilio not configured' };
   }
 
   const formattedPhone = formatPhone(to);
   if (!formattedPhone) {
+    console.warn(`[SMS] Invalid phone format for: "${to}" - skipping`);
     return { success: false, error: 'Invalid phone number format' };
   }
 
   try {
+    console.log(`[SMS] Sending to ${formattedPhone} from ${fromNumber}`);
     const message = await twilioClient.messages.create({
       body,
       from: fromNumber,
       to: formattedPhone,
     });
-    console.log(`SMS sent to ${formattedPhone}: ${message.sid}`);
+    console.log(`[SMS] Successfully sent to ${formattedPhone}: ${message.sid}`);
     return { success: true, sid: message.sid };
   } catch (error: any) {
-    console.error('Failed to send SMS:', error?.message || error);
+    console.error(`[SMS] Failed to send to ${formattedPhone}:`, error?.message || error);
     return { success: false, error: error?.message || 'Unknown error' };
   }
 }
