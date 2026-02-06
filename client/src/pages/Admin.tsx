@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut, CreditCard, BarChart3, DollarSign, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability, AdminPermissions } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
@@ -1574,7 +1574,7 @@ export default function Admin() {
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [currentUser, setCurrentUser] = useState<AdminUserInfo | null>(null);
-  const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments" | "availability" | "users">("leads");
+  const [activeTab, setActiveTab] = useState<"leads" | "products" | "appointments" | "availability" | "users" | "payments" | "reports">("leads");
   const [showProductDialog, setShowProductDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showPrescriptionDialog, setShowPrescriptionDialog] = useState(false);
@@ -1688,6 +1688,16 @@ export default function Admin() {
   const { data: adminUsers, isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUserListItem[]>({
     queryKey: ["/api/admin/users"],
     enabled: isAuthenticated === true && currentUser?.permissions?.manageUsers === true,
+  });
+
+  const { data: payments, isLoading: paymentsLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/payments"],
+    enabled: isAuthenticated === true,
+  });
+
+  const { data: reports, isLoading: reportsLoading } = useQuery<any>({
+    queryKey: ["/api/admin/reports"],
+    enabled: isAuthenticated === true,
   });
 
   const createUserMutation = useMutation({
@@ -2214,6 +2224,25 @@ export default function Admin() {
               <Badge variant="secondary" className="ml-2">{availabilitySlots.length}</Badge>
             )}
           </Button>
+          <Button
+            variant={activeTab === "payments" ? "default" : "outline"}
+            onClick={() => setActiveTab("payments")}
+            data-testid="button-tab-payments"
+          >
+            <CreditCard className="h-4 w-4 mr-2" />
+            Payments
+            {payments && payments.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{payments.length}</Badge>
+            )}
+          </Button>
+          <Button
+            variant={activeTab === "reports" ? "default" : "outline"}
+            onClick={() => setActiveTab("reports")}
+            data-testid="button-tab-reports"
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Reports
+          </Button>
           {currentUser?.permissions?.manageUsers && (
             <Button
               variant={activeTab === "users" ? "default" : "outline"}
@@ -2618,6 +2647,235 @@ export default function Admin() {
                 )}
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {activeTab === "payments" && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Payments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {paymentsLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : payments && payments.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-2 font-medium">Date</th>
+                          <th className="text-left py-3 px-2 font-medium">Customer Email</th>
+                          <th className="text-left py-3 px-2 font-medium">Amount</th>
+                          <th className="text-left py-3 px-2 font-medium">Type</th>
+                          <th className="text-left py-3 px-2 font-medium">Product</th>
+                          <th className="text-left py-3 px-2 font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {payments
+                          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                          .map((payment: any) => (
+                          <tr key={payment.id} className="border-b last:border-0" data-testid={`row-payment-${payment.id}`}>
+                            <td className="py-3 px-2 text-muted-foreground">
+                              {format(new Date(payment.createdAt), "MMM d, yyyy")}
+                            </td>
+                            <td className="py-3 px-2" data-testid={`text-payment-email-${payment.id}`}>
+                              {payment.customerEmail || "N/A"}
+                            </td>
+                            <td className="py-3 px-2 font-medium" data-testid={`text-payment-amount-${payment.id}`}>
+                              {(payment.amount).toLocaleString("en-US", { style: "currency", currency: payment.currency || "usd" })}
+                            </td>
+                            <td className="py-3 px-2">
+                              <Badge variant="outline" className="no-default-hover-elevate no-default-active-elevate" data-testid={`badge-payment-type-${payment.id}`}>
+                                {payment.mode === "subscription" ? "Subscription" : "One-time"}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-2 text-muted-foreground" data-testid={`text-payment-product-${payment.id}`}>
+                              {payment.metadata?.productName || "N/A"}
+                            </td>
+                            <td className="py-3 px-2">
+                              <Badge
+                                variant="secondary"
+                                className={`no-default-hover-elevate no-default-active-elevate ${
+                                  payment.paymentStatus === "paid"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                    : payment.paymentStatus === "unpaid"
+                                    ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                                }`}
+                                data-testid={`badge-payment-status-${payment.id}`}
+                              >
+                                {payment.paymentStatus || "unknown"}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No payments yet</h3>
+                    <p className="text-muted-foreground">Payment data will appear here once customers make purchases.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "reports" && (
+          <div className="space-y-4">
+            {reportsLoading ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} className="h-32 w-full" />
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-32 w-full" />
+                  ))}
+                </div>
+                <Skeleton className="h-64 w-full" />
+              </div>
+            ) : reports ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card data-testid="card-total-revenue">
+                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold" data-testid="text-total-revenue">
+                        {(reports.overview?.totalRevenue || 0).toLocaleString("en-US", { style: "currency", currency: "usd" })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card data-testid="card-revenue-month">
+                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Revenue This Month</CardTitle>
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold" data-testid="text-revenue-month">
+                        {(reports.overview?.revenueThisMonth || 0).toLocaleString("en-US", { style: "currency", currency: "usd" })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card data-testid="card-successful-payments">
+                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Successful Payments</CardTitle>
+                      <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold" data-testid="text-successful-payments">
+                        {reports.overview?.totalPaid || 0}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card data-testid="card-failed-payments">
+                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Failed/Unpaid Payments</CardTitle>
+                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold" data-testid="text-failed-payments">
+                        {reports.overview?.totalUnpaid || 0}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card data-testid="card-active-subscriptions">
+                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold" data-testid="text-active-subscriptions">
+                        {reports.subscriptions?.active || 0}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card data-testid="card-total-leads">
+                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold" data-testid="text-total-leads">
+                        {reports.leads?.total || 0}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card data-testid="card-conversion-rate">
+                    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                      <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold" data-testid="text-conversion-rate">
+                        {reports.leads?.conversionRate || 0}%
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {reports.monthlyRevenue && Object.keys(reports.monthlyRevenue).length > 0 && (
+                  <Card data-testid="card-monthly-revenue">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Monthly Revenue Breakdown
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-3 px-2 font-medium">Month</th>
+                              <th className="text-left py-3 px-2 font-medium">Revenue</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(reports.monthlyRevenue)
+                              .sort(([a], [b]) => b.localeCompare(a))
+                              .map(([month, revenue]: [string, any]) => (
+                              <tr key={month} className="border-b last:border-0" data-testid={`row-monthly-revenue-${month}`}>
+                                <td className="py-3 px-2">{month}</td>
+                                <td className="py-3 px-2 font-medium" data-testid={`text-monthly-revenue-${month}`}>
+                                  {(revenue).toLocaleString("en-US", { style: "currency", currency: "usd" })}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No report data available</h3>
+                <p className="text-muted-foreground">Reports will be generated once payment data is available.</p>
+              </div>
+            )}
           </div>
         )}
 

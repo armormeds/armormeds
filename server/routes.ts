@@ -1143,5 +1143,157 @@ export async function registerRoutes(
     }
   });
 
+  // Admin Payments endpoint - fetch payment data from Stripe synced tables
+  app.get('/api/admin/payments', requirePermission("viewLeads"), async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          cs.id,
+          cs.customer_email,
+          cs.amount_total,
+          cs.currency,
+          cs.payment_status,
+          cs.status,
+          cs.mode,
+          cs.created,
+          cs.metadata
+        FROM stripe.checkout_sessions cs
+        ORDER BY cs.created DESC
+        LIMIT 200
+      `);
+      
+      const payments = result.rows.map((row: any) => ({
+        id: row.id,
+        customerEmail: row.customer_email,
+        amount: row.amount_total ? Number(row.amount_total) / 100 : 0,
+        currency: row.currency || 'usd',
+        paymentStatus: row.payment_status,
+        sessionStatus: row.status,
+        mode: row.mode,
+        createdAt: row.created ? new Date(Number(row.created) * 1000).toISOString() : null,
+        metadata: row.metadata,
+      }));
+
+      res.json(payments);
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+      res.json([]);
+    }
+  });
+
+  // Admin Reports endpoint - financial summaries
+  app.get('/api/admin/reports', requirePermission("viewLeads"), async (req, res) => {
+    try {
+      const [paymentsResult, subscriptionsResult, leadsResult] = await Promise.all([
+        db.execute(sql`
+          SELECT 
+            cs.payment_status,
+            cs.mode,
+            cs.amount_total,
+            cs.currency,
+            cs.created
+          FROM stripe.checkout_sessions cs
+          WHERE cs.payment_status IS NOT NULL
+        `),
+        db.execute(sql`
+          SELECT 
+            s.id,
+            s.status,
+            s.created,
+            s.current_period_start,
+            s.current_period_end,
+            s.items
+          FROM stripe.subscriptions s
+        `),
+        db.execute(sql`
+          SELECT 
+            l.status,
+            l.payment_status,
+            l.created_at
+          FROM leads l
+        `)
+      ]);
+
+      const payments = paymentsResult.rows as any[];
+      const subscriptions = subscriptionsResult.rows as any[];
+      const leads = leadsResult.rows as any[];
+
+      const totalRevenue = payments
+        .filter((p: any) => p.payment_status === 'paid')
+        .reduce((sum: number, p: any) => sum + (Number(p.amount_total) || 0), 0) / 100;
+
+      const totalPaid = payments.filter((p: any) => p.payment_status === 'paid').length;
+      const totalUnpaid = payments.filter((p: any) => p.payment_status === 'unpaid').length;
+      const totalPending = payments.filter((p: any) => p.payment_status === 'no_payment_required' || !p.payment_status).length;
+
+      const subscriptionPayments = payments.filter((p: any) => p.mode === 'subscription').length;
+      const oneTimePayments = payments.filter((p: any) => p.mode === 'payment').length;
+
+      const activeSubscriptions = subscriptions.filter((s: any) => s.status === 'active').length;
+      const canceledSubscriptions = subscriptions.filter((s: any) => s.status === 'canceled').length;
+      const totalSubscriptions = subscriptions.length;
+
+      const now = new Date();
+      const thirtyDaysAgo = Math.floor((now.getTime() - 30 * 24 * 60 * 60 * 1000) / 1000);
+      const sevenDaysAgo = Math.floor((now.getTime() - 7 * 24 * 60 * 60 * 1000) / 1000);
+
+      const revenueThisMonth = payments
+        .filter((p: any) => p.payment_status === 'paid' && Number(p.created) >= thirtyDaysAgo)
+        .reduce((sum: number, p: any) => sum + (Number(p.amount_total) || 0), 0) / 100;
+
+      const revenueThisWeek = payments
+        .filter((p: any) => p.payment_status === 'paid' && Number(p.created) >= sevenDaysAgo)
+        .reduce((sum: number, p: any) => sum + (Number(p.amount_total) || 0), 0) / 100;
+
+      const monthlyRevenue: Record<string, number> = {};
+      payments
+        .filter((p: any) => p.payment_status === 'paid')
+        .forEach((p: any) => {
+          const date = new Date(Number(p.created) * 1000);
+          const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          monthlyRevenue[key] = (monthlyRevenue[key] || 0) + (Number(p.amount_total) || 0) / 100;
+        });
+
+      const totalLeads = leads.length;
+      const convertedLeads = leads.filter((l: any) => l.payment_status === 'completed' || l.status === 'completed').length;
+      const conversionRate = totalLeads > 0 ? ((convertedLeads / totalLeads) * 100).toFixed(1) : '0';
+
+      res.json({
+        overview: {
+          totalRevenue,
+          revenueThisMonth,
+          revenueThisWeek,
+          totalPaid,
+          totalUnpaid,
+          totalPending,
+        },
+        paymentTypes: {
+          subscriptionPayments,
+          oneTimePayments,
+        },
+        subscriptions: {
+          total: totalSubscriptions,
+          active: activeSubscriptions,
+          canceled: canceledSubscriptions,
+        },
+        leads: {
+          total: totalLeads,
+          converted: convertedLeads,
+          conversionRate: Number(conversionRate),
+        },
+        monthlyRevenue,
+      });
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      res.json({
+        overview: { totalRevenue: 0, revenueThisMonth: 0, revenueThisWeek: 0, totalPaid: 0, totalUnpaid: 0, totalPending: 0 },
+        paymentTypes: { subscriptionPayments: 0, oneTimePayments: 0 },
+        subscriptions: { total: 0, active: 0, canceled: 0 },
+        leads: { total: 0, converted: 0, conversionRate: 0 },
+        monthlyRevenue: {},
+      });
+    }
+  });
+
   return httpServer;
 }
