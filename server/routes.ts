@@ -1159,15 +1159,39 @@ export async function registerRoutes(
           cs.metadata,
           cs.customer_details,
           cs.payment_intent,
+          ch.id AS charge_id,
+          ch.payment_intent AS charge_payment_intent,
           ch.payment_method_details,
           ch.outcome,
           ch.status AS charge_status,
           ch.receipt_email,
-          ch.description AS charge_description
+          ch.description AS charge_description,
+          ch.refunded AS charge_refunded,
+          ch.amount_refunded AS charge_amount_refunded,
+          ch.amount AS charge_amount
         FROM stripe.checkout_sessions cs
-        LEFT JOIN stripe.charges ch ON ch.payment_intent = cs.payment_intent
+        LEFT JOIN stripe.charges ch ON ch.customer = cs.customer AND cs.customer IS NOT NULL AND cs.customer != ''
         ORDER BY cs.id, ch.created DESC
       `);
+
+      const refundsResult = await db.execute(sql`
+        SELECT r.payment_intent, r.id, r.amount, r.status, r.reason, r.created
+        FROM stripe.refunds r
+        ORDER BY r.created DESC
+      `);
+      const refundsByPi: Record<string, any[]> = {};
+      for (const r of refundsResult.rows as any[]) {
+        if (r.payment_intent) {
+          if (!refundsByPi[r.payment_intent]) refundsByPi[r.payment_intent] = [];
+          refundsByPi[r.payment_intent].push({
+            id: r.id,
+            amount: r.amount ? Number(r.amount) / 100 : 0,
+            status: r.status,
+            reason: r.reason,
+            createdAt: r.created ? new Date(Number(r.created) * 1000).toISOString() : null,
+          });
+        }
+      }
       
       const payments = result.rows.map((row: any) => {
         const customerDetails = row.customer_details || {};
@@ -1175,6 +1199,7 @@ export async function registerRoutes(
         const outcome = row.outcome || {};
         const card = paymentMethodDetails?.card || {};
         const address = customerDetails?.address || {};
+        const pi = row.charge_payment_intent || row.payment_intent || '';
 
         return {
           id: row.id,
@@ -1211,10 +1236,15 @@ export async function registerRoutes(
             networkStatus: outcome?.network_status || null,
             sellerMessage: outcome?.seller_message || null,
           },
+          chargeId: row.charge_id || null,
           chargeStatus: row.charge_status || null,
+          chargeAmount: row.charge_amount ? Number(row.charge_amount) / 100 : 0,
           receiptEmail: row.receipt_email || null,
           chargeDescription: row.charge_description || null,
-          paymentIntentId: row.payment_intent || null,
+          paymentIntentId: pi || null,
+          isRefunded: row.charge_refunded === true,
+          amountRefunded: row.charge_amount_refunded ? Number(row.charge_amount_refunded) / 100 : 0,
+          refunds: refundsByPi[pi] || [],
         };
       });
 
@@ -1222,6 +1252,97 @@ export async function registerRoutes(
     } catch (error) {
       console.error('Error fetching payments:', error);
       res.json([]);
+    }
+  });
+
+  app.post('/api/admin/refund', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const { paymentIntentId, amount, reason } = req.body;
+
+      if (!paymentIntentId || typeof paymentIntentId !== 'string' || !paymentIntentId.startsWith('pi_')) {
+        return res.status(400).json({ error: "Valid payment intent ID is required" });
+      }
+
+      const validReasons = ['duplicate', 'fraudulent', 'requested_by_customer'];
+      if (reason && !validReasons.includes(reason)) {
+        return res.status(400).json({ error: "Invalid refund reason" });
+      }
+
+      const chargeResult = await db.execute(sql`
+        SELECT ch.id, ch.amount, ch.amount_refunded, ch.status, ch.refunded
+        FROM stripe.charges ch
+        WHERE ch.payment_intent = ${paymentIntentId}
+        ORDER BY ch.created DESC
+        LIMIT 1
+      `);
+
+      if (!chargeResult.rows.length) {
+        return res.status(404).json({ error: "No charge found for this payment" });
+      }
+
+      const charge = chargeResult.rows[0] as any;
+      if (charge.status !== 'succeeded') {
+        return res.status(400).json({ error: "Can only refund succeeded charges" });
+      }
+
+      const chargeAmountCents = Number(charge.amount) || 0;
+      const alreadyRefundedCents = Number(charge.amount_refunded) || 0;
+      const refundableCents = chargeAmountCents - alreadyRefundedCents;
+
+      if (refundableCents <= 0) {
+        return res.status(400).json({ error: "This charge has already been fully refunded" });
+      }
+
+      const stripe = await getUncachableStripeClient();
+
+      const refundParams: any = {
+        payment_intent: paymentIntentId,
+      };
+
+      if (amount && Number(amount) > 0) {
+        const requestedCents = Math.round(Number(amount) * 100);
+        if (requestedCents > refundableCents) {
+          return res.status(400).json({ 
+            error: `Refund amount exceeds refundable balance. Maximum: $${(refundableCents / 100).toFixed(2)}`
+          });
+        }
+        if (requestedCents < 50) {
+          return res.status(400).json({ error: "Minimum refund amount is $0.50" });
+        }
+        refundParams.amount = requestedCents;
+      }
+
+      if (reason) {
+        refundParams.reason = reason;
+      }
+
+      const refund = await stripe.refunds.create(refundParams);
+
+      try {
+        const sync = await (await import('./stripeClient')).getStripeSync();
+        await sync.sync();
+      } catch (syncError) {
+        console.error('Stripe sync after refund failed:', syncError);
+      }
+
+      res.json({
+        success: true,
+        refund: {
+          id: refund.id,
+          amount: refund.amount / 100,
+          status: refund.status,
+          currency: refund.currency,
+        },
+      });
+    } catch (error: any) {
+      console.error('Error processing refund:', error);
+      const message = error?.type === 'StripeInvalidRequestError' 
+        ? error.message 
+        : error?.message || "Failed to process refund";
+      res.status(400).json({ 
+        error: message,
+        code: error?.code || "unknown"
+      });
     }
   });
 

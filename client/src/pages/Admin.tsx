@@ -1700,6 +1700,59 @@ export default function Admin() {
     enabled: isAuthenticated === true,
   });
 
+  const [showRefundDialog, setShowRefundDialog] = useState(false);
+  const [selectedPaymentForRefund, setSelectedPaymentForRefund] = useState<any>(null);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundReason, setRefundReason] = useState("");
+  const [refundType, setRefundType] = useState<"full" | "partial">("full");
+
+  const refundMutation = useMutation({
+    mutationFn: async (data: { paymentIntentId: string; amount?: number; reason?: string }) => {
+      return apiRequest("POST", "/api/admin/refund", data);
+    },
+    onSuccess: async (response) => {
+      const result = await response.json();
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/payments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/reports"] });
+      setShowRefundDialog(false);
+      setSelectedPaymentForRefund(null);
+      setRefundAmount("");
+      setRefundReason("");
+      setRefundType("full");
+      toast({
+        title: "Refund processed",
+        description: `Refund of ${result.refund.amount.toLocaleString("en-US", { style: "currency", currency: result.refund.currency || "usd" })} has been initiated. Status: ${result.refund.status}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Refund failed",
+        description: error?.message || "Failed to process refund. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRefundClick = (payment: any) => {
+    setSelectedPaymentForRefund(payment);
+    setRefundAmount(String(payment.amount - payment.amountRefunded));
+    setRefundReason("");
+    setRefundType("full");
+    setShowRefundDialog(true);
+  };
+
+  const handleRefundSubmit = () => {
+    if (!selectedPaymentForRefund?.paymentIntentId) return;
+    const data: any = { paymentIntentId: selectedPaymentForRefund.paymentIntentId };
+    if (refundType === "partial" && refundAmount) {
+      data.amount = Number(refundAmount);
+    }
+    if (refundReason) {
+      data.reason = refundReason;
+    }
+    refundMutation.mutate(data);
+  };
+
   const createUserMutation = useMutation({
     mutationFn: async (userData: { email: string; password: string; name: string; role: string }) => {
       return apiRequest("POST", "/api/admin/users", userData);
@@ -2709,6 +2762,15 @@ export default function Admin() {
                                 >
                                   {payment.paymentStatus || "unknown"}
                                 </Badge>
+                                {payment.isRefunded && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="no-default-hover-elevate no-default-active-elevate bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                    data-testid={`badge-refunded-${payment.id}`}
+                                  >
+                                    {payment.amount <= payment.amountRefunded ? "Fully Refunded" : "Partially Refunded"}
+                                  </Badge>
+                                )}
                                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
                               </div>
                             </div>
@@ -2820,6 +2882,73 @@ export default function Admin() {
                                   </div>
                                 </div>
                               </div>
+
+                              {payment.refunds && payment.refunds.length > 0 && (
+                                <div className="mt-4 pt-4 border-t">
+                                  <h4 className="text-sm font-semibold flex items-center gap-1.5 mb-2">
+                                    <RefreshCw className="h-3.5 w-3.5" />
+                                    Refund History
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {payment.refunds.map((refund: any) => (
+                                      <div key={refund.id} className="flex items-center justify-between text-sm p-2 bg-muted/30 rounded-md">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span className="font-medium">{refund.amount.toLocaleString("en-US", { style: "currency", currency: payment.currency || "usd" })}</span>
+                                          <Badge
+                                            variant="secondary"
+                                            className={`no-default-hover-elevate no-default-active-elevate text-xs ${
+                                              refund.status === "succeeded"
+                                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                : refund.status === "pending"
+                                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                            }`}
+                                          >
+                                            {refund.status}
+                                          </Badge>
+                                          {refund.reason && (
+                                            <span className="text-muted-foreground capitalize">{refund.reason.replace(/_/g, ' ')}</span>
+                                          )}
+                                        </div>
+                                        <span className="text-muted-foreground text-xs">
+                                          {refund.createdAt ? format(new Date(refund.createdAt), "MMM d, yyyy h:mm a") : ""}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {payment.paymentIntentId && payment.paymentStatus === "paid" && payment.amount > payment.amountRefunded && (
+                                <div className="mt-4 pt-4 border-t flex items-center justify-between gap-2">
+                                  <div className="text-sm">
+                                    {payment.amountRefunded > 0 ? (
+                                      <span className="text-muted-foreground">
+                                        Refunded: {payment.amountRefunded.toLocaleString("en-US", { style: "currency", currency: payment.currency || "usd" })} of {payment.amount.toLocaleString("en-US", { style: "currency", currency: payment.currency || "usd" })}
+                                      </span>
+                                    ) : (
+                                      <span className="text-muted-foreground">No refunds issued</span>
+                                    )}
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => { e.stopPropagation(); handleRefundClick(payment); }}
+                                    data-testid={`button-refund-${payment.id}`}
+                                  >
+                                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                                    {payment.amountRefunded > 0 ? "Refund More" : "Issue Refund"}
+                                  </Button>
+                                </div>
+                              )}
+
+                              {payment.isRefunded && payment.amount <= payment.amountRefunded && (
+                                <div className="mt-4 pt-4 border-t">
+                                  <Badge variant="secondary" className="no-default-hover-elevate no-default-active-elevate bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                    Fully Refunded
+                                  </Badge>
+                                </div>
+                              )}
                             </div>
                           </CollapsibleContent>
                         </Card>
@@ -3100,6 +3229,119 @@ export default function Admin() {
                 isSubmitting={createPrescriptionMutation.isPending}
               />
             ) : null}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showRefundDialog} onOpenChange={(open) => {
+          if (!open) {
+            setShowRefundDialog(false);
+            setSelectedPaymentForRefund(null);
+            setRefundAmount("");
+            setRefundReason("");
+            setRefundType("full");
+          }
+        }}>
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <RefreshCw className="h-5 w-5" />
+                Issue Refund
+              </DialogTitle>
+            </DialogHeader>
+            {selectedPaymentForRefund && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted/30 rounded-md space-y-1">
+                  <p className="text-sm"><span className="text-muted-foreground">Customer: </span>{selectedPaymentForRefund.customerName || selectedPaymentForRefund.customerEmail}</p>
+                  <p className="text-sm"><span className="text-muted-foreground">Original Amount: </span>{selectedPaymentForRefund.amount.toLocaleString("en-US", { style: "currency", currency: selectedPaymentForRefund.currency || "usd" })}</p>
+                  {selectedPaymentForRefund.amountRefunded > 0 && (
+                    <p className="text-sm"><span className="text-muted-foreground">Already Refunded: </span>{selectedPaymentForRefund.amountRefunded.toLocaleString("en-US", { style: "currency", currency: selectedPaymentForRefund.currency || "usd" })}</p>
+                  )}
+                  <p className="text-sm"><span className="text-muted-foreground">Refundable: </span>{(selectedPaymentForRefund.amount - selectedPaymentForRefund.amountRefunded).toLocaleString("en-US", { style: "currency", currency: selectedPaymentForRefund.currency || "usd" })}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Refund Type</Label>
+                  <Select value={refundType} onValueChange={(val: "full" | "partial") => {
+                    setRefundType(val);
+                    if (val === "full") {
+                      setRefundAmount(String(selectedPaymentForRefund.amount - selectedPaymentForRefund.amountRefunded));
+                    }
+                  }}>
+                    <SelectTrigger data-testid="select-refund-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="full">Full Refund</SelectItem>
+                      <SelectItem value="partial">Partial Refund</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {refundType === "partial" && (
+                  <div className="space-y-2">
+                    <Label>Refund Amount ($)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0.50"
+                      max={selectedPaymentForRefund.amount - selectedPaymentForRefund.amountRefunded}
+                      value={refundAmount}
+                      onChange={(e) => setRefundAmount(e.target.value)}
+                      data-testid="input-refund-amount"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label>Reason (optional)</Label>
+                  <Select value={refundReason} onValueChange={setRefundReason}>
+                    <SelectTrigger data-testid="select-refund-reason">
+                      <SelectValue placeholder="Select a reason..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="duplicate">Duplicate charge</SelectItem>
+                      <SelectItem value="fraudulent">Fraudulent</SelectItem>
+                      <SelectItem value="requested_by_customer">Customer request</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md text-sm text-yellow-800 dark:text-yellow-200 flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span>Refunds are processed through Stripe and cannot be undone. The customer will receive the refund within 5-10 business days.</span>
+                </div>
+
+                <DialogFooter className="gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowRefundDialog(false);
+                      setSelectedPaymentForRefund(null);
+                    }}
+                    data-testid="button-cancel-refund"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleRefundSubmit}
+                    disabled={refundMutation.isPending || (refundType === "partial" && (!refundAmount || Number(refundAmount) <= 0))}
+                    data-testid="button-confirm-refund"
+                  >
+                    {refundMutation.isPending ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Confirm Refund
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
