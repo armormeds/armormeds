@@ -1147,32 +1147,76 @@ export async function registerRoutes(
   app.get('/api/admin/payments', requirePermission("viewLeads"), async (req, res) => {
     try {
       const result = await db.execute(sql`
-        SELECT 
+        SELECT DISTINCT ON (cs.id)
           cs.id,
           cs.customer_email,
           cs.amount_total,
           cs.currency,
           cs.payment_status,
-          cs.status,
+          cs.status AS session_status,
           cs.mode,
           cs.created,
-          cs.metadata
+          cs.metadata,
+          cs.customer_details,
+          cs.payment_intent,
+          ch.payment_method_details,
+          ch.outcome,
+          ch.status AS charge_status,
+          ch.receipt_email,
+          ch.description AS charge_description
         FROM stripe.checkout_sessions cs
-        ORDER BY cs.created DESC
-        LIMIT 200
+        LEFT JOIN stripe.charges ch ON ch.payment_intent = cs.payment_intent
+        ORDER BY cs.id, ch.created DESC
       `);
       
-      const payments = result.rows.map((row: any) => ({
-        id: row.id,
-        customerEmail: row.customer_email,
-        amount: row.amount_total ? Number(row.amount_total) / 100 : 0,
-        currency: row.currency || 'usd',
-        paymentStatus: row.payment_status,
-        sessionStatus: row.status,
-        mode: row.mode,
-        createdAt: row.created ? new Date(Number(row.created) * 1000).toISOString() : null,
-        metadata: row.metadata,
-      }));
+      const payments = result.rows.map((row: any) => {
+        const customerDetails = row.customer_details || {};
+        const paymentMethodDetails = row.payment_method_details || {};
+        const outcome = row.outcome || {};
+        const card = paymentMethodDetails?.card || {};
+        const address = customerDetails?.address || {};
+
+        return {
+          id: row.id,
+          customerEmail: row.customer_email,
+          amount: row.amount_total ? Number(row.amount_total) / 100 : 0,
+          currency: row.currency || 'usd',
+          paymentStatus: row.payment_status,
+          sessionStatus: row.session_status,
+          mode: row.mode,
+          createdAt: row.created ? new Date(Number(row.created) * 1000).toISOString() : null,
+          metadata: row.metadata,
+          customerName: customerDetails?.name || null,
+          billingAddress: address ? {
+            line1: address.line1 || null,
+            line2: address.line2 || null,
+            city: address.city || null,
+            state: address.state || null,
+            postalCode: address.postal_code || null,
+            country: address.country || null,
+          } : null,
+          paymentMethod: {
+            type: paymentMethodDetails?.type || null,
+            cardBrand: card?.brand || null,
+            cardLast4: card?.last4 || null,
+            cardExpMonth: card?.exp_month || null,
+            cardExpYear: card?.exp_year || null,
+            cardCountry: card?.country || null,
+            cardFunding: card?.funding || null,
+            wallet: card?.wallet?.type || null,
+          },
+          riskAssessment: {
+            riskLevel: outcome?.risk_level || null,
+            riskScore: outcome?.risk_score ?? null,
+            networkStatus: outcome?.network_status || null,
+            sellerMessage: outcome?.seller_message || null,
+          },
+          chargeStatus: row.charge_status || null,
+          receiptEmail: row.receipt_email || null,
+          chargeDescription: row.charge_description || null,
+          paymentIntentId: row.payment_intent || null,
+        };
+      });
 
       res.json(payments);
     } catch (error) {

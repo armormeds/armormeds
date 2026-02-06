@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut, CreditCard, BarChart3, DollarSign, TrendingUp } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut, CreditCard, BarChart3, DollarSign, TrendingUp, Shield, Wallet, Globe } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability, AdminPermissions } from "@shared/schema";
 import { buildUrl } from "@shared/routes";
@@ -2656,7 +2656,7 @@ export default function Admin() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5" />
-                  Payments
+                  Payment History
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -2667,59 +2667,164 @@ export default function Admin() {
                     ))}
                   </div>
                 ) : payments && payments.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-2 font-medium">Date</th>
-                          <th className="text-left py-3 px-2 font-medium">Customer Email</th>
-                          <th className="text-left py-3 px-2 font-medium">Amount</th>
-                          <th className="text-left py-3 px-2 font-medium">Type</th>
-                          <th className="text-left py-3 px-2 font-medium">Product</th>
-                          <th className="text-left py-3 px-2 font-medium">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {payments
-                          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                          .map((payment: any) => (
-                          <tr key={payment.id} className="border-b last:border-0" data-testid={`row-payment-${payment.id}`}>
-                            <td className="py-3 px-2 text-muted-foreground">
-                              {format(new Date(payment.createdAt), "MMM d, yyyy")}
-                            </td>
-                            <td className="py-3 px-2" data-testid={`text-payment-email-${payment.id}`}>
-                              {payment.customerEmail || "N/A"}
-                            </td>
-                            <td className="py-3 px-2 font-medium" data-testid={`text-payment-amount-${payment.id}`}>
-                              {(payment.amount).toLocaleString("en-US", { style: "currency", currency: payment.currency || "usd" })}
-                            </td>
-                            <td className="py-3 px-2">
-                              <Badge variant="outline" className="no-default-hover-elevate no-default-active-elevate" data-testid={`badge-payment-type-${payment.id}`}>
-                                {payment.mode === "subscription" ? "Subscription" : "One-time"}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-2 text-muted-foreground" data-testid={`text-payment-product-${payment.id}`}>
-                              {payment.metadata?.productName || "N/A"}
-                            </td>
-                            <td className="py-3 px-2">
-                              <Badge
-                                variant="secondary"
-                                className={`no-default-hover-elevate no-default-active-elevate ${
-                                  payment.paymentStatus === "paid"
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                    : payment.paymentStatus === "unpaid"
-                                    ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-                                }`}
-                                data-testid={`badge-payment-status-${payment.id}`}
-                              >
-                                {payment.paymentStatus || "unknown"}
-                              </Badge>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="space-y-3">
+                    {payments
+                      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .map((payment: any) => (
+                      <Collapsible key={payment.id}>
+                        <Card className="overflow-visible" data-testid={`row-payment-${payment.id}`}>
+                          <CollapsibleTrigger className="w-full text-left" data-testid={`button-expand-payment-${payment.id}`}>
+                            <div className="p-4 flex flex-wrap items-center gap-3 justify-between">
+                              <div className="flex items-center gap-3 flex-wrap min-w-0">
+                                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                                  {payment.createdAt ? format(new Date(payment.createdAt), "MMM d, yyyy h:mm a") : "N/A"}
+                                </span>
+                                <span className="text-sm font-medium truncate" data-testid={`text-payment-email-${payment.id}`}>
+                                  {payment.customerName || payment.customerEmail || "N/A"}
+                                </span>
+                                <span className="text-sm font-bold" data-testid={`text-payment-amount-${payment.id}`}>
+                                  {(payment.amount).toLocaleString("en-US", { style: "currency", currency: payment.currency || "usd" })}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {payment.paymentMethod?.cardBrand && (
+                                  <Badge variant="outline" className="no-default-hover-elevate no-default-active-elevate capitalize">
+                                    <CreditCard className="h-3 w-3 mr-1" />
+                                    {payment.paymentMethod.cardBrand} {payment.paymentMethod.cardLast4 ? `****${payment.paymentMethod.cardLast4}` : ""}
+                                  </Badge>
+                                )}
+                                <Badge variant="outline" className="no-default-hover-elevate no-default-active-elevate" data-testid={`badge-payment-type-${payment.id}`}>
+                                  {payment.mode === "subscription" ? "Subscription" : "One-time"}
+                                </Badge>
+                                <Badge
+                                  variant="secondary"
+                                  className={`no-default-hover-elevate no-default-active-elevate ${
+                                    payment.paymentStatus === "paid"
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                      : payment.paymentStatus === "unpaid"
+                                      ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                      : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                                  }`}
+                                  data-testid={`badge-payment-status-${payment.id}`}
+                                >
+                                  {payment.paymentStatus || "unknown"}
+                                </Badge>
+                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="px-4 pb-4 border-t">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                                <div className="space-y-3">
+                                  <h4 className="text-sm font-semibold flex items-center gap-1.5">
+                                    <CreditCard className="h-3.5 w-3.5" />
+                                    Payment Method
+                                  </h4>
+                                  <div className="text-sm space-y-1">
+                                    {payment.paymentMethod?.cardBrand ? (
+                                      <>
+                                        <p className="capitalize"><span className="text-muted-foreground">Card: </span>{payment.paymentMethod.cardBrand} ending in {payment.paymentMethod.cardLast4}</p>
+                                        {payment.paymentMethod.cardExpMonth && (
+                                          <p><span className="text-muted-foreground">Expires: </span>{payment.paymentMethod.cardExpMonth}/{payment.paymentMethod.cardExpYear}</p>
+                                        )}
+                                        {payment.paymentMethod.cardFunding && (
+                                          <p className="capitalize"><span className="text-muted-foreground">Funding: </span>{payment.paymentMethod.cardFunding}</p>
+                                        )}
+                                        {payment.paymentMethod.cardCountry && (
+                                          <p><span className="text-muted-foreground">Card Country: </span>{payment.paymentMethod.cardCountry}</p>
+                                        )}
+                                        {payment.paymentMethod.wallet && (
+                                          <p className="capitalize"><span className="text-muted-foreground">Wallet: </span>{payment.paymentMethod.wallet.replace('_', ' ')}</p>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <p className="text-muted-foreground">No card details available</p>
+                                    )}
+                                    {payment.paymentIntentId && (
+                                      <p className="text-xs text-muted-foreground break-all mt-2"><span className="font-medium">Transaction ID: </span>{payment.paymentIntentId}</p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                  <h4 className="text-sm font-semibold flex items-center gap-1.5">
+                                    <MapPin className="h-3.5 w-3.5" />
+                                    Customer & Billing
+                                  </h4>
+                                  <div className="text-sm space-y-1">
+                                    {payment.customerName && (
+                                      <p><span className="text-muted-foreground">Name: </span>{payment.customerName}</p>
+                                    )}
+                                    <p><span className="text-muted-foreground">Email: </span>{payment.customerEmail || "N/A"}</p>
+                                    {payment.billingAddress && (payment.billingAddress.line1 || payment.billingAddress.city) ? (
+                                      <>
+                                        {payment.billingAddress.line1 && (
+                                          <p><span className="text-muted-foreground">Address: </span>{payment.billingAddress.line1}{payment.billingAddress.line2 ? `, ${payment.billingAddress.line2}` : ""}</p>
+                                        )}
+                                        <p>
+                                          <span className="text-muted-foreground">Location: </span>
+                                          {[payment.billingAddress.city, payment.billingAddress.state, payment.billingAddress.postalCode].filter(Boolean).join(", ")}
+                                          {payment.billingAddress.country ? ` (${payment.billingAddress.country})` : ""}
+                                        </p>
+                                      </>
+                                    ) : (
+                                      <p className="text-muted-foreground">No billing address on file</p>
+                                    )}
+                                    {payment.metadata?.productName && (
+                                      <p className="mt-1"><span className="text-muted-foreground">Product: </span>{payment.metadata.productName}</p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                  <h4 className="text-sm font-semibold flex items-center gap-1.5">
+                                    <Shield className="h-3.5 w-3.5" />
+                                    Verification & Risk
+                                  </h4>
+                                  <div className="text-sm space-y-1">
+                                    {payment.riskAssessment?.riskLevel ? (
+                                      <>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-muted-foreground">Risk Level: </span>
+                                          <Badge
+                                            variant="secondary"
+                                            className={`no-default-hover-elevate no-default-active-elevate text-xs ${
+                                              payment.riskAssessment.riskLevel === "normal"
+                                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                : payment.riskAssessment.riskLevel === "elevated"
+                                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                            }`}
+                                          >
+                                            {payment.riskAssessment.riskLevel}
+                                          </Badge>
+                                        </div>
+                                        {payment.riskAssessment.riskScore !== null && (
+                                          <p><span className="text-muted-foreground">Risk Score: </span>{payment.riskAssessment.riskScore}/100</p>
+                                        )}
+                                        {payment.riskAssessment.networkStatus && (
+                                          <p className="capitalize"><span className="text-muted-foreground">Network: </span>{payment.riskAssessment.networkStatus.replace(/_/g, ' ')}</p>
+                                        )}
+                                        {payment.riskAssessment.sellerMessage && (
+                                          <p><span className="text-muted-foreground">Result: </span>{payment.riskAssessment.sellerMessage}</p>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <p className="text-muted-foreground">No risk data available</p>
+                                    )}
+                                    {payment.chargeStatus && (
+                                      <p className="mt-1"><span className="text-muted-foreground">Charge: </span>{payment.chargeStatus}</p>
+                                    )}
+                                    <p className="text-xs text-muted-foreground break-all mt-2"><span className="font-medium">Session ID: </span>{payment.id}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Card>
+                      </Collapsible>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-12">
