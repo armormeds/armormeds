@@ -11,6 +11,7 @@ import { adminUsers } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import type { AdminUser, AdminPermissions } from "@shared/schema";
+import { sendPrescriptionReadySMS, sendAppointmentScheduledSMS, sendCustomSMS, isTwilioConfigured } from "./twilio";
 
 // Server-side token storage with user info and expiration (in-memory for MVP)
 interface AdminSession {
@@ -791,10 +792,11 @@ export async function registerRoutes(
         prescriptionNotifiedAt: new Date()
       });
 
-      // TODO: Send email notification to patient when email service is configured
-      // The lead's email can be fetched from storage.getLead(leadId)
-      // Email should inform patient that prescription is ready, no call required,
-      // but they can optionally schedule a consultation if desired
+      if (patientPhone) {
+        sendPrescriptionReadySMS(patientPhone, patientName, medication).catch(err => 
+          console.error('SMS notification failed for prescription:', err)
+        );
+      }
 
       res.status(201).json(prescription);
     } catch (error) {
@@ -898,6 +900,12 @@ export async function registerRoutes(
 
       // Update lead status to indicate follow-up needed
       await storage.updateLead(leadId, { status: 'follow-up' });
+
+      if (patientPhone) {
+        sendAppointmentScheduledSMS(patientPhone, patientName, doctorName, new Date(scheduledAt), videoLink).catch(err =>
+          console.error('SMS notification failed for appointment:', err)
+        );
+      }
 
       res.status(201).json(appointment);
     } catch (error) {
@@ -1136,6 +1144,12 @@ export async function registerRoutes(
       // Update lead status
       await storage.updateLead(lead.id, { status: 'follow-up' });
 
+      if (patientPhone) {
+        sendAppointmentScheduledSMS(patientPhone.trim(), patientName.trim(), slot.doctorName, new Date(slot.startAt)).catch(err =>
+          console.error('SMS notification failed for self-scheduled appointment:', err)
+        );
+      }
+
       res.status(201).json(appointment);
     } catch (error) {
       console.error('Error self-scheduling appointment:', error);
@@ -1344,6 +1358,41 @@ export async function registerRoutes(
         code: error?.code || "unknown"
       });
     }
+  });
+
+  app.post('/api/admin/send-sms', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const { phone, message } = req.body;
+
+      if (!phone || typeof phone !== 'string') {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+      if (!message || typeof message !== 'string' || message.trim().length < 1) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+      if (message.length > 1600) {
+        return res.status(400).json({ error: "Message too long (max 1600 characters)" });
+      }
+
+      if (!isTwilioConfigured()) {
+        return res.status(503).json({ error: "SMS service is not configured" });
+      }
+
+      const result = await sendCustomSMS(phone, message.trim());
+
+      if (!result.success) {
+        return res.status(400).json({ error: result.error || "Failed to send SMS" });
+      }
+
+      res.json({ success: true, sid: result.sid });
+    } catch (error: any) {
+      console.error('Error sending SMS:', error);
+      res.status(500).json({ error: error?.message || "Failed to send SMS" });
+    }
+  });
+
+  app.get('/api/admin/sms-status', requirePermission("viewLeads"), async (_req, res) => {
+    res.json({ configured: isTwilioConfigured() });
   });
 
   // Admin Reports endpoint - financial summaries

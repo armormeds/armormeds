@@ -129,6 +129,18 @@ shared/           # Shared code between frontend and backend
 - **Rate Limiting**: 5 login attempts per IP, 15-minute lockout after exceeding limit
 - **Logout**: Available from admin dashboard header, invalidates token server-side
 
+### SMS Notifications (Twilio)
+- **Twilio SDK**: `twilio` npm package for sending SMS via Twilio REST API
+- **Configuration**: Uses `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` environment secrets
+- **Utility Module**: `server/twilio.ts` provides `sendSMS`, `sendPrescriptionReadySMS`, `sendAppointmentScheduledSMS`, `sendCustomSMS`, `isTwilioConfigured`
+- **Automatic Notifications**: SMS sent automatically when:
+  - Prescription is created (patient's phone from prescription form)
+  - Appointment is scheduled by admin (patient's phone from lead)
+  - Patient self-schedules an appointment (patient's phone from booking form)
+- **Manual SMS**: Admin can send custom texts from lead cards via "Send SMS" button with pre-built templates (Inquiry Received, File Reviewed, Follow-up)
+- **API Endpoints**: `POST /api/admin/send-sms` (requires editLeads permission), `GET /api/admin/sms-status` (check if Twilio configured)
+- **Phone Format**: Accepts 10-digit US numbers, 11-digit with leading 1, or E.164 format
+
 ### Future Enhancements
-- **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated. The backend has placeholder code in `server/routes.ts` ready for email integration.
+- **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated.
 - **Patient Authentication**: Add proper patient authentication for secure access to appointments and prescriptions

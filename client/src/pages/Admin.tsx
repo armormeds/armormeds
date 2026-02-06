@@ -1026,7 +1026,7 @@ function AppointmentCard({
   );
 }
 
-function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void }) {
+function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, onSendSMS }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void; onSendSMS: (lead: Lead) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   
   const hasExtendedInfo = lead.goals || lead.state || lead.dateOfBirth || lead.weight || 
@@ -1306,6 +1306,17 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall }
               <span data-testid={`text-lead-date-${lead.id}`}>{format(new Date(lead.createdAt), "MMM d, yyyy 'at' h:mm a")}</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {lead.phone && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onSendSMS(lead)}
+                  data-testid={`button-send-sms-${lead.id}`}
+                >
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  Send SMS
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -1592,6 +1603,9 @@ export default function Admin() {
   const [newSlotEndTime, setNewSlotEndTime] = useState("");
   const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUserListItem | null>(null);
+  const [showSMSDialog, setShowSMSDialog] = useState(false);
+  const [selectedLeadForSMS, setSelectedLeadForSMS] = useState<Lead | null>(null);
+  const [smsMessage, setSmsMessage] = useState("");
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -2122,6 +2136,34 @@ export default function Admin() {
     createAvailabilityMutation.mutate({ doctorName: newSlotDoctor, startAt, endAt });
   };
 
+  const handleSendSMS = (lead: Lead) => {
+    setSelectedLeadForSMS(lead);
+    setSmsMessage("");
+    setShowSMSDialog(true);
+  };
+
+  const sendSMSMutation = useMutation({
+    mutationFn: async ({ phone, message }: { phone: string; message: string }) => {
+      return apiRequest("POST", "/api/admin/send-sms", { phone, message });
+    },
+    onSuccess: () => {
+      setShowSMSDialog(false);
+      setSelectedLeadForSMS(null);
+      setSmsMessage("");
+      toast({
+        title: "SMS sent",
+        description: "Text message has been sent successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to send SMS",
+        description: error?.message || "Could not send the text message.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleScheduleCall = (lead: Lead) => {
     setSelectedLeadForAppt(lead);
     setShowAppointmentDialog(true);
@@ -2338,6 +2380,7 @@ export default function Admin() {
                           onStatusChange={handleStatusChange}
                           onCreatePrescription={handleCreatePrescription}
                           onScheduleCall={handleScheduleCall}
+                          onSendSMS={handleSendSMS}
                         />
                       ))}
                   </div>
@@ -3112,6 +3155,100 @@ export default function Admin() {
             )}
           </div>
         )}
+
+        <Dialog open={showSMSDialog} onOpenChange={(open) => {
+          if (!open) {
+            setShowSMSDialog(false);
+            setSelectedLeadForSMS(null);
+            setSmsMessage("");
+          }
+        }}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Send Text Message
+              </DialogTitle>
+            </DialogHeader>
+            {selectedLeadForSMS && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted/30 rounded-md space-y-1">
+                  <div className="text-sm">
+                    <span className="font-medium">To:</span> {selectedLeadForSMS.name}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium">Phone:</span> {selectedLeadForSMS.phone}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Message</Label>
+                  <Textarea
+                    placeholder="Type your message here..."
+                    value={smsMessage}
+                    onChange={(e) => setSmsMessage(e.target.value)}
+                    rows={4}
+                    maxLength={1600}
+                    data-testid="input-sms-message"
+                  />
+                  <div className="text-xs text-muted-foreground text-right">
+                    {smsMessage.length}/1600
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium">Quick templates:</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, this is WellnessMeds. We received your inquiry and a provider will review your information shortly. Reply with any questions.`)}
+                    data-testid="button-sms-template-inquiry"
+                  >
+                    Inquiry Received
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, your WellnessMeds provider has reviewed your file. Please check your email for next steps. Questions? Reply here.`)}
+                    data-testid="button-sms-template-reviewed"
+                  >
+                    File Reviewed
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, just a friendly follow-up from WellnessMeds. We'd love to help you get started on your wellness journey. Reply or call us anytime.`)}
+                    data-testid="button-sms-template-followup"
+                  >
+                    Follow-up
+                  </Button>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowSMSDialog(false);
+                      setSelectedLeadForSMS(null);
+                      setSmsMessage("");
+                    }}
+                    data-testid="button-cancel-sms"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (selectedLeadForSMS?.phone && smsMessage.trim()) {
+                        sendSMSMutation.mutate({ phone: selectedLeadForSMS.phone, message: smsMessage.trim() });
+                      }
+                    }}
+                    disabled={!smsMessage.trim() || sendSMSMutation.isPending}
+                    data-testid="button-confirm-sms"
+                  >
+                    {sendSMSMutation.isPending ? "Sending..." : "Send SMS"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showAppointmentDialog} onOpenChange={(open) => {
           if (!open) handleCloseAppointmentDialog();
