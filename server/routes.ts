@@ -144,6 +144,21 @@ export async function registerRoutes(
   // Seed data on startup
   await storage.seedProducts();
 
+  // Reset admin password if ADMIN_RESET env var is set
+  if (process.env.ADMIN_RESET === 'true') {
+    try {
+      const allAdmins = await storage.getAdminUsers();
+      const superAdmin = allAdmins.find(u => u.role === 'super_admin');
+      if (superAdmin) {
+        const newHash = bcrypt.hashSync('Welcome123', 10);
+        await storage.updateAdminUser(superAdmin.id, { passwordHash: newHash });
+        console.log(`Admin password reset for ${superAdmin.email} to Welcome123`);
+      }
+    } catch (err) {
+      console.error("Admin reset error:", err);
+    }
+  }
+
   // Register object storage routes for secure file uploads
   registerObjectStorageRoutes(app);
 
