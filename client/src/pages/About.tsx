@@ -12,7 +12,7 @@ export default function About() {
             Healthcare That Actually Cares
           </h1>
           <p className="text-xl text-slate-600 leading-relaxed">
-            We started WellnessMeds with a simple mission: to make effective weight management treatments accessible, affordable, and judgment-free.
+            We started ArmorMeds with a simple mission: to make effective weight management treatments accessible, affordable, and judgment-free.
           </p>
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function About() {
             />
           </div>
           <div className="flex-1">
-            <h2 className="text-4xl font-display font-bold mb-6">The WellnessMeds Difference</h2>
+            <h2 className="text-4xl font-display font-bold mb-6">The ArmorMeds Difference</h2>
             <p className="text-lg text-slate-600 mb-6 leading-relaxed">
               Traditional healthcare is often slow, expensive, and impersonal. We've rebuilt the experience from the ground up.
             </p>

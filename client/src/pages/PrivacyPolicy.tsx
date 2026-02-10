@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
             <p>
-              WellnessMeds ("we," "our," or "us") is committed to protecting your privacy and ensuring the security of your personal health information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our telehealth services.
+              ArmorMeds ("we," "our," or "us") is committed to protecting your privacy and ensuring the security of your personal health information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our telehealth services.
             </p>
             <p>
               We comply with the Health Insurance Portability and Accountability Act (HIPAA) and other applicable federal and state privacy laws. Your trust is important to us, and we take our responsibility to protect your information seriously.
@@ -111,7 +111,7 @@ export default function PrivacyPolicy() {
               <li><strong>Complaint:</strong> File a complaint if you believe your rights have been violated</li>
             </ul>
             <p className="mt-4">
-              To exercise any of these rights, please contact our Privacy Officer at privacy@wellnessmeds.com.
+              To exercise any of these rights, please contact our Privacy Officer at privacy@armormeds.com.
             </p>
           </section>
 
@@ -149,8 +149,8 @@ export default function PrivacyPolicy() {
               If you have questions about this Privacy Policy or our privacy practices, please contact us:
             </p>
             <div className="bg-muted/50 p-4 rounded-md mt-4">
-              <p><strong>WellnessMeds Privacy Officer</strong></p>
-              <p>Email: privacy@wellnessmeds.com</p>
+              <p><strong>ArmorMeds Privacy Officer</strong></p>
+              <p>Email: privacy@armormeds.com</p>
               <p>Phone: 1-800-XXX-XXXX</p>
               <p>Address: [Your Business Address]</p>
             </div>

@@ -59,7 +59,7 @@ export async function sendSMS(to: string, body: string): Promise<{ success: bool
 
 export async function sendPrescriptionReadySMS(patientPhone: string, patientName: string, medication: string): Promise<{ success: boolean; sid?: string; error?: string }> {
   const firstName = patientName.split(' ')[0];
-  const body = `Hi ${firstName}, your ${medication} prescription from WellnessMeds is ready. Log in to your patient portal to view details. Questions? Reply to this message or call us.`;
+  const body = `Hi ${firstName}, your ${medication} prescription from ArmorMeds is ready. Log in to your patient portal to view details. Questions? Reply to this message or call us.`;
   return sendSMS(patientPhone, body);
 }
 
@@ -71,7 +71,7 @@ export async function sendAppointmentScheduledSMS(patientPhone: string, patientN
   if (videoLink) {
     body += ` Join here: ${videoLink}`;
   }
-  body += ` - WellnessMeds`;
+  body += ` - ArmorMeds`;
   return sendSMS(patientPhone, body);
 }
 
@@ -82,7 +82,7 @@ export async function sendAppointmentReminderSMS(patientPhone: string, patientNa
   if (videoLink) {
     body += ` Join here: ${videoLink}`;
   }
-  body += ` - WellnessMeds`;
+  body += ` - ArmorMeds`;
   return sendSMS(patientPhone, body);
 }
 

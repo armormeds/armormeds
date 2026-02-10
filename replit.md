@@ -1,8 +1,8 @@
-# WellnessMeds
+# ArmorMeds
 
 ## Overview
 
-WellnessMeds is a comprehensive telehealth platform for weight management, hair loss, and sexual health treatments. It's a lead generation website where users can browse medications, learn about services, and submit inquiry forms to connect with licensed providers. The application follows a modern full-stack architecture with a React frontend and Express backend.
+ArmorMeds is a comprehensive telehealth platform for weight management, hair loss, and sexual health treatments. It's a lead generation website where users can browse medications, learn about services, and submit inquiry forms to connect with licensed providers. The application follows a modern full-stack architecture with a React frontend and Express backend.
 
 ## User Preferences
 

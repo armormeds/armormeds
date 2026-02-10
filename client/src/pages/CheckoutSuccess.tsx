@@ -153,11 +153,11 @@ export default function CheckoutSuccess() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="w-4 h-4 text-primary" />
-                  <span>1-800-WELLNESS</span>
+                  <span>1-800-ARMORMEDS</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="w-4 h-4 text-primary" />
-                  <span>support@wellnessmeds.com</span>
+                  <span>support@armormeds.com</span>
                 </div>
               </div>
             </CardContent>

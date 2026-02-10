@@ -23,7 +23,7 @@ export default function RefundPolicy() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">1. Overview</h2>
             <p>
-              At WellnessMeds, we strive to provide excellent telehealth services. This policy outlines our refund and cancellation terms to ensure transparency and fairness for all patients.
+              At ArmorMeds, we strive to provide excellent telehealth services. This policy outlines our refund and cancellation terms to ensure transparency and fairness for all patients.
             </p>
           </section>
 
@@ -78,7 +78,7 @@ export default function RefundPolicy() {
             <h2 className="text-2xl font-semibold mb-4">5. How to Request a Refund</h2>
             <p>To request a refund, please:</p>
             <ol className="list-decimal pl-6">
-              <li>Email us at refunds@wellnessmeds.com with your order number</li>
+              <li>Email us at refunds@armormeds.com with your order number</li>
               <li>Include your full name and reason for the refund request</li>
               <li>Allow 3-5 business days for us to review your request</li>
               <li>Approved refunds will be processed within 5-10 business days</li>
@@ -119,8 +119,8 @@ export default function RefundPolicy() {
               If you have questions about our refund policy or need assistance, please contact us:
             </p>
             <div className="bg-muted/50 p-4 rounded-md mt-4">
-              <p><strong>WellnessMeds Billing Department</strong></p>
-              <p>Email: refunds@wellnessmeds.com</p>
+              <p><strong>ArmorMeds Billing Department</strong></p>
+              <p>Email: refunds@armormeds.com</p>
               <p>Phone: 1-800-XXX-XXXX</p>
               <p>Hours: Monday-Friday, 9am-5pm EST</p>
             </div>

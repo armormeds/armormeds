@@ -27,7 +27,7 @@ export default function Providers() {
               <div>
                 <h2 className="text-xl font-semibold mb-2">Our Commitment to Quality Care</h2>
                 <p className="text-muted-foreground">
-                  All WellnessMeds healthcare providers are fully licensed, board-certified medical professionals with specialized training in weight management and metabolic health. Our providers undergo rigorous credentialing and maintain active licenses in all states where they practice.
+                  All ArmorMeds healthcare providers are fully licensed, board-certified medical professionals with specialized training in weight management and metabolic health. Our providers undergo rigorous credentialing and maintain active licenses in all states where they practice.
                 </p>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function Providers() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold">[Medical Director Name], MD</h3>
-                  <p className="text-muted-foreground mb-2">Medical Director, WellnessMeds</p>
+                  <p className="text-muted-foreground mb-2">Medical Director, ArmorMeds</p>
                   <p className="text-sm text-muted-foreground mb-3">
                     Board Certified in Internal Medicine and Obesity Medicine
                   </p>
@@ -177,10 +177,10 @@ export default function Providers() {
             <p className="mb-4">
               If you have questions about our providers or medical services, please contact us:
             </p>
-            <p><strong>Email:</strong> medical@wellnessmeds.com</p>
+            <p><strong>Email:</strong> medical@armormeds.com</p>
             <p><strong>Phone:</strong> 1-800-XXX-XXXX</p>
             <p className="text-sm text-muted-foreground mt-4">
-              For licensing verification requests, please email compliance@wellnessmeds.com
+              For licensing verification requests, please email compliance@armormeds.com
             </p>
           </div>
         </section>

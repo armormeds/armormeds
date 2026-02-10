@@ -23,14 +23,14 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using WellnessMeds telehealth services ("Services"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Services.
+              By accessing or using ArmorMeds telehealth services ("Services"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Services.
             </p>
           </section>
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">2. Description of Services</h2>
             <p>
-              WellnessMeds provides telehealth consultations for weight management medications, including but not limited to GLP-1 receptor agonists such as Semaglutide and Tirzepatide. Our services include:
+              ArmorMeds provides telehealth consultations for weight management medications, including but not limited to GLP-1 receptor agonists such as Semaglutide and Tirzepatide. Our services include:
             </p>
             <ul className="list-disc pl-6">
               <li>Online medical consultations with licensed healthcare providers</li>
@@ -115,21 +115,21 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">9. Intellectual Property</h2>
             <p>
-              All content on this website, including text, graphics, logos, and software, is the property of WellnessMeds and is protected by copyright and other intellectual property laws. You may not reproduce, distribute, or create derivative works without our express written permission.
+              All content on this website, including text, graphics, logos, and software, is the property of ArmorMeds and is protected by copyright and other intellectual property laws. You may not reproduce, distribute, or create derivative works without our express written permission.
             </p>
           </section>
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">10. Limitation of Liability</h2>
             <p>
-              To the fullest extent permitted by law, WellnessMeds shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our Services. Our total liability shall not exceed the amount you paid for the Services.
+              To the fullest extent permitted by law, ArmorMeds shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our Services. Our total liability shall not exceed the amount you paid for the Services.
             </p>
           </section>
 
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">11. Indemnification</h2>
             <p>
-              You agree to indemnify and hold harmless WellnessMeds, its officers, directors, employees, and agents from any claims, damages, or expenses arising from your use of our Services or violation of these Terms.
+              You agree to indemnify and hold harmless ArmorMeds, its officers, directors, employees, and agents from any claims, damages, or expenses arising from your use of our Services or violation of these Terms.
             </p>
           </section>
 
@@ -160,8 +160,8 @@ export default function TermsOfService() {
               If you have questions about these Terms, please contact us:
             </p>
             <div className="bg-muted/50 p-4 rounded-md mt-4">
-              <p><strong>WellnessMeds</strong></p>
-              <p>Email: legal@wellnessmeds.com</p>
+              <p><strong>ArmorMeds</strong></p>
+              <p>Email: legal@armormeds.com</p>
               <p>Phone: 1-800-XXX-XXXX</p>
               <p>Address: [Your Business Address]</p>
             </div>

@@ -51,8 +51,8 @@ export default function CheckoutCancel() {
 
           <p className="text-sm text-muted-foreground">
             Need help? Contact us at{" "}
-            <a href="mailto:support@wellnessmeds.com" className="text-primary hover:underline">
-              support@wellnessmeds.com
+            <a href="mailto:support@armormeds.com" className="text-primary hover:underline">
+              support@armormeds.com
             </a>
           </p>
         </motion.div>

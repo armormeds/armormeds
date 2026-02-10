@@ -38,7 +38,7 @@ export function Navigation() {
               <Heart className="w-5 h-5 text-white fill-white" />
             </div>
             <span className="font-display font-bold text-xl tracking-tight">
-              Wellness<span className="text-primary">Meds</span>
+              Armor<span className="text-primary">Meds</span>
             </span>
           </Link>
 

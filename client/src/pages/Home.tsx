@@ -406,7 +406,7 @@ export default function Home() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-display font-bold text-white mb-4">Ready to get started?</h2>
           <p className="text-primary-foreground/80 mb-8">
-            Join thousands of patients who have transformed their health with WellnessMeds.
+            Join thousands of patients who have transformed their health with ArmorMeds.
           </p>
           <Link href="/get-started">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90 h-12 px-8 rounded-full" data-testid="button-cta-start">

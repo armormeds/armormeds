@@ -12,7 +12,7 @@ export function Footer() {
                 <Heart className="w-4 h-4 text-white fill-white" />
               </div>
               <span className="font-display font-bold text-lg text-white">
-                WellnessMeds
+                ArmorMeds
               </span>
             </Link>
             <p className="text-sm leading-relaxed">
@@ -52,7 +52,7 @@ export function Footer() {
         <div className="border-t border-slate-800 pt-8">
           <div className="text-xs text-slate-500 mb-6">
             <p className="mb-2">
-              WellnessMeds provides telehealth consultations for prescription medications. 
+              ArmorMeds provides telehealth consultations for prescription medications. 
               All consultations are conducted by licensed healthcare providers.
             </p>
             <p>
@@ -61,8 +61,8 @@ export function Footer() {
           </div>
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-            <p>&copy; 2026 WellnessMeds. All rights reserved.</p>
-            <p>support@wellnessmeds.com</p>
+            <p>&copy; 2026 ArmorMeds. All rights reserved.</p>
+            <p>support@armormeds.com</p>
           </div>
         </div>
       </div>

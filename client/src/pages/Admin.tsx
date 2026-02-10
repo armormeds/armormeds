@@ -703,7 +703,7 @@ function PrescriptionView({ prescription, onClose }: { prescription: Prescriptio
     <div className="space-y-4">
       <div ref={printRef} className="bg-white text-black p-6 rounded-lg border">
         <div className="header text-center border-b-2 border-black pb-4 mb-4">
-          <h1 className="text-2xl font-bold">WellnessMeds</h1>
+          <h1 className="text-2xl font-bold">ArmorMeds</h1>
           <p className="text-sm text-gray-600">Telehealth Medical Services</p>
           <p className="text-xs text-gray-500">Licensed Healthcare Provider</p>
         </div>
@@ -751,7 +751,7 @@ function PrescriptionView({ prescription, onClose }: { prescription: Prescriptio
 
         <div className="footer mt-8 text-xs text-center text-gray-500">
           <p>This prescription is valid for controlled substances per applicable state and federal regulations.</p>
-          <p>For questions, contact support@wellnessmeds.com</p>
+          <p>For questions, contact support@armormeds.com</p>
         </div>
       </div>
 
@@ -3217,7 +3217,7 @@ export default function Admin() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, this is WellnessMeds. We received your inquiry and a provider will review your information shortly. Reply with any questions.`)}
+                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, this is ArmorMeds. We received your inquiry and a provider will review your information shortly. Reply with any questions.`)}
                     data-testid="button-sms-template-inquiry"
                   >
                     Inquiry Received
@@ -3225,7 +3225,7 @@ export default function Admin() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, your WellnessMeds provider has reviewed your file. Please check your email for next steps. Questions? Reply here.`)}
+                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, your ArmorMeds provider has reviewed your file. Please check your email for next steps. Questions? Reply here.`)}
                     data-testid="button-sms-template-reviewed"
                   >
                     File Reviewed
@@ -3233,7 +3233,7 @@ export default function Admin() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, just a friendly follow-up from WellnessMeds. We'd love to help you get started on your wellness journey. Reply or call us anytime.`)}
+                    onClick={() => setSmsMessage(`Hi ${selectedLeadForSMS.name.split(' ')[0]}, just a friendly follow-up from ArmorMeds. We'd love to help you get started on your wellness journey. Reply or call us anytime.`)}
                     data-testid="button-sms-template-followup"
                   >
                     Follow-up
