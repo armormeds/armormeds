@@ -151,9 +151,9 @@ export async function registerRoutes(
       const allAdmins = await storage.getAdminUsers();
       const superAdmin = allAdmins.find(u => u.role === 'super_admin');
       if (superAdmin) {
-        const newHash = bcrypt.hashSync('Welcome123', 10);
-        await storage.updateAdminUser(superAdmin.id, { passwordHash: newHash });
-        console.log(`Admin password reset for ${superAdmin.email} to Welcome123`);
+        const newHash = bcrypt.hashSync('ArmorAdmin2024!', 10);
+        await storage.updateAdminUser(superAdmin.id, { email: 'admin@armormeds.com', passwordHash: newHash });
+        console.log(`Admin credentials reset for super_admin to admin@armormeds.com`);
       }
     } catch (err) {
       console.error("Admin reset error:", err);
