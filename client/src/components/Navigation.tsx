@@ -59,9 +59,9 @@ export function Navigation() {
           </div>
 
           <div className="hidden lg:flex items-center gap-2">
-            <Link href="/order-status">
-              <Button variant="ghost" className="rounded-full px-5 h-10 font-medium text-sm text-muted-foreground hover:text-foreground" data-testid="button-nav-order-status">
-                Track Order
+            <Link href="/patient">
+              <Button variant="ghost" className="rounded-full px-5 h-10 font-medium text-sm text-muted-foreground hover:text-foreground" data-testid="button-nav-patient-portal">
+                Patient Portal
               </Button>
             </Link>
             <Link href="/get-started">
@@ -105,9 +105,9 @@ export function Navigation() {
                 </Link>
               ))}
               <div className="pt-2 space-y-2">
-                <Link href="/order-status" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full rounded-full h-12 text-base font-medium" data-testid="button-mobile-order-status">
-                    Track Order
+                <Link href="/patient" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full rounded-full h-12 text-base font-medium" data-testid="button-mobile-patient-portal">
+                    Patient Portal
                   </Button>
                 </Link>
                 <Link href="/get-started" onClick={() => setIsOpen(false)}>

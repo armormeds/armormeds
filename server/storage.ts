@@ -1,4 +1,4 @@
-import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, leadActivities, leadNotes, leadTags, leadTasks, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest, type LeadActivity, type InsertLeadActivity, type LeadNote, type InsertLeadNote, type LeadTag, type InsertLeadTag, type LeadTask, type InsertLeadTask } from "@shared/schema";
+import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, leadActivities, leadNotes, leadTags, leadTasks, patientUsers, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest, type LeadActivity, type InsertLeadActivity, type LeadNote, type InsertLeadNote, type LeadTag, type InsertLeadTag, type LeadTask, type InsertLeadTask, type PatientUser, type InsertPatientUser } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, gte, and } from "drizzle-orm";
 
@@ -39,6 +39,13 @@ export interface IStorage {
   updateAdminUser(id: number, updates: UpdateAdminUserRequest): Promise<AdminUser | undefined>;
   deleteAdminUser(id: number): Promise<boolean>;
   updateAdminUserLastLogin(id: number): Promise<void>;
+  // Patient user management
+  getPatientByEmail(email: string): Promise<PatientUser | undefined>;
+  getPatientById(id: number): Promise<PatientUser | undefined>;
+  getPatientByGoogleId(googleId: string): Promise<PatientUser | undefined>;
+  createPatient(patient: InsertPatientUser): Promise<PatientUser>;
+  updatePatient(id: number, updates: Partial<PatientUser>): Promise<PatientUser | undefined>;
+  updatePatientLastLogin(id: number): Promise<void>;
   getLeadActivities(leadId: number): Promise<LeadActivity[]>;
   createLeadActivity(activity: InsertLeadActivity): Promise<LeadActivity>;
   getLeadNotes(leadId: number): Promise<LeadNote[]>;
@@ -263,6 +270,35 @@ export class DatabaseStorage implements IStorage {
 
   async updateAdminUserLastLogin(id: number): Promise<void> {
     await db.update(adminUsers).set({ lastLoginAt: new Date() }).where(eq(adminUsers.id, id));
+  }
+
+  async getPatientByEmail(email: string): Promise<PatientUser | undefined> {
+    const [patient] = await db.select().from(patientUsers).where(eq(patientUsers.email, email.toLowerCase()));
+    return patient;
+  }
+
+  async getPatientById(id: number): Promise<PatientUser | undefined> {
+    const [patient] = await db.select().from(patientUsers).where(eq(patientUsers.id, id));
+    return patient;
+  }
+
+  async getPatientByGoogleId(googleId: string): Promise<PatientUser | undefined> {
+    const [patient] = await db.select().from(patientUsers).where(eq(patientUsers.googleId, googleId));
+    return patient;
+  }
+
+  async createPatient(patient: InsertPatientUser): Promise<PatientUser> {
+    const [created] = await db.insert(patientUsers).values({ ...patient, email: patient.email.toLowerCase() }).returning();
+    return created;
+  }
+
+  async updatePatient(id: number, updates: Partial<PatientUser>): Promise<PatientUser | undefined> {
+    const [updated] = await db.update(patientUsers).set(updates as any).where(eq(patientUsers.id, id)).returning();
+    return updated;
+  }
+
+  async updatePatientLastLogin(id: number): Promise<void> {
+    await db.update(patientUsers).set({ lastLoginAt: new Date() }).where(eq(patientUsers.id, id));
   }
 
   async getLeadActivities(leadId: number): Promise<LeadActivity[]> {

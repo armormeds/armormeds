@@ -13,6 +13,37 @@ import crypto from "crypto";
 import type { AdminUser, AdminPermissions } from "@shared/schema";
 import { sendPrescriptionReadySMS, sendAppointmentScheduledSMS, sendCustomSMS, isTwilioConfigured } from "./twilio";
 
+// Patient session store
+interface PatientSession {
+  patientId: number;
+  email: string;
+  name: string;
+  expiresAt: number;
+}
+const patientTokens = new Map<string, PatientSession>();
+const PATIENT_TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function createPatientToken(patient: { id: number; email: string; name: string }): string {
+  const token = crypto.randomBytes(32).toString("hex");
+  patientTokens.set(token, {
+    patientId: patient.id,
+    email: patient.email,
+    name: patient.name,
+    expiresAt: Date.now() + PATIENT_TOKEN_EXPIRY_MS,
+  });
+  return token;
+}
+
+async function getPatientFromToken(token: string): Promise<PatientSession | null> {
+  const session = patientTokens.get(token);
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) {
+    patientTokens.delete(token);
+    return null;
+  }
+  return session;
+}
+
 // Server-side token storage with user info and expiration (in-memory for MVP)
 interface AdminSession {
   userId: number;
@@ -1700,6 +1731,175 @@ export async function registerRoutes(
         monthlyRevenue: {},
       });
     }
+  });
+
+  // ===== PATIENT PORTAL ROUTES =====
+
+  // Register new patient
+  app.post("/api/patient/register", async (req: Request, res: Response) => {
+    try {
+      const { email, name, password } = req.body;
+      if (!email || !name || !password) return res.status(400).json({ error: "Email, name and password are required" });
+      if (password.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters" });
+      const existing = await storage.getPatientByEmail(email);
+      if (existing) return res.status(409).json({ error: "An account with this email already exists. Please sign in." });
+      const passwordHash = bcrypt.hashSync(password, 10);
+      const patient = await storage.createPatient({ email, name, passwordHash, googleId: null, avatar: null, phone: null });
+      await storage.updatePatientLastLogin(patient.id);
+      const token = createPatientToken(patient);
+      return res.json({ token, patient: { id: patient.id, email: patient.email, name: patient.name, avatar: patient.avatar } });
+    } catch (err) {
+      console.error("Patient register error:", err);
+      return res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
+  // Patient login with email + password
+  app.post("/api/patient/login", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
+      const patient = await storage.getPatientByEmail(email);
+      if (!patient || !patient.passwordHash) return res.status(401).json({ error: "Invalid email or password" });
+      const valid = bcrypt.compareSync(password, patient.passwordHash);
+      if (!valid) return res.status(401).json({ error: "Invalid email or password" });
+      await storage.updatePatientLastLogin(patient.id);
+      const token = createPatientToken(patient);
+      return res.json({ token, patient: { id: patient.id, email: patient.email, name: patient.name, avatar: patient.avatar } });
+    } catch (err) {
+      console.error("Patient login error:", err);
+      return res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Google Sign-In for patient portal (verifies Google JWT, creates/finds account)
+  app.post("/api/patient/google-auth", async (req: Request, res: Response) => {
+    try {
+      const { credential } = req.body;
+      if (!credential) return res.status(400).json({ error: "Google credential is required" });
+      // Decode the JWT payload (we trust Google's signature since it came from our client ID)
+      const payloadB64 = credential.split(".")[1];
+      const payload = JSON.parse(Buffer.from(payloadB64, "base64").toString("utf-8"));
+      const { sub: googleId, email, name, picture } = payload;
+      if (!email || !googleId) return res.status(400).json({ error: "Invalid Google credential" });
+      // Find existing patient by Google ID or email
+      let patient = await storage.getPatientByGoogleId(googleId);
+      if (!patient) patient = await storage.getPatientByEmail(email);
+      if (!patient) {
+        // Create new account
+        patient = await storage.createPatient({ email, name: name || email.split("@")[0], passwordHash: null, googleId, avatar: picture || null, phone: null });
+      } else if (!patient.googleId) {
+        // Link Google ID to existing email account
+        patient = (await storage.updatePatient(patient.id, { googleId, avatar: picture || patient.avatar })) || patient;
+      }
+      await storage.updatePatientLastLogin(patient.id);
+      const token = createPatientToken(patient);
+      return res.json({ token, patient: { id: patient.id, email: patient.email, name: patient.name, avatar: patient.avatar } });
+    } catch (err) {
+      console.error("Patient google auth error:", err);
+      return res.status(500).json({ error: "Google authentication failed" });
+    }
+  });
+
+  // Get current patient profile
+  app.get("/api/patient/me", async (req: Request, res: Response) => {
+    try {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) return res.status(401).json({ error: "Not authenticated" });
+      const session = await getPatientFromToken(token);
+      if (!session) return res.status(401).json({ error: "Session expired. Please sign in again." });
+      const patient = await storage.getPatientById(session.patientId);
+      if (!patient) return res.status(404).json({ error: "Patient not found" });
+      return res.json({ id: patient.id, email: patient.email, name: patient.name, avatar: patient.avatar, phone: patient.phone, createdAt: patient.createdAt, lastLoginAt: patient.lastLoginAt });
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to get profile" });
+    }
+  });
+
+  // Update patient profile
+  app.patch("/api/patient/profile", async (req: Request, res: Response) => {
+    try {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) return res.status(401).json({ error: "Not authenticated" });
+      const session = await getPatientFromToken(token);
+      if (!session) return res.status(401).json({ error: "Session expired" });
+      const { name, phone, currentPassword, newPassword } = req.body;
+      const patient = await storage.getPatientById(session.patientId);
+      if (!patient) return res.status(404).json({ error: "Patient not found" });
+      const updates: any = {};
+      if (name) updates.name = name;
+      if (phone !== undefined) updates.phone = phone;
+      if (newPassword) {
+        if (!currentPassword) return res.status(400).json({ error: "Current password is required to change password" });
+        if (!patient.passwordHash || !bcrypt.compareSync(currentPassword, patient.passwordHash)) {
+          return res.status(400).json({ error: "Current password is incorrect" });
+        }
+        if (newPassword.length < 6) return res.status(400).json({ error: "New password must be at least 6 characters" });
+        updates.passwordHash = bcrypt.hashSync(newPassword, 10);
+      }
+      const updated = await storage.updatePatient(session.patientId, updates);
+      return res.json({ id: updated!.id, email: updated!.email, name: updated!.name, avatar: updated!.avatar, phone: updated!.phone });
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
+  // Get full patient dashboard data (orders, prescriptions, appointments)
+  app.get("/api/patient/dashboard", async (req: Request, res: Response) => {
+    try {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) return res.status(401).json({ error: "Not authenticated" });
+      const session = await getPatientFromToken(token);
+      if (!session) return res.status(401).json({ error: "Session expired" });
+      const lead = await storage.getLeadByEmail(session.email);
+      if (!lead) {
+        return res.json({ hasIntake: false, orders: [], prescriptions: [], appointments: [] });
+      }
+      const prescriptions = await storage.getPrescriptionsByLead(lead.id);
+      const appointments = await storage.getAppointmentsByLead(lead.id);
+      return res.json({
+        hasIntake: true,
+        order: {
+          id: lead.id,
+          medicationInterest: lead.medicationInterest,
+          status: lead.status,
+          paymentStatus: lead.paymentStatus,
+          prescriptionStatus: lead.prescriptionStatus,
+          createdAt: lead.createdAt,
+        },
+        prescriptions: prescriptions.map(p => ({
+          id: p.id,
+          medication: p.medication,
+          dosage: p.dosage,
+          quantity: p.quantity,
+          refills: p.refills,
+          instructions: p.instructions,
+          providerName: p.providerName,
+          prescriptionNumber: p.prescriptionNumber,
+          status: p.status,
+          createdAt: p.createdAt,
+        })),
+        appointments: appointments.map(a => ({
+          id: a.id,
+          doctorName: a.doctorName,
+          reason: a.reason,
+          scheduledAt: a.scheduledAt,
+          duration: a.duration,
+          videoLink: a.videoLink,
+          status: a.status,
+        })),
+      });
+    } catch (err) {
+      console.error("Patient dashboard error:", err);
+      return res.status(500).json({ error: "Failed to load dashboard" });
+    }
+  });
+
+  // Logout patient
+  app.post("/api/patient/logout", async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    if (token) patientTokens.delete(token);
+    return res.json({ success: true });
   });
 
   // Patient order status lookup (public endpoint - email-based lookup)

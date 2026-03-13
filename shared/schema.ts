@@ -1,4 +1,4 @@
-import { pgTable, text, serial, jsonb, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, jsonb, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -168,6 +168,18 @@ export const leadTasks = pgTable("lead_tasks", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const patientUsers = pgTable("patient_users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  passwordHash: text("password_hash"),
+  googleId: text("google_id"),
+  avatar: text("avatar"),
+  phone: text("phone"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastLoginAt: timestamp("last_login_at"),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, status: true, createdAt: true });
 export const insertPrescriptionSchema = createInsertSchema(prescriptions).omit({ id: true, createdAt: true });
@@ -239,3 +251,6 @@ export type UpdateProductRequest = {
   benefits?: string[];
   category?: string;
 };
+export const insertPatientUserSchema = createInsertSchema(patientUsers).omit({ id: true, createdAt: true, lastLoginAt: true });
+export type PatientUser = typeof patientUsers.$inferSelect;
+export type InsertPatientUser = z.infer<typeof insertPatientUserSchema>;

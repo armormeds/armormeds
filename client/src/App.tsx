@@ -24,45 +24,61 @@ import CheckoutCancel from "@/pages/CheckoutCancel";
 import MyAppointments from "@/pages/MyAppointments";
 import ScheduleAppointment from "@/pages/ScheduleAppointment";
 import OrderStatus from "@/pages/OrderStatus";
+import PatientPortal from "@/pages/PatientPortal";
+import PatientDashboard from "@/pages/PatientDashboard";
 import NotFound from "@/pages/not-found";
 
-// Helper to scroll to top on route change
 function ScrollToTopWrapper() {
   const [pathname] = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
 }
 
+// Pages that have their own full-page layout (no main nav/footer)
+const STANDALONE_PATHS = ["/admin", "/patient", "/patient/dashboard"];
+
 function Router() {
+  const [pathname] = useLocation();
+  const isStandalone = STANDALONE_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"));
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
       <ScrollToTopWrapper />
-      <Navigation />
-      <main className="flex-grow">
+      {isStandalone ? (
+        // Standalone layout — no nav/footer
         <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/medications" component={Medications} />
-          <Route path="/hair-loss" component={HairLoss} />
-          <Route path="/sexual-health" component={SexualHealth} />
-          <Route path="/get-started" component={GetStarted} />
-          <Route path="/about" component={About} />
           <Route path="/admin" component={Admin} />
-          <Route path="/privacy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
-          <Route path="/refund-policy" component={RefundPolicy} />
-          <Route path="/providers" component={Providers} />
-          <Route path="/checkout/success" component={CheckoutSuccess} />
-          <Route path="/checkout/cancel" component={CheckoutCancel} />
-          <Route path="/my-appointments" component={MyAppointments} />
-          <Route path="/schedule" component={ScheduleAppointment} />
-          <Route path="/order-status" component={OrderStatus} />
-          <Route component={NotFound} />
+          <Route path="/patient" component={PatientPortal} />
+          <Route path="/patient/dashboard" component={PatientDashboard} />
         </Switch>
-      </main>
-      <Footer />
-    </div>
+      ) : (
+        // Public layout — with nav and footer
+        <div className="flex flex-col min-h-screen">
+          <Navigation />
+          <main className="flex-grow">
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/medications" component={Medications} />
+              <Route path="/hair-loss" component={HairLoss} />
+              <Route path="/sexual-health" component={SexualHealth} />
+              <Route path="/get-started" component={GetStarted} />
+              <Route path="/about" component={About} />
+              <Route path="/privacy" component={PrivacyPolicy} />
+              <Route path="/terms" component={TermsOfService} />
+              <Route path="/refund-policy" component={RefundPolicy} />
+              <Route path="/providers" component={Providers} />
+              <Route path="/checkout/success" component={CheckoutSuccess} />
+              <Route path="/checkout/cancel" component={CheckoutCancel} />
+              <Route path="/my-appointments" component={MyAppointments} />
+              <Route path="/schedule" component={ScheduleAppointment} />
+              <Route path="/order-status" component={OrderStatus} />
+              <Route component={NotFound} />
+            </Switch>
+          </main>
+          <Footer />
+        </div>
+      )}
+    </>
   );
 }
 

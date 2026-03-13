@@ -141,6 +141,18 @@ shared/           # Shared code between frontend and backend
 - **API Endpoints**: `POST /api/admin/send-sms` (requires editLeads permission), `GET /api/admin/sms-status` (check if Twilio configured)
 - **Phone Format**: Accepts 10-digit US numbers, 11-digit with leading 1, or E.164 format
 
+### Patient Portal
+- **Patient Accounts**: Patients create accounts at `/patient` using email/password or Google Sign-In
+- **Auth Flow**: JWT-like token stored in localStorage (`armor_patient_token`), 7-day expiry
+- **Google Sign-In**: Powered by Google Identity Services (VITE_GOOGLE_CLIENT_ID env var)
+- **Patient Dashboard** (`/patient/dashboard`): Tabbed interface showing overview, prescriptions, appointments
+- **Progress Tracker**: Visual step tracker (Intake → Payment → Provider Review → Prescription Ready)
+- **Profile Editing**: Patients can update name, phone, and password from the dashboard
+- **Data Linking**: Patient portal links to lead data by email address match
+- **Standalone Layout**: Patient pages have their own header/layout (no main site nav)
+- **DB Table**: `patient_users` (id, email, name, passwordHash, googleId, avatar, phone, createdAt, lastLoginAt)
+- **API Routes**: POST /api/patient/register, POST /api/patient/login, POST /api/patient/google-auth, GET /api/patient/me, PATCH /api/patient/profile, GET /api/patient/dashboard, POST /api/patient/logout
+
 ### Future Enhancements
 - **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated.
 - **Patient Authentication**: Add proper patient authentication for secure access to appointments and prescriptions
