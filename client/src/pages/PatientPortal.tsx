@@ -101,10 +101,6 @@ export default function PatientPortal() {
 
   const handleGoogleSignIn = () => {
     if (!window.google) return;
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID!,
-      callback: handleGoogleCredential,
-    });
     window.google.accounts.id.prompt();
   };
 
