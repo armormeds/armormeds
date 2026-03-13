@@ -45,3 +45,4 @@ integrations = ["javascript_object_storage:2.0.0", "stripe:2.0.0"]
 
 [userenv.shared]
 ADMIN_RESET = "true"
+VITE_GOOGLE_CLIENT_ID = "748393509801-dbquavgblcenhl5lnsc1hop8r08cb3r9.apps.googleusercontent.com"
