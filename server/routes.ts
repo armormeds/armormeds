@@ -1702,5 +1702,59 @@ export async function registerRoutes(
     }
   });
 
+  // Patient order status lookup (public endpoint - email-based lookup)
+  app.get("/api/patient/status", async (req: Request, res: Response) => {
+    try {
+      const email = (req.query.email as string)?.toLowerCase().trim();
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      const lead = await storage.getLeadByEmail(email);
+      if (!lead) {
+        return res.status(404).json({ error: "No account found with this email address" });
+      }
+      const prescriptions = await storage.getPrescriptionsByLead(lead.id);
+      const appointments = await storage.getAppointmentsByLead(lead.id);
+      // Return only patient-safe fields
+      return res.json({
+        patient: {
+          name: lead.name,
+          email: lead.email,
+          medicationInterest: lead.medicationInterest,
+          createdAt: lead.createdAt,
+        },
+        status: {
+          intake: lead.status,
+          payment: lead.paymentStatus,
+          prescription: lead.prescriptionStatus,
+        },
+        prescriptions: prescriptions.map(p => ({
+          id: p.id,
+          medication: p.medication,
+          dosage: p.dosage,
+          quantity: p.quantity,
+          refills: p.refills,
+          instructions: p.instructions,
+          providerName: p.providerName,
+          prescriptionNumber: p.prescriptionNumber,
+          status: p.status,
+          createdAt: p.createdAt,
+        })),
+        appointments: appointments.map(a => ({
+          id: a.id,
+          doctorName: a.doctorName,
+          reason: a.reason,
+          scheduledAt: a.scheduledAt,
+          duration: a.duration,
+          videoLink: a.videoLink,
+          status: a.status,
+        })),
+      });
+    } catch (err) {
+      console.error("Patient status error:", err);
+      return res.status(500).json({ error: "Failed to retrieve status" });
+    }
+  });
+
   return httpServer;
 }

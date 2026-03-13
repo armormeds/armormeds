@@ -3508,7 +3508,7 @@ export default function Admin() {
               setShowCRMPanel(open);
               if (!open) setSelectedLeadForCRM(null);
             }}
-            currentUserName={adminUser?.name || "Admin"}
+            currentUserName={currentUser?.name || "Admin"}
           />
         )}
       </div>

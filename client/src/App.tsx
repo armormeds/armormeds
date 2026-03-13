@@ -23,6 +23,7 @@ import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import CheckoutCancel from "@/pages/CheckoutCancel";
 import MyAppointments from "@/pages/MyAppointments";
 import ScheduleAppointment from "@/pages/ScheduleAppointment";
+import OrderStatus from "@/pages/OrderStatus";
 import NotFound from "@/pages/not-found";
 
 // Helper to scroll to top on route change
@@ -56,6 +57,7 @@ function Router() {
           <Route path="/checkout/cancel" component={CheckoutCancel} />
           <Route path="/my-appointments" component={MyAppointments} />
           <Route path="/schedule" component={ScheduleAppointment} />
+          <Route path="/order-status" component={OrderStatus} />
           <Route component={NotFound} />
         </Switch>
       </main>

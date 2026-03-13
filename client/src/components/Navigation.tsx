@@ -58,7 +58,12 @@ export function Navigation() {
             ))}
           </div>
 
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-2">
+            <Link href="/order-status">
+              <Button variant="ghost" className="rounded-full px-5 h-10 font-medium text-sm text-muted-foreground hover:text-foreground" data-testid="button-nav-order-status">
+                Track Order
+              </Button>
+            </Link>
             <Link href="/get-started">
               <Button className="rounded-full px-6 h-10 font-medium shadow-none" data-testid="button-nav-start">
                 Get Started
@@ -99,7 +104,12 @@ export function Navigation() {
                   {link.label}
                 </Link>
               ))}
-              <div className="pt-2">
+              <div className="pt-2 space-y-2">
+                <Link href="/order-status" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full rounded-full h-12 text-base font-medium" data-testid="button-mobile-order-status">
+                    Track Order
+                  </Button>
+                </Link>
                 <Link href="/get-started" onClick={() => setIsOpen(false)}>
                   <Button className="w-full rounded-full h-12 text-base font-medium" data-testid="button-mobile-start">
                     Get Started

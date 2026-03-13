@@ -208,6 +208,7 @@ export type AdminPermissions = {
 export type UpdateAdminUserRequest = {
   name?: string;
   email?: string;
+  passwordHash?: string;
   role?: string;
   permissions?: AdminPermissions;
   isActive?: string;
