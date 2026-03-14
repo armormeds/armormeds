@@ -17,6 +17,7 @@ import About from "@/pages/About";
 import Admin from "@/pages/Admin";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import HipaaPrivacy from "@/pages/HipaaPrivacy";
 import RefundPolicy from "@/pages/RefundPolicy";
 import Providers from "@/pages/Providers";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
@@ -65,6 +66,7 @@ function Router() {
               <Route path="/about" component={About} />
               <Route path="/privacy" component={PrivacyPolicy} />
               <Route path="/terms" component={TermsOfService} />
+              <Route path="/hipaa-privacy" component={HipaaPrivacy} />
               <Route path="/refund-policy" component={RefundPolicy} />
               <Route path="/providers" component={Providers} />
               <Route path="/checkout/success" component={CheckoutSuccess} />

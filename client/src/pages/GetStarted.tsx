@@ -1438,8 +1438,10 @@ export default function GetStarted() {
                               <p className="text-sm text-slate-500">
                                 I have read and agree to the{" "}
                                 <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline text-primary">Terms of Service</a>
-                                {" "}and{" "}
+                                ,{" "}
                                 <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-primary">Privacy Policy</a>
+                                , and{" "}
+                                <a href="/hipaa-privacy" target="_blank" rel="noopener noreferrer" className="underline text-primary">HIPAA Notice of Privacy Practices</a>
                                 , and consent to my health information being used as described therein.
                               </p>
                             </div>
