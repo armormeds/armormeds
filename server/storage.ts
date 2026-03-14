@@ -1,4 +1,4 @@
-import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, leadActivities, leadNotes, leadTags, leadTasks, patientUsers, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest, type LeadActivity, type InsertLeadActivity, type LeadNote, type InsertLeadNote, type LeadTag, type InsertLeadTag, type LeadTask, type InsertLeadTask, type PatientUser, type InsertPatientUser } from "@shared/schema";
+import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, leadActivities, leadNotes, leadTags, leadTasks, patientUsers, shipments, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest, type LeadActivity, type InsertLeadActivity, type LeadNote, type InsertLeadNote, type LeadTag, type InsertLeadTag, type LeadTask, type InsertLeadTask, type PatientUser, type InsertPatientUser, type Shipment, type InsertShipment } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, gte, and } from "drizzle-orm";
 
@@ -39,6 +39,13 @@ export interface IStorage {
   updateAdminUser(id: number, updates: UpdateAdminUserRequest): Promise<AdminUser | undefined>;
   deleteAdminUser(id: number): Promise<boolean>;
   updateAdminUserLastLogin(id: number): Promise<void>;
+  // Shipments
+  getShipmentsByLead(leadId: number): Promise<Shipment[]>;
+  getShipment(id: number): Promise<Shipment | undefined>;
+  createShipment(shipment: InsertShipment): Promise<Shipment>;
+  updateShipment(id: number, updates: Partial<Shipment>): Promise<Shipment | undefined>;
+  deleteShipment(id: number): Promise<boolean>;
+  getAllShipments(): Promise<Shipment[]>;
   // Patient user management
   getPatientByEmail(email: string): Promise<PatientUser | undefined>;
   getPatientById(id: number): Promise<PatientUser | undefined>;
@@ -270,6 +277,34 @@ export class DatabaseStorage implements IStorage {
 
   async updateAdminUserLastLogin(id: number): Promise<void> {
     await db.update(adminUsers).set({ lastLoginAt: new Date() }).where(eq(adminUsers.id, id));
+  }
+
+  async getShipmentsByLead(leadId: number): Promise<Shipment[]> {
+    return await db.select().from(shipments).where(eq(shipments.leadId, leadId)).orderBy(desc(shipments.createdAt));
+  }
+
+  async getShipment(id: number): Promise<Shipment | undefined> {
+    const [s] = await db.select().from(shipments).where(eq(shipments.id, id));
+    return s;
+  }
+
+  async createShipment(shipment: InsertShipment): Promise<Shipment> {
+    const [created] = await db.insert(shipments).values(shipment as any).returning();
+    return created;
+  }
+
+  async updateShipment(id: number, updates: Partial<Shipment>): Promise<Shipment | undefined> {
+    const [updated] = await db.update(shipments).set({ ...updates, updatedAt: new Date() } as any).where(eq(shipments.id, id)).returning();
+    return updated;
+  }
+
+  async deleteShipment(id: number): Promise<boolean> {
+    const result = await db.delete(shipments).where(eq(shipments.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getAllShipments(): Promise<Shipment[]> {
+    return await db.select().from(shipments).orderBy(desc(shipments.createdAt));
   }
 
   async getPatientByEmail(email: string): Promise<PatientUser | undefined> {

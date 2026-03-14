@@ -1733,6 +1733,111 @@ export async function registerRoutes(
     }
   });
 
+  // ===== SHIPMENT ROUTES =====
+
+  // Helper: generate tracking URL by carrier
+  function getTrackingUrl(carrier: string, trackingNumber: string): string {
+    const urls: Record<string, string> = {
+      usps: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${trackingNumber}`,
+      ups: `https://www.ups.com/track?tracknum=${trackingNumber}`,
+      fedex: `https://www.fedex.com/fedextrack/?tracknumbers=${trackingNumber}`,
+      dhl: `https://www.dhl.com/us-en/home/tracking.html?tracking-id=${trackingNumber}`,
+      amazon: `https://track.amazon.com/tracking/${trackingNumber}`,
+    };
+    return urls[carrier.toLowerCase()] || `https://www.google.com/search?q=${carrier}+tracking+${trackingNumber}`;
+  }
+
+  // Admin: create shipment for a lead/prescription
+  app.post("/api/admin/shipments", requirePermission("editLeads"), async (req: Request, res: Response) => {
+    try {
+      const { leadId, prescriptionId, carrier, trackingNumber, notes, estimatedDelivery } = req.body;
+      if (!leadId || !carrier || !trackingNumber) return res.status(400).json({ error: "leadId, carrier, and trackingNumber are required" });
+      const shipment = await storage.createShipment({
+        leadId: Number(leadId),
+        prescriptionId: prescriptionId ? Number(prescriptionId) : null,
+        carrier,
+        trackingNumber,
+        status: "shipped",
+        notes: notes || null,
+        shippedAt: new Date(),
+        estimatedDelivery: estimatedDelivery ? new Date(estimatedDelivery) : null,
+      });
+      return res.json(shipment);
+    } catch (err) {
+      console.error("Create shipment error:", err);
+      return res.status(500).json({ error: "Failed to create shipment" });
+    }
+  });
+
+  // Admin: update shipment status
+  app.patch("/api/admin/shipments/:id", requirePermission("editLeads"), async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status, notes, estimatedDelivery } = req.body;
+      const updates: any = {};
+      if (status) updates.status = status;
+      if (notes !== undefined) updates.notes = notes;
+      if (estimatedDelivery !== undefined) updates.estimatedDelivery = estimatedDelivery ? new Date(estimatedDelivery) : null;
+      if (status === "delivered") updates.deliveredAt = new Date();
+      const updated = await storage.updateShipment(id, updates);
+      if (!updated) return res.status(404).json({ error: "Shipment not found" });
+      return res.json(updated);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to update shipment" });
+    }
+  });
+
+  // Admin: delete shipment
+  app.delete("/api/admin/shipments/:id", requirePermission("editLeads"), async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteShipment(id);
+      if (!deleted) return res.status(404).json({ error: "Shipment not found" });
+      return res.json({ success: true });
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to delete shipment" });
+    }
+  });
+
+  // Admin: get all shipments
+  app.get("/api/admin/shipments", requirePermission("viewLeads"), async (req: Request, res: Response) => {
+    try {
+      const all = await storage.getAllShipments();
+      const enriched = all.map(s => ({ ...s, trackingUrl: getTrackingUrl(s.carrier, s.trackingNumber) }));
+      return res.json(enriched);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch shipments" });
+    }
+  });
+
+  // Admin: get shipments for a lead
+  app.get("/api/admin/shipments/lead/:leadId", requirePermission("viewLeads"), async (req: Request, res: Response) => {
+    try {
+      const leadId = parseInt(req.params.leadId);
+      const list = await storage.getShipmentsByLead(leadId);
+      const enriched = list.map(s => ({ ...s, trackingUrl: getTrackingUrl(s.carrier, s.trackingNumber) }));
+      return res.json(enriched);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch shipments" });
+    }
+  });
+
+  // Patient: get their shipments
+  app.get("/api/patient/shipments", async (req: Request, res: Response) => {
+    try {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) return res.status(401).json({ error: "Not authenticated" });
+      const session = await getPatientFromToken(token);
+      if (!session) return res.status(401).json({ error: "Session expired" });
+      const lead = await storage.getLeadByEmail(session.email);
+      if (!lead) return res.json([]);
+      const list = await storage.getShipmentsByLead(lead.id);
+      return res.json(list.map(s => ({ ...s, trackingUrl: getTrackingUrl(s.carrier, s.trackingNumber) })));
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch shipments" });
+    }
+  });
+
   // ===== PATIENT PORTAL ROUTES =====
 
   // Register new patient

@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   Heart, LogOut, User, Pill, Calendar, ClipboardList, Video,
   CheckCircle, Clock, AlertCircle, XCircle, CreditCard,
-  FileText, Activity, Edit, Phone, Mail, Shield, ChevronRight,
+  FileText, Activity, Phone, Shield, ChevronRight, Package,
+  Truck, MapPin, ExternalLink,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { clearPatientSession, getPatientToken, getPatientUser } from "./PatientPortal";
@@ -78,6 +79,17 @@ export default function PatientDashboard() {
     queryFn: async () => {
       const res = await fetch("/api/patient/me", { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) { clearPatientSession(); navigate("/patient"); throw new Error("Session expired"); }
+      return res.json();
+    },
+    enabled: !!token,
+  });
+
+  // Fetch shipments
+  const { data: shipments = [] } = useQuery<any[]>({
+    queryKey: ["/api/patient/shipments"],
+    queryFn: async () => {
+      const res = await fetch("/api/patient/shipments", { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return [];
       return res.json();
     },
     enabled: !!token,
@@ -183,13 +195,16 @@ export default function PatientDashboard() {
           </div>
         ) : (
           <Tabs defaultValue="overview" className="space-y-5">
-            <TabsList className="bg-white border border-gray-200 rounded-xl p-1 h-auto">
+            <TabsList className="bg-white border border-gray-200 rounded-xl p-1 h-auto flex-wrap">
               <TabsTrigger value="overview" className="rounded-lg text-sm" data-testid="tab-overview">Overview</TabsTrigger>
               <TabsTrigger value="prescriptions" className="rounded-lg text-sm" data-testid="tab-prescriptions">
                 Prescriptions {dashboard?.prescriptions?.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{dashboard.prescriptions.length}</Badge>}
               </TabsTrigger>
               <TabsTrigger value="appointments" className="rounded-lg text-sm" data-testid="tab-appointments">
                 Appointments {dashboard?.appointments?.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{dashboard.appointments.length}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="shipments" className="rounded-lg text-sm" data-testid="tab-shipments">
+                Shipments {shipments.length > 0 && <Badge variant="secondary" className="ml-1.5 text-xs">{shipments.length}</Badge>}
               </TabsTrigger>
             </TabsList>
 
@@ -347,6 +362,128 @@ export default function PatientDashboard() {
                     </CardContent>
                   </Card>
                 ))
+              )}
+            </TabsContent>
+
+            {/* SHIPMENTS TAB */}
+            <TabsContent value="shipments" className="space-y-4">
+              {!shipments.length ? (
+                <Card className="border-0 shadow-md">
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <h3 className="font-semibold text-gray-700 mb-1">No shipments yet</h3>
+                    <p className="text-sm text-gray-400">Your medication will appear here once it's been shipped by our pharmacy.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                shipments.map((shipment: any) => {
+                  const statusConfig: Record<string, { label: string; cls: string; icon: any; dot: string }> = {
+                    label_created:  { label: "Label Created",  cls: "bg-gray-100 text-gray-700 border-gray-200",  icon: Package,     dot: "bg-gray-400" },
+                    shipped:        { label: "Shipped",        cls: "bg-blue-100 text-blue-700 border-blue-200",  icon: Truck,       dot: "bg-blue-500" },
+                    in_transit:     { label: "In Transit",     cls: "bg-yellow-100 text-yellow-700 border-yellow-200", icon: MapPin, dot: "bg-yellow-500" },
+                    out_for_delivery: { label: "Out for Delivery", cls: "bg-orange-100 text-orange-700 border-orange-200", icon: Truck, dot: "bg-orange-500" },
+                    delivered:      { label: "Delivered",      cls: "bg-green-100 text-green-700 border-green-200", icon: CheckCircle, dot: "bg-green-500" },
+                    exception:      { label: "Exception",      cls: "bg-red-100 text-red-700 border-red-200",    icon: AlertCircle, dot: "bg-red-500" },
+                  };
+                  const sc = statusConfig[shipment.status] || statusConfig.label_created;
+                  const StatusIcon = sc.icon;
+                  const CARRIER_NAMES: Record<string, string> = { usps: "USPS", ups: "UPS", fedex: "FedEx", dhl: "DHL", amazon: "Amazon" };
+                  const carrierLabel = CARRIER_NAMES[shipment.carrier?.toLowerCase()] || shipment.carrier;
+
+                  const TIMELINE_STEPS = [
+                    { key: "label_created", label: "Label Created" },
+                    { key: "shipped", label: "Shipped" },
+                    { key: "in_transit", label: "In Transit" },
+                    { key: "out_for_delivery", label: "Out for Delivery" },
+                    { key: "delivered", label: "Delivered" },
+                  ];
+                  const stepKeys = TIMELINE_STEPS.map(s => s.key);
+                  const currentIdx = stepKeys.indexOf(shipment.status);
+
+                  return (
+                    <Card key={shipment.id} className="border-0 shadow-md" data-testid={`card-shipment-${shipment.id}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                              <Truck className="w-4 h-4 text-primary" /> {carrierLabel} Shipment
+                            </CardTitle>
+                            <p className="text-xs text-gray-400 mt-0.5 font-mono">#{shipment.trackingNumber}</p>
+                          </div>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${sc.cls}`}>
+                            <StatusIcon className="w-3 h-3" /> {sc.label}
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0 space-y-4">
+                        {/* Timeline bar */}
+                        <div className="flex items-start justify-between">
+                          {TIMELINE_STEPS.map((step, idx) => {
+                            const done = currentIdx >= idx;
+                            const active = currentIdx === idx;
+                            return (
+                              <div key={step.key} className="flex items-center flex-1">
+                                <div className="flex flex-col items-center flex-shrink-0">
+                                  <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 text-xs ${done ? "bg-primary border-primary text-white" : "bg-gray-100 border-gray-300 text-gray-400"} ${active ? "ring-2 ring-primary/20" : ""}`}>
+                                    {done ? <CheckCircle className="w-3.5 h-3.5" /> : <span className="text-[10px]">{idx + 1}</span>}
+                                  </div>
+                                  <span className={`text-[10px] mt-1 text-center font-medium max-w-[52px] leading-tight ${done ? "text-primary" : "text-gray-400"}`}>
+                                    {step.label}
+                                  </span>
+                                </div>
+                                {idx < TIMELINE_STEPS.length - 1 && (
+                                  <div className={`flex-1 h-0.5 mx-1 mb-4 ${done && currentIdx > idx ? "bg-primary" : "bg-gray-200"}`} />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Details */}
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-xs text-gray-400">Carrier</p>
+                            <p className="font-medium text-gray-800">{carrierLabel}</p>
+                          </div>
+                          {shipment.shippedAt && (
+                            <div>
+                              <p className="text-xs text-gray-400">Shipped</p>
+                              <p className="font-medium text-gray-800">{new Date(shipment.shippedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                            </div>
+                          )}
+                          {shipment.estimatedDelivery && (
+                            <div>
+                              <p className="text-xs text-gray-400">Est. Delivery</p>
+                              <p className="font-medium text-gray-800">{new Date(shipment.estimatedDelivery).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                            </div>
+                          )}
+                          {shipment.deliveredAt && (
+                            <div>
+                              <p className="text-xs text-gray-400">Delivered</p>
+                              <p className="font-medium text-green-700 font-semibold">{new Date(shipment.deliveredAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {shipment.notes && (
+                          <div className="bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-gray-600">{shipment.notes}</div>
+                        )}
+
+                        {shipment.trackingUrl && (
+                          <a
+                            href={shipment.trackingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                            data-testid={`link-track-${shipment.id}`}
+                          >
+                            <ExternalLink className="w-4 h-4" /> Track on {carrierLabel}
+                          </a>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })
               )}
             </TabsContent>
 

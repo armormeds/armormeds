@@ -1027,7 +1027,7 @@ function AppointmentCard({
   );
 }
 
-function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, onSendSMS, onOpenCRM }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void; onSendSMS: (lead: Lead) => void; onOpenCRM: (lead: Lead) => void }) {
+function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, onSendSMS, onOpenCRM, onShipOrder }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void; onSendSMS: (lead: Lead) => void; onOpenCRM: (lead: Lead) => void; onShipOrder: (lead: Lead) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   
   const hasExtendedInfo = lead.goals || lead.state || lead.dateOfBirth || lead.weight || 
@@ -1345,6 +1345,15 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, 
                 <FileSignature className="h-4 w-4 mr-1" />
                 Generate Rx
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onShipOrder(lead)}
+                data-testid={`button-ship-order-${lead.id}`}
+              >
+                <Package className="h-4 w-4 mr-1" />
+                Ship Order
+              </Button>
               <Select
                 value={lead.status}
                 onValueChange={(value) => onStatusChange(lead.id, value)}
@@ -1606,6 +1615,9 @@ export default function Admin() {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [selectedAppointmentForNotes, setSelectedAppointmentForNotes] = useState<Appointment | null>(null);
   const [newNoteContent, setNewNoteContent] = useState("");
+  const [showShipmentDialog, setShowShipmentDialog] = useState(false);
+  const [selectedLeadForShipment, setSelectedLeadForShipment] = useState<Lead | null>(null);
+  const [shipmentForm, setShipmentForm] = useState({ carrier: "usps", trackingNumber: "", estimatedDelivery: "", notes: "" });
   const [showAvailabilityDialog, setShowAvailabilityDialog] = useState(false);
   const [newSlotDoctor, setNewSlotDoctor] = useState("");
   const [newSlotDate, setNewSlotDate] = useState("");
@@ -2186,6 +2198,43 @@ export default function Admin() {
     setShowAppointmentDialog(true);
   };
 
+  const createShipmentMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch("/api/admin/shipments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem(ADMIN_TOKEN_KEY)}` },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to create shipment");
+      return json;
+    },
+    onSuccess: () => {
+      toast({ title: "Shipment created", description: "The patient will see tracking info in their portal." });
+      setShowShipmentDialog(false);
+      setSelectedLeadForShipment(null);
+      setShipmentForm({ carrier: "usps", trackingNumber: "", estimatedDelivery: "", notes: "" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const handleShipOrder = (lead: Lead) => {
+    setSelectedLeadForShipment(lead);
+    setShipmentForm({ carrier: "usps", trackingNumber: "", estimatedDelivery: "", notes: "" });
+    setShowShipmentDialog(true);
+  };
+
+  const handleShipmentSubmit = () => {
+    if (!selectedLeadForShipment || !shipmentForm.trackingNumber) return;
+    createShipmentMutation.mutate({
+      leadId: selectedLeadForShipment.id,
+      carrier: shipmentForm.carrier,
+      trackingNumber: shipmentForm.trackingNumber,
+      estimatedDelivery: shipmentForm.estimatedDelivery || undefined,
+      notes: shipmentForm.notes || undefined,
+    });
+  };
+
   const handleAppointmentSubmit = (data: AppointmentFormData) => {
     if (!selectedLeadForAppt) return;
     
@@ -2399,6 +2448,7 @@ export default function Admin() {
                           onScheduleCall={handleScheduleCall}
                           onSendSMS={handleSendSMS}
                           onOpenCRM={handleOpenCRM}
+                          onShipOrder={handleShipOrder}
                         />
                       ))}
                   </div>
@@ -3384,6 +3434,81 @@ export default function Admin() {
                 isSubmitting={createPrescriptionMutation.isPending}
               />
             ) : null}
+          </DialogContent>
+        </Dialog>
+
+        {/* Ship Order Dialog */}
+        <Dialog open={showShipmentDialog} onOpenChange={(open) => { if (!open) { setShowShipmentDialog(false); setSelectedLeadForShipment(null); } }}>
+          <DialogContent className="sm:max-w-[480px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" /> Add Shipment Tracking
+              </DialogTitle>
+            </DialogHeader>
+            {selectedLeadForShipment && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted/30 rounded-md text-sm">
+                  <p className="font-medium">{selectedLeadForShipment.name}</p>
+                  <p className="text-muted-foreground">{selectedLeadForShipment.email}</p>
+                  {selectedLeadForShipment.medicationInterest && <p className="text-muted-foreground mt-0.5">Medication: {selectedLeadForShipment.medicationInterest}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label>Carrier</Label>
+                  <Select value={shipmentForm.carrier} onValueChange={v => setShipmentForm(f => ({ ...f, carrier: v }))}>
+                    <SelectTrigger data-testid="select-shipment-carrier">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="usps">USPS</SelectItem>
+                      <SelectItem value="ups">UPS</SelectItem>
+                      <SelectItem value="fedex">FedEx</SelectItem>
+                      <SelectItem value="dhl">DHL</SelectItem>
+                      <SelectItem value="amazon">Amazon Logistics</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Tracking Number *</Label>
+                  <Input
+                    value={shipmentForm.trackingNumber}
+                    onChange={e => setShipmentForm(f => ({ ...f, trackingNumber: e.target.value }))}
+                    placeholder="e.g. 9400111899223456789012"
+                    data-testid="input-tracking-number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Estimated Delivery (optional)</Label>
+                  <Input
+                    type="date"
+                    value={shipmentForm.estimatedDelivery}
+                    onChange={e => setShipmentForm(f => ({ ...f, estimatedDelivery: e.target.value }))}
+                    data-testid="input-estimated-delivery"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Notes (optional)</Label>
+                  <Input
+                    value={shipmentForm.notes}
+                    onChange={e => setShipmentForm(f => ({ ...f, notes: e.target.value }))}
+                    placeholder="e.g. 30-day supply of Semaglutide"
+                    data-testid="input-shipment-notes"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button variant="outline" className="flex-1" onClick={() => { setShowShipmentDialog(false); setSelectedLeadForShipment(null); }}>
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleShipmentSubmit}
+                    disabled={!shipmentForm.trackingNumber || createShipmentMutation.isPending}
+                    data-testid="button-submit-shipment"
+                  >
+                    {createShipmentMutation.isPending ? "Creating..." : "Create Shipment"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
 

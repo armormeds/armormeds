@@ -251,6 +251,25 @@ export type UpdateProductRequest = {
   benefits?: string[];
   category?: string;
 };
+export const shipments = pgTable("shipments", {
+  id: serial("id").primaryKey(),
+  prescriptionId: integer("prescription_id"),
+  leadId: integer("lead_id").notNull(),
+  carrier: text("carrier").notNull(),
+  trackingNumber: text("tracking_number").notNull(),
+  status: text("status").notNull().default("label_created"),
+  notes: text("notes"),
+  shippedAt: timestamp("shipped_at"),
+  estimatedDelivery: timestamp("estimated_delivery"),
+  deliveredAt: timestamp("delivered_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertShipmentSchema = createInsertSchema(shipments).omit({ id: true, createdAt: true, updatedAt: true, deliveredAt: true });
+export type Shipment = typeof shipments.$inferSelect;
+export type InsertShipment = z.infer<typeof insertShipmentSchema>;
+
 export const insertPatientUserSchema = createInsertSchema(patientUsers).omit({ id: true, createdAt: true, lastLoginAt: true });
 export type PatientUser = typeof patientUsers.$inferSelect;
 export type InsertPatientUser = z.infer<typeof insertPatientUserSchema>;

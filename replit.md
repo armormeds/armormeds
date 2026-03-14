@@ -153,6 +153,15 @@ shared/           # Shared code between frontend and backend
 - **DB Table**: `patient_users` (id, email, name, passwordHash, googleId, avatar, phone, createdAt, lastLoginAt)
 - **API Routes**: POST /api/patient/register, POST /api/patient/login, POST /api/patient/google-auth, GET /api/patient/me, PATCH /api/patient/profile, GET /api/patient/dashboard, POST /api/patient/logout
 
+### Shipping Tracking
+- **Shipments Table**: `shipments` DB table (carrier, trackingNumber, status, shippedAt, estimatedDelivery, deliveredAt, notes, leadId, prescriptionId)
+- **Admin Side**: "Ship Order" button on every lead card → dialog to enter carrier (USPS/UPS/FedEx/DHL/Amazon) + tracking number + optional estimated delivery date + notes
+- **Carrier URL Generation**: Auto-generates direct tracking links for each carrier (USPS tools, UPS track, FedEx track, DHL, Amazon)
+- **Status Stages**: label_created → shipped → in_transit → out_for_delivery → delivered → exception
+- **Patient Portal Tab**: "Shipments" tab in patient dashboard with visual 5-step progress timeline, carrier details, estimated/actual delivery dates, and a direct "Track on [Carrier]" button
+- **API Endpoints**: POST /api/admin/shipments (create), PATCH /api/admin/shipments/:id (update status), DELETE /api/admin/shipments/:id, GET /api/admin/shipments (all), GET /api/admin/shipments/lead/:leadId, GET /api/patient/shipments (patient's own)
+- **Admin Status Updates**: Admins can update shipment status (in_transit, out_for_delivery, delivered, exception) after creating
+
 ### Future Enhancements
 - **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated.
 - **Patient Authentication**: Add proper patient authentication for secure access to appointments and prescriptions
