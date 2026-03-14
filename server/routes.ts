@@ -74,6 +74,7 @@ const DEFAULT_PERMISSIONS: Record<string, AdminPermissions> = {
     manageProducts: true,
     manageUsers: true,
     manageAvailability: true,
+    viewMedicalPHI: true,
   },
   provider: {
     viewLeads: true,
@@ -85,6 +86,7 @@ const DEFAULT_PERMISSIONS: Record<string, AdminPermissions> = {
     manageProducts: false,
     manageUsers: false,
     manageAvailability: true,
+    viewMedicalPHI: true,
   },
   staff: {
     viewLeads: true,
@@ -96,8 +98,23 @@ const DEFAULT_PERMISSIONS: Record<string, AdminPermissions> = {
     manageProducts: false,
     manageUsers: false,
     manageAvailability: false,
+    viewMedicalPHI: false,
   },
 };
+
+const SENSITIVE_PHI_FIELDS = [
+  "dateOfBirth", "medicalConditions", "currentMedications", "allergies",
+  "hasPancreatitis", "hasThyroidCancer", "hasKidneyIssues", "hasDiabetes",
+  "isPregnant", "previousGlp", "glpDetails", "documentPaths",
+] as const;
+
+function stripPHI<T extends Record<string, any>>(lead: T): Omit<T, typeof SENSITIVE_PHI_FIELDS[number]> {
+  const result = { ...lead };
+  for (const field of SENSITIVE_PHI_FIELDS) {
+    delete result[field];
+  }
+  return result;
+}
 
 function generateSecureToken(): string {
   return crypto.randomBytes(32).toString('hex');
@@ -249,12 +266,17 @@ export async function registerRoutes(
         // Generate secure token and store server-side with user info
         const token = generateSecureToken();
         const now = Date.now();
+        const roleDefaults = DEFAULT_PERMISSIONS[user.role] || DEFAULT_PERMISSIONS.staff;
+        const mergedPermissions: AdminPermissions = {
+          ...roleDefaults,
+          ...(user.permissions as AdminPermissions),
+        };
         adminTokens.set(token, { 
           userId: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
-          permissions: user.permissions as AdminPermissions,
+          permissions: mergedPermissions,
           createdAt: now, 
           expiresAt: now + TOKEN_EXPIRY_MS 
         });
@@ -563,7 +585,9 @@ export async function registerRoutes(
 
   app.get(api.leads.list.path, requirePermission("viewLeads"), async (req, res) => {
     const allLeads = await storage.getLeads();
-    res.json(allLeads);
+    const canViewPHI = req.adminSession?.permissions?.viewMedicalPHI;
+    const result = canViewPHI ? allLeads : allLeads.map(stripPHI);
+    res.json(result);
   });
 
   app.patch(api.leads.update.path, requirePermission("editLeads"), async (req, res) => {

@@ -216,6 +216,7 @@ export type AdminPermissions = {
   manageProducts: boolean;
   manageUsers: boolean;
   manageAvailability: boolean;
+  viewMedicalPHI: boolean;
 };
 export type UpdateAdminUserRequest = {
   name?: string;
