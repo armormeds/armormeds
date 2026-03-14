@@ -1190,6 +1190,29 @@ export default function GetStarted() {
                         </FormItem>
                       )}
                     />
+
+                    {isWeightLoss && (
+                      form.watch("hasPancreatitis") === "yes" || form.watch("hasThyroidCancer") === "yes"
+                    ) && (
+                      <div className="p-4 rounded-xl bg-amber-50 border border-amber-300" data-testid="contraindication-warning">
+                        <p className="font-semibold text-amber-900 mb-1">⚠️ Important Notice</p>
+                        <p className="text-sm text-amber-800">
+                          Based on your answers, you may not be a candidate for GLP-1 medications.
+                          Our licensed provider will carefully review your medical history before any prescription is issued.
+                          If you are found ineligible, you will receive a full refund.
+                        </p>
+                      </div>
+                    )}
+
+                    {form.watch("currentMedications") && form.watch("currentMedications")!.trim().length > 2 && (
+                      <div className="p-4 rounded-xl bg-blue-50 border border-blue-200" data-testid="medication-interaction-notice">
+                        <p className="font-semibold text-blue-900 mb-1">💊 Medication Interaction Notice</p>
+                        <p className="text-sm text-blue-800">
+                          You've listed current medications. Please ensure all medications are accurately disclosed —
+                          your provider will review potential interactions before prescribing.
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
