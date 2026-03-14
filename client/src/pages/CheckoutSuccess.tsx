@@ -94,7 +94,7 @@ export default function CheckoutSuccess() {
                 <div>
                   <h3 className="font-semibold text-foreground">Prescription Generated</h3>
                   <p className="text-muted-foreground text-sm">
-                    If approved, you'll receive an email notification when your prescription is ready. No call required!
+                    If approved, your prescription will be ready in your patient portal. Our team may reach out by phone or text with any questions. No call required!
                   </p>
                 </div>
               </div>

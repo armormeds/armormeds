@@ -382,7 +382,7 @@ export default function GetStarted() {
           </div>
           <h2 className="text-2xl font-display font-bold mb-3" data-testid="text-success-title">Form Submitted!</h2>
           <p className="text-muted-foreground mb-6">
-            A licensed provider will review your information within 24-48 hours.
+            Your intake form has been received. A licensed provider will review your information within 24–48 hours and may reach out by phone or text. No email confirmation will be sent at this time.
           </p>
           <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mb-6">
             <span className="flex items-center gap-1">
@@ -1313,7 +1313,7 @@ export default function GetStarted() {
                       <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm text-blue-800">
-                          Document upload is optional. You can skip this step and submit documents later via email if preferred.
+                          Document upload is optional. You can skip this step and submit documents later by contacting our support team if preferred.
                         </p>
                       </div>
                     </div>
