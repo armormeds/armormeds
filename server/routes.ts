@@ -857,7 +857,13 @@ export async function registerRoutes(
         );
       }
 
-      storage.createLeadActivity({ leadId, type: 'prescription_created', summary: `Prescription created: ${medication} ${dosage}`, meta: { prescriptionId: prescription.id, medication, dosage } as any }).catch(() => {});
+      const issuedBy = req.adminSession?.name || req.adminSession?.email || 'Unknown provider';
+      storage.createLeadActivity({
+        leadId,
+        type: 'prescription_created',
+        summary: `Prescription #${prescriptionNumber} issued — ${medication} ${dosage}, Qty: ${quantity}${refills && refills !== "0" ? `, Refills: ${refills}` : ""} — issued by ${issuedBy}`,
+        meta: { prescriptionId: prescription.id, prescriptionNumber, medication, dosage, quantity, refills, providerName, issuedBy } as any
+      }).catch(() => {});
 
       res.status(201).json(prescription);
     } catch (error) {
