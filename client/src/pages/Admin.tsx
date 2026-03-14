@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut, CreditCard, BarChart3, DollarSign, TrendingUp, Shield, Wallet, Globe } from "lucide-react";
+import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut, CreditCard, BarChart3, DollarSign, TrendingUp, Shield, Wallet, Globe, KeyRound, Copy, CheckCheck } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability, AdminPermissions } from "@shared/schema";
 import { LeadCrmPanel } from "@/components/LeadCrmPanel";
@@ -1027,7 +1027,7 @@ function AppointmentCard({
   );
 }
 
-function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, onSendSMS, onOpenCRM, onShipOrder }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void; onSendSMS: (lead: Lead) => void; onOpenCRM: (lead: Lead) => void; onShipOrder: (lead: Lead) => void }) {
+function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, onSendSMS, onOpenCRM, onShipOrder, onResetPassword }: { lead: Lead; onStatusChange: (id: number, status: string) => void; onCreatePrescription: (lead: Lead) => void; onScheduleCall: (lead: Lead) => void; onSendSMS: (lead: Lead) => void; onOpenCRM: (lead: Lead) => void; onShipOrder: (lead: Lead) => void; onResetPassword: (lead: Lead) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   
   const hasExtendedInfo = lead.goals || lead.state || lead.dateOfBirth || lead.weight || 
@@ -1354,6 +1354,15 @@ function LeadCard({ lead, onStatusChange, onCreatePrescription, onScheduleCall, 
                 <Package className="h-4 w-4 mr-1" />
                 Ship Order
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onResetPassword(lead)}
+                data-testid={`button-reset-password-${lead.id}`}
+              >
+                <KeyRound className="h-4 w-4 mr-1" />
+                Reset Password
+              </Button>
               <Select
                 value={lead.status}
                 onValueChange={(value) => onStatusChange(lead.id, value)}
@@ -1630,6 +1639,9 @@ export default function Admin() {
   const [showCRMPanel, setShowCRMPanel] = useState(false);
   const [selectedLeadForCRM, setSelectedLeadForCRM] = useState<Lead | null>(null);
   const [smsMessage, setSmsMessage] = useState("");
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [selectedLeadForReset, setSelectedLeadForReset] = useState<Lead | null>(null);
+  const [resetPasswordResult, setResetPasswordResult] = useState<{ tempPassword: string; patientName: string } | null>(null);
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -2171,6 +2183,25 @@ export default function Admin() {
     setShowCRMPanel(true);
   };
 
+  const handleResetPatientPassword = (lead: Lead) => {
+    setSelectedLeadForReset(lead);
+    setResetPasswordResult(null);
+    setShowResetPasswordDialog(true);
+  };
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ email, leadId }: { email: string; leadId: number }) => {
+      const res = await apiRequest("POST", "/api/admin/patient-reset-password", { email, leadId });
+      return res as { tempPassword: string; patientName: string };
+    },
+    onSuccess: (data) => {
+      setResetPasswordResult(data);
+    },
+    onError: (e: any) => {
+      toast({ title: e.message || "Failed to reset password", variant: "destructive" });
+    },
+  });
+
   const sendSMSMutation = useMutation({
     mutationFn: async ({ phone, message }: { phone: string; message: string }) => {
       return apiRequest("POST", "/api/admin/send-sms", { phone, message });
@@ -2449,6 +2480,7 @@ export default function Admin() {
                           onSendSMS={handleSendSMS}
                           onOpenCRM={handleOpenCRM}
                           onShipOrder={handleShipOrder}
+                          onResetPassword={handleResetPatientPassword}
                         />
                       ))}
                   </div>
@@ -3223,6 +3255,78 @@ export default function Admin() {
             )}
           </div>
         )}
+
+        {/* Reset Patient Password Dialog */}
+        <Dialog open={showResetPasswordDialog} onOpenChange={(open) => {
+          if (!open) {
+            setShowResetPasswordDialog(false);
+            setSelectedLeadForReset(null);
+            setResetPasswordResult(null);
+          }
+        }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <KeyRound className="h-5 w-5 text-primary" />
+                Reset Patient Password
+              </DialogTitle>
+            </DialogHeader>
+            {selectedLeadForReset && (
+              <div className="space-y-4">
+                {!resetPasswordResult ? (
+                  <>
+                    <div className="p-3 bg-muted/30 rounded-md space-y-1">
+                      <div className="text-sm"><span className="font-medium">Patient:</span> {selectedLeadForReset.name}</div>
+                      <div className="text-sm text-muted-foreground">{selectedLeadForReset.email}</div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      This will generate a temporary password for the patient's portal account. Share it with them by phone or SMS, and ask them to change it after logging in.
+                    </p>
+                    <p className="text-sm font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-md px-3 py-2">
+                      If this patient doesn't have a portal account yet, this will fail. They must register at /patient first.
+                    </p>
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>Cancel</Button>
+                      <Button
+                        onClick={() => resetPasswordMutation.mutate({ email: selectedLeadForReset.email, leadId: selectedLeadForReset.id })}
+                        disabled={resetPasswordMutation.isPending}
+                        data-testid="button-confirm-reset-password"
+                      >
+                        {resetPasswordMutation.isPending ? "Generating..." : "Generate Temp Password"}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-3 bg-green-50 border border-green-100 rounded-md space-y-1">
+                      <div className="text-sm font-medium text-green-800">Password reset successful</div>
+                      <div className="text-sm text-green-700">Account: {resetPasswordResult.patientName}</div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Temporary password — share this with the patient securely:</p>
+                      <div className="flex items-center gap-2 bg-muted/40 border rounded-md px-3 py-2">
+                        <code className="text-base font-mono flex-1 select-all" data-testid="text-temp-password">{resetPasswordResult.tempPassword}</code>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 shrink-0"
+                          onClick={() => { navigator.clipboard.writeText(resetPasswordResult!.tempPassword); toast({ title: "Copied to clipboard" }); }}
+                          data-testid="button-copy-temp-password"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Ask the patient to log in with this password and change it immediately from their profile settings.</p>
+                    <div className="flex justify-end">
+                      <Button onClick={() => { setShowResetPasswordDialog(false); setResetPasswordResult(null); }}>Done</Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showSMSDialog} onOpenChange={(open) => {
           if (!open) {

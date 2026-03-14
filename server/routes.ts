@@ -1464,6 +1464,31 @@ export async function registerRoutes(
     }
   });
 
+  app.post('/api/admin/patient-reset-password', requirePermission("editLeads"), async (req, res) => {
+    try {
+      const { email, leadId } = req.body;
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ error: "Patient email is required" });
+      }
+      const patient = await storage.getPatientByEmail(email.toLowerCase());
+      if (!patient) {
+        return res.status(404).json({ error: "No patient portal account found for this email address" });
+      }
+      const chars = "ABCDEFGHJKMNPQRSTWXYZabcdefghjkmnpqrstwxyz23456789";
+      const tempPassword = "Tmp!" + Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      const passwordHash = bcrypt.hashSync(tempPassword, 10);
+      await storage.updatePatient(patient.id, { passwordHash });
+      const issuedBy = req.adminSession?.name || req.adminSession?.email || "Admin";
+      if (leadId) {
+        storage.createLeadActivity({ leadId: Number(leadId), type: 'other', summary: `Patient portal password reset by ${issuedBy}` }).catch(() => {});
+      }
+      res.json({ success: true, tempPassword, patientName: patient.name });
+    } catch (error: any) {
+      console.error("Error resetting patient password:", error);
+      res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
+
   app.get('/api/admin/sms-status', requirePermission("viewLeads"), async (_req, res) => {
     res.json({ configured: isTwilioConfigured() });
   });
