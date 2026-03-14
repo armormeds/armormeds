@@ -359,6 +359,16 @@ export default function GetStarted() {
 
   const progress = (currentStep / TOTAL_STEPS) * 100;
 
+  const dobValue = form.watch("dateOfBirth");
+  const isUnderAge = (() => {
+    if (!dobValue) return false;
+    const dob = new Date(dobValue);
+    const today = new Date();
+    const age = today.getFullYear() - dob.getFullYear() -
+      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+    return age < 18;
+  })();
+
   if (isSuccess) {
     return (
       <div className="min-h-screen pt-24 pb-16 bg-background flex items-center justify-center px-4">
@@ -759,6 +769,11 @@ export default function GetStarted() {
                             />
                           </FormControl>
                           <FormMessage />
+                          {isUnderAge && (
+                            <p className="text-sm text-red-600 font-medium mt-1 flex items-center gap-2" data-testid="text-underage-warning">
+                              ⚠️ You must be 18 or older to use this service. Please speak with a doctor in person.
+                            </p>
+                          )}
                         </FormItem>
                       )}
                     />
@@ -1498,6 +1513,7 @@ export default function GetStarted() {
                   <Button
                     type="button"
                     onClick={nextStep}
+                    disabled={currentStep === 2 && isUnderAge}
                     className="h-12 px-8 rounded-xl"
                     data-testid="button-next-step"
                   >
