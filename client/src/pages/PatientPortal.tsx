@@ -130,9 +130,22 @@ export default function PatientPortal() {
     }
   };
 
+  const inactivityLogout = new URLSearchParams(window.location.search).get("reason") === "inactivity";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100 flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
+        {inactivityLogout && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800"
+            data-testid="notice-inactivity-logout"
+          >
+            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <p>You were signed out due to inactivity. Please sign in again to access your portal.</p>
+          </motion.div>
+        )}
         {/* Logo */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <div className="inline-flex items-center gap-2.5 mb-4">

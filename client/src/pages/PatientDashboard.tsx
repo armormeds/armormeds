@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { clearPatientSession, getPatientToken, getPatientUser } from "./PatientPortal";
+import { useInactivityTimeout } from "@/hooks/use-inactivity-timeout";
 
 const STEPS = [
   { label: "Intake Submitted", icon: FileText },
@@ -130,6 +131,12 @@ export default function PatientDashboard() {
     clearPatientSession();
     navigate("/patient");
   };
+
+  useInactivityTimeout(async () => {
+    await fetch("/api/patient/logout", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    clearPatientSession();
+    navigate("/patient?reason=inactivity");
+  }, 15 * 60 * 1000);
 
   const user = profile || cachedUser;
   const stepsDone = dashboard?.order ? getStepsDone(dashboard.order.status, dashboard.order.paymentStatus, dashboard.order.prescriptionStatus) : [false, false, false, false];
