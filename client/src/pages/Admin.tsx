@@ -18,6 +18,7 @@ import { LeadCrmPanel } from "@/components/LeadCrmPanel";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
 import { useState, useRef, useEffect } from "react";
+import { useAdminInactivityTimeout } from "@/hooks/use-admin-inactivity-timeout";
 import { useForm } from "react-hook-form";
 
 const ADMIN_TOKEN_KEY = "wellness_admin_token";
@@ -1704,6 +1705,23 @@ export default function Admin() {
     });
   };
 
+  const handleInactivityLogout = async () => {
+    const token = localStorage.getItem(ADMIN_TOKEN_KEY);
+    if (token) {
+      fetch("/api/admin/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) }).catch(() => {});
+    }
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    localStorage.removeItem(ADMIN_USER_KEY);
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    toast({ title: "Session expired", description: "You were logged out due to inactivity.", variant: "destructive" });
+  };
+
+  const { showWarning: showInactivityWarning, secondsLeft: inactivitySecondsLeft, stayLoggedIn } = useAdminInactivityTimeout(
+    handleInactivityLogout,
+    isAuthenticated === true
+  );
+
   const { data: leads, isLoading: leadsLoading, refetch: refetchLeads } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
     enabled: isAuthenticated === true,
@@ -3335,6 +3353,45 @@ export default function Admin() {
             )}
           </div>
         )}
+
+        {/* Admin Session Inactivity Warning Dialog */}
+        <Dialog open={showInactivityWarning} onOpenChange={() => {}}>
+          <DialogContent className="max-w-sm" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-amber-700">
+                <Clock className="h-5 w-5" />
+                Session Expiring Soon
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Your admin session will expire due to inactivity. To protect patient data, you will be logged out in:
+              </p>
+              <div className="text-center py-4">
+                <span className="text-5xl font-bold font-mono tabular-nums text-amber-600" data-testid="text-inactivity-countdown">
+                  {String(Math.floor(inactivitySecondsLeft / 60)).padStart(2, "0")}:{String(inactivitySecondsLeft % 60).padStart(2, "0")}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleInactivityLogout}
+                  data-testid="button-logout-now"
+                >
+                  Log Out Now
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={stayLoggedIn}
+                  data-testid="button-stay-logged-in"
+                >
+                  Stay Logged In
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Reset Patient Password Dialog */}
         <Dialog open={showResetPasswordDialog} onOpenChange={(open) => {
