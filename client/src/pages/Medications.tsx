@@ -3,6 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Check, Info, Shield } from "lucide-react";
 
+const SAFETY_LINKS: Record<string, string> = {
+  semaglutide: "https://www.drugs.com/semaglutide.html",
+  tirzepatide: "https://www.drugs.com/tirzepatide.html",
+  finasteride: "https://www.drugs.com/finasteride.html",
+  minoxidil:   "https://www.drugs.com/minoxidil.html",
+  sildenafil:  "https://www.drugs.com/sildenafil.html",
+  tadalafil:   "https://www.drugs.com/tadalafil.html",
+};
+
+function getSafetyLink(name: string): string | null {
+  const key = Object.keys(SAFETY_LINKS).find(k => name.toLowerCase().includes(k));
+  return key ? SAFETY_LINKS[key] : null;
+}
+
 export default function Medications() {
   const { data: allProducts, isLoading } = useProducts();
   const products = allProducts?.filter(p => p.category === "weight-loss");
@@ -80,6 +94,19 @@ export default function Medications() {
                     </Link>
                     <p className="text-center text-sm text-slate-400 mt-4 flex items-center justify-center gap-2">
                       <Shield className="w-4 h-4" /> 100% Online Process
+                    </p>
+                    <p className="text-center text-xs text-slate-400 mt-3">
+                      Prescription required. Side effects may occur.{" "}
+                      {getSafetyLink(product.name) && (
+                        <a
+                          href={getSafetyLink(product.name)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-slate-600"
+                        >
+                          View safety information
+                        </a>
+                      )}
                     </p>
                   </div>
                 </div>
