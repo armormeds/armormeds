@@ -1,4 +1,4 @@
-import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, leadActivities, leadNotes, leadTags, leadTasks, patientUsers, shipments, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest, type LeadActivity, type InsertLeadActivity, type LeadNote, type InsertLeadNote, type LeadTag, type InsertLeadTag, type LeadTask, type InsertLeadTask, type PatientUser, type InsertPatientUser, type Shipment, type InsertShipment } from "@shared/schema";
+import { products, leads, prescriptions, appointments, callNotes, providerAvailability, adminUsers, leadActivities, leadNotes, leadTags, leadTasks, patientUsers, shipments, smsLogs, type Product, type InsertProduct, type InsertLead, type Lead, type UpdateLeadRequest, type UpdateProductRequest, type Prescription, type InsertPrescription, type Appointment, type InsertAppointment, type CallNote, type InsertCallNote, type ProviderAvailability, type InsertProviderAvailability, type AdminUser, type InsertAdminUser, type UpdateAdminUserRequest, type LeadActivity, type InsertLeadActivity, type LeadNote, type InsertLeadNote, type LeadTag, type InsertLeadTag, type LeadTask, type InsertLeadTask, type PatientUser, type InsertPatientUser, type Shipment, type InsertShipment, type SmsLog, type InsertSmsLog } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, gte, and } from "drizzle-orm";
 
@@ -65,6 +65,10 @@ export interface IStorage {
   createLeadTask(task: InsertLeadTask): Promise<LeadTask>;
   updateLeadTask(id: number, updates: Partial<LeadTask>): Promise<LeadTask | undefined>;
   deleteLeadTask(id: number): Promise<boolean>;
+  // SMS Logs
+  createSmsLog(log: InsertSmsLog): Promise<SmsLog>;
+  getSmsLogs(limit?: number): Promise<SmsLog[]>;
+  getSmsLogsByLead(leadId: number): Promise<SmsLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -468,6 +472,19 @@ export class DatabaseStorage implements IStorage {
     if (productsToInsert.length > 0) {
       await db.insert(products).values(productsToInsert);
     }
+  }
+
+  async createSmsLog(log: InsertSmsLog): Promise<SmsLog> {
+    const [created] = await db.insert(smsLogs).values(log as any).returning();
+    return created;
+  }
+
+  async getSmsLogs(limit = 200): Promise<SmsLog[]> {
+    return await db.select().from(smsLogs).orderBy(desc(smsLogs.sentAt)).limit(limit);
+  }
+
+  async getSmsLogsByLead(leadId: number): Promise<SmsLog[]> {
+    return await db.select().from(smsLogs).where(eq(smsLogs.leadId, leadId)).orderBy(desc(smsLogs.sentAt));
   }
 }
 

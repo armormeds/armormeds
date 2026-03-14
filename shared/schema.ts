@@ -274,3 +274,21 @@ export type InsertShipment = z.infer<typeof insertShipmentSchema>;
 export const insertPatientUserSchema = createInsertSchema(patientUsers).omit({ id: true, createdAt: true, lastLoginAt: true });
 export type PatientUser = typeof patientUsers.$inferSelect;
 export type InsertPatientUser = z.infer<typeof insertPatientUserSchema>;
+
+export const smsLogs = pgTable("sms_logs", {
+  id: serial("id").primaryKey(),
+  recipientPhone: text("recipient_phone").notNull(),
+  recipientName: text("recipient_name"),
+  message: text("message").notNull(),
+  messageType: text("message_type").notNull().default("custom"),
+  sentBy: text("sent_by").notNull().default("system"),
+  twilioSid: text("twilio_sid"),
+  status: text("status").notNull().default("sent"),
+  errorMessage: text("error_message"),
+  leadId: integer("lead_id"),
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+});
+
+export const insertSmsLogSchema = createInsertSchema(smsLogs).omit({ id: true, sentAt: true });
+export type SmsLog = typeof smsLogs.$inferSelect;
+export type InsertSmsLog = z.infer<typeof insertSmsLogSchema>;

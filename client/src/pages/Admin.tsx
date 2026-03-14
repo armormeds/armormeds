@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Users, Package, ArrowLeft, Mail, Phone, MessageSquare, Calendar, RefreshCw, FileText, ChevronDown, ChevronUp, User, MapPin, Target, Pill, Heart, Scale, Ruler, ClipboardList, CheckCircle, AlertCircle, ExternalLink, Plus, Pencil, Trash2, X, FileSignature, Printer, Video, Clock, StickyNote, Play, Lock, LogOut, CreditCard, BarChart3, DollarSign, TrendingUp, Shield, Wallet, Globe, KeyRound, Copy, CheckCheck } from "lucide-react";
 import { Link } from "wouter";
-import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability, AdminPermissions } from "@shared/schema";
+import type { Lead, Product, Prescription, Appointment, CallNote, ProviderAvailability, AdminPermissions, SmsLog } from "@shared/schema";
 import { LeadCrmPanel } from "@/components/LeadCrmPanel";
 import { buildUrl } from "@shared/routes";
 import { format } from "date-fns";
@@ -1740,6 +1740,11 @@ export default function Admin() {
     enabled: isAuthenticated === true && currentUser?.permissions?.manageUsers === true,
   });
 
+  const { data: smsLogData, isLoading: smsLogsLoading, refetch: refetchSmsLogs } = useQuery<SmsLog[]>({
+    queryKey: ["/api/admin/sms-logs"],
+    enabled: isAuthenticated === true && activeTab === "smslog",
+  });
+
   const { data: payments, isLoading: paymentsLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/payments"],
     enabled: isAuthenticated === true,
@@ -2362,6 +2367,7 @@ export default function Admin() {
               else if (activeTab === "products") refetchProducts();
               else if (activeTab === "appointments") refetchAppointments();
               else if (activeTab === "users") refetchUsers();
+              else if (activeTab === "smslog") refetchSmsLogs();
               else refetchAvailability();
             }} data-testid="button-refresh">
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -2448,6 +2454,17 @@ export default function Admin() {
               )}
             </Button>
           )}
+          <Button
+            variant={activeTab === "smslog" ? "default" : "outline"}
+            onClick={() => setActiveTab("smslog")}
+            data-testid="button-tab-smslog"
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            SMS Log
+            {smsLogData && smsLogData.length > 0 && (
+              <Badge variant="secondary" className="ml-2">{smsLogData.length}</Badge>
+            )}
+          </Button>
         </div>
 
         {activeTab === "leads" && (
@@ -3103,6 +3120,69 @@ export default function Admin() {
                     <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium mb-2">No payments yet</h3>
                     <p className="text-muted-foreground">Payment data will appear here once customers make purchases.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "smslog" && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  SMS Audit Log
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">Complete record of all text messages sent by the system and admin users.</p>
+              </CardHeader>
+              <CardContent>
+                {smsLogsLoading ? (
+                  <div className="space-y-3">
+                    {[1,2,3,4,5].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+                  </div>
+                ) : !smsLogData || smsLogData.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                    <p>No SMS messages have been sent yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b">
+                      <div className="col-span-2">Date / Time</div>
+                      <div className="col-span-2">Recipient</div>
+                      <div className="col-span-2">Phone</div>
+                      <div className="col-span-3">Message</div>
+                      <div className="col-span-1">Type</div>
+                      <div className="col-span-1">Sent By</div>
+                      <div className="col-span-1">Status</div>
+                    </div>
+                    {smsLogData.map((log) => (
+                      <div key={log.id} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm rounded-lg hover:bg-muted/30 border border-transparent hover:border-border transition-colors" data-testid={`row-smslog-${log.id}`}>
+                        <div className="col-span-2 text-muted-foreground text-xs">
+                          {format(new Date(log.sentAt), "MMM d, yyyy")}
+                          <br />
+                          <span className="text-xs">{format(new Date(log.sentAt), "h:mm a")}</span>
+                        </div>
+                        <div className="col-span-2 font-medium truncate">{log.recipientName || "—"}</div>
+                        <div className="col-span-2 text-muted-foreground font-mono text-xs">{log.recipientPhone}</div>
+                        <div className="col-span-3 text-muted-foreground text-xs line-clamp-2">{log.message}</div>
+                        <div className="col-span-1">
+                          <Badge variant="outline" className="text-xs capitalize whitespace-nowrap">
+                            {log.messageType.replace(/_/g, " ")}
+                          </Badge>
+                        </div>
+                        <div className="col-span-1 text-xs text-muted-foreground truncate">{log.sentBy}</div>
+                        <div className="col-span-1">
+                          {log.status === "sent" ? (
+                            <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">Sent</Badge>
+                          ) : (
+                            <Badge variant="destructive" className="text-xs" title={log.errorMessage || ""}>Failed</Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>

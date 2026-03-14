@@ -8,6 +8,7 @@ import { getUncachableStripeClient } from "./stripeClient";
 import { db } from "./db";
 import { sql, eq } from "drizzle-orm";
 import { adminUsers } from "@shared/schema";
+import type { SmsLog } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import type { AdminUser, AdminPermissions } from "@shared/schema";
@@ -852,9 +853,11 @@ export async function registerRoutes(
       });
 
       if (patientPhone) {
-        sendPrescriptionReadySMS(patientPhone, patientName, medication).catch(err => 
-          console.error('SMS notification failed for prescription:', err)
-        );
+        sendPrescriptionReadySMS(patientPhone, patientName, medication).then(result => {
+          const firstName = patientName.split(' ')[0];
+          const body = `Hi ${firstName}, your ${medication} prescription from ArmorMeds is ready. Log in to your patient portal to view details. Questions? Reply to this message or call us.`;
+          storage.createSmsLog({ recipientPhone: patientPhone, recipientName: patientName, message: body, messageType: "prescription_ready", sentBy: "system", twilioSid: result.sid || null, status: result.success ? "sent" : "failed", errorMessage: result.success ? null : (result.error || null), leadId }).catch(() => {});
+        }).catch(err => console.error('SMS notification failed for prescription:', err));
       }
 
       const issuedBy = req.adminSession?.name || req.adminSession?.email || 'Unknown provider';
@@ -969,9 +972,9 @@ export async function registerRoutes(
       await storage.updateLead(leadId, { status: 'follow-up' });
 
       if (patientPhone) {
-        sendAppointmentScheduledSMS(patientPhone, patientName, doctorName, new Date(scheduledAt), videoLink).catch(err =>
-          console.error('SMS notification failed for appointment:', err)
-        );
+        sendAppointmentScheduledSMS(patientPhone, patientName, doctorName, new Date(scheduledAt), videoLink).then(result => {
+          storage.createSmsLog({ recipientPhone: patientPhone, recipientName: patientName, message: `Appointment confirmation SMS for ${doctorName}`, messageType: "appointment_scheduled", sentBy: "system", twilioSid: result.sid || null, status: result.success ? "sent" : "failed", errorMessage: result.success ? null : (result.error || null), leadId }).catch(() => {});
+        }).catch(err => console.error('SMS notification failed for appointment:', err));
       }
 
       storage.createLeadActivity({ leadId, type: 'appointment_scheduled', summary: `Appointment scheduled with ${doctorName}`, meta: { appointmentId: appointment.id, doctorName, scheduledAt } as any }).catch(() => {});
@@ -1214,9 +1217,9 @@ export async function registerRoutes(
       await storage.updateLead(lead.id, { status: 'follow-up' });
 
       if (patientPhone) {
-        sendAppointmentScheduledSMS(patientPhone.trim(), patientName.trim(), slot.doctorName, new Date(slot.startAt)).catch(err =>
-          console.error('SMS notification failed for self-scheduled appointment:', err)
-        );
+        sendAppointmentScheduledSMS(patientPhone.trim(), patientName.trim(), slot.doctorName, new Date(slot.startAt)).then(result => {
+          storage.createSmsLog({ recipientPhone: patientPhone.trim(), recipientName: patientName.trim(), message: `Appointment confirmation SMS for ${slot.doctorName}`, messageType: "appointment_scheduled", sentBy: "system", twilioSid: result.sid || null, status: result.success ? "sent" : "failed", errorMessage: result.success ? null : (result.error || null), leadId: lead.id }).catch(() => {});
+        }).catch(err => console.error('SMS notification failed for self-scheduled appointment:', err));
       }
 
       res.status(201).json(appointment);
@@ -1448,6 +1451,18 @@ export async function registerRoutes(
       }
 
       const result = await sendCustomSMS(phone, message.trim());
+      const sentBy = req.adminSession?.name || req.adminSession?.email || "Admin";
+
+      storage.createSmsLog({
+        recipientPhone: phone,
+        message: message.trim(),
+        messageType: "custom",
+        sentBy,
+        twilioSid: result.sid || null,
+        status: result.success ? "sent" : "failed",
+        errorMessage: result.success ? null : (result.error || null),
+        leadId: leadId ? Number(leadId) : null,
+      }).catch(() => {});
 
       if (!result.success) {
         return res.status(400).json({ error: result.error || "Failed to send SMS" });
@@ -1491,6 +1506,16 @@ export async function registerRoutes(
 
   app.get('/api/admin/sms-status', requirePermission("viewLeads"), async (_req, res) => {
     res.json({ configured: isTwilioConfigured() });
+  });
+
+  app.get('/api/admin/sms-logs', requirePermission("viewLeads"), async (_req, res) => {
+    try {
+      const logs = await storage.getSmsLogs(500);
+      res.json(logs);
+    } catch (error) {
+      console.error('Error fetching SMS logs:', error);
+      res.status(500).json({ error: 'Failed to fetch SMS logs' });
+    }
   });
 
   // CRM: Lead Activities (timeline)

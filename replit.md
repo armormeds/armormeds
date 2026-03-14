@@ -162,6 +162,15 @@ shared/           # Shared code between frontend and backend
 - **API Endpoints**: POST /api/admin/shipments (create), PATCH /api/admin/shipments/:id (update status), DELETE /api/admin/shipments/:id, GET /api/admin/shipments (all), GET /api/admin/shipments/lead/:leadId, GET /api/patient/shipments (patient's own)
 - **Admin Status Updates**: Admins can update shipment status (in_transit, out_for_delivery, delivered, exception) after creating
 
+### SMS Audit Trail
+- **sms_logs Table**: `sms_logs` DB table (recipientPhone, recipientName, message, messageType, sentBy, twilioSid, status, errorMessage, leadId, sentAt)
+- **Message Types**: `custom` (admin manual), `prescription_ready` (auto on Rx), `appointment_scheduled` (auto on booking)
+- **Sent By Field**: Stores admin name/email or "system" for automated messages
+- **Status Tracking**: `sent` or `failed` with errorMessage for failed deliveries; Twilio SID stored for every message
+- **All SMS Paths Logged**: manual admin SMS, prescription ready SMS, admin-scheduled appointment SMS, patient self-scheduled SMS
+- **Admin Dashboard**: "SMS Log" tab shows all messages in a table — date/time, recipient, phone, message preview, type badge, sent by, sent/failed status
+- **API Endpoint**: GET /api/admin/sms-logs (requires viewLeads permission)
+
 ### Future Enhancements
 - **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated.
 - **Patient Authentication**: Add proper patient authentication for secure access to appointments and prescriptions
