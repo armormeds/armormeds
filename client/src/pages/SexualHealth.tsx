@@ -5,18 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Check, ArrowRight, Shield, Lock, Truck } from "lucide-react";
+import { SafetyDisclosure } from "@/components/SafetyDisclosure";
 import type { Product } from "@shared/schema";
 
-const SAFETY_LINKS: Record<string, string> = {
-  sildenafil: "https://www.drugs.com/sildenafil.html",
-  tadalafil:  "https://www.drugs.com/tadalafil.html",
-  vardenafil: "https://www.drugs.com/vardenafil.html",
-};
-
-function getSafetyLink(name: string): string | null {
-  const key = Object.keys(SAFETY_LINKS).find(k => name.toLowerCase().includes(k));
-  return key ? SAFETY_LINKS[key] : null;
-}
 
 export default function SexualHealth() {
   const { data: allProducts, isLoading } = useQuery<Product[]>({
@@ -139,14 +130,7 @@ export default function SexualHealth() {
                           Get Started
                         </Button>
                       </Link>
-                      {getSafetyLink(product.name) && (
-                        <p className="text-xs text-muted-foreground mt-3 text-center">
-                          Prescription required. Side effects may occur.{" "}
-                          <a href={getSafetyLink(product.name)!} target="_blank" rel="noopener noreferrer" className="underline">
-                            View safety info
-                          </a>
-                        </p>
-                      )}
+                      <SafetyDisclosure productName={product.name} />
                     </CardContent>
                   </Card>
                 </motion.div>
