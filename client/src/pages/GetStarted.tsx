@@ -1433,7 +1433,25 @@ export default function GetStarted() {
                 )}
               </AnimatePresence>
 
-              <div className="flex justify-between gap-4 mt-8 pt-6 border-t">
+              {currentStep === 8 && (() => {
+                const selectedProduct = stripeProducts.find(p =>
+                  p.prices.some((price: any) => price.id === selectedPriceId)
+                );
+                const selectedPrice = selectedProduct?.prices.find((p: any) => p.id === selectedPriceId);
+                const amount = selectedPrice?.unit_amount ? (selectedPrice.unit_amount / 100).toFixed(2) : null;
+                const interval = selectedPrice?.recurring?.interval ?? "month";
+                return amount ? (
+                  <div className="mb-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-sm text-blue-800" data-testid="billing-disclosure">
+                    <p className="font-semibold mb-1">💳 Billing Summary</p>
+                    <p>
+                      You will be charged <strong>${amount}/{interval}</strong> for <strong>{selectedProduct?.name}</strong>.
+                      Your subscription renews automatically each {interval}. You may cancel at any time by contacting us.
+                    </p>
+                  </div>
+                ) : null;
+              })()}
+
+              <div className="flex justify-between gap-4 pt-6 border-t">
                 {currentStep > 1 ? (
                   <Button
                     type="button"
