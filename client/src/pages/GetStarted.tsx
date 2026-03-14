@@ -97,6 +97,8 @@ const formSchema = insertLeadSchema.extend({
   previousGlp: z.string().optional(),
   glpDetails: z.string().optional(),
   consentGiven: z.string().optional(),
+  consentAccuracy: z.string().optional(),
+  consentTelehealth: z.string().optional(),
   documentPaths: z.array(z.string()).optional(),
 });
 
@@ -243,6 +245,8 @@ export default function GetStarted() {
       previousGlp: "",
       glpDetails: "",
       consentGiven: "",
+      consentAccuracy: "",
+      consentTelehealth: "",
       documentPaths: [],
     }
   });
@@ -1334,31 +1338,77 @@ export default function GetStarted() {
                       </div>
                     </div>
 
-                    <FormField
-                      control={form.control}
-                      name="consentGiven"
-                      render={({ field }) => (
-                        <FormItem className="flex items-start space-x-3 space-y-0 p-4 rounded-xl border border-gray-200">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value === "yes"}
-                              onCheckedChange={(checked) => {
-                                field.onChange(checked ? "yes" : "");
-                              }}
-                              data-testid="checkbox-consent"
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel className="font-medium">
-                              I agree to the terms and conditions
-                            </FormLabel>
-                            <p className="text-sm text-slate-500">
-                              By checking this box, I confirm that the information provided is accurate and I consent to telehealth services.
-                            </p>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
+                    <div className="space-y-3">
+                      <FormField
+                        control={form.control}
+                        name="consentAccuracy"
+                        render={({ field }) => (
+                          <FormItem className="flex items-start space-x-3 space-y-0 p-4 rounded-xl border border-gray-200">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === "yes"}
+                                onCheckedChange={(checked) => field.onChange(checked ? "yes" : "")}
+                                data-testid="checkbox-consent-accuracy"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">Medical Information Accuracy</FormLabel>
+                              <p className="text-sm text-slate-500">
+                                I confirm all information I have provided is accurate and complete to the best of my knowledge.
+                              </p>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="consentTelehealth"
+                        render={({ field }) => (
+                          <FormItem className="flex items-start space-x-3 space-y-0 p-4 rounded-xl border border-gray-200">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === "yes"}
+                                onCheckedChange={(checked) => field.onChange(checked ? "yes" : "")}
+                                data-testid="checkbox-consent-telehealth"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">Telehealth Services Consent</FormLabel>
+                              <p className="text-sm text-slate-500">
+                                I understand I am receiving telehealth services remotely, not in-person care, and I have the right to stop treatment at any time.
+                              </p>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="consentGiven"
+                        render={({ field }) => (
+                          <FormItem className="flex items-start space-x-3 space-y-0 p-4 rounded-xl border border-gray-200">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === "yes"}
+                                onCheckedChange={(checked) => field.onChange(checked ? "yes" : "")}
+                                data-testid="checkbox-consent"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium">Terms, Privacy & HIPAA</FormLabel>
+                              <p className="text-sm text-slate-500">
+                                I have read and agree to the{" "}
+                                <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline text-primary">Terms of Service</a>
+                                {" "}and{" "}
+                                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-primary">Privacy Policy</a>
+                                , and consent to my health information being used as described therein.
+                              </p>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     <FormField
                       control={form.control}
@@ -1414,7 +1464,12 @@ export default function GetStarted() {
                   <Button
                     type="button"
                     onClick={handleCheckout}
-                    disabled={form.watch("consentGiven") !== "yes" || isCheckoutLoading}
+                    disabled={
+                      form.watch("consentGiven") !== "yes" ||
+                      form.watch("consentAccuracy") !== "yes" ||
+                      form.watch("consentTelehealth") !== "yes" ||
+                      isCheckoutLoading
+                    }
                     className="h-12 px-8 rounded-xl"
                     data-testid="button-checkout"
                   >
