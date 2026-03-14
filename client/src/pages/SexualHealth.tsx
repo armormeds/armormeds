@@ -15,8 +15,8 @@ export default function SexualHealth() {
   const products = allProducts?.filter(p => p.category === "sexual-health") || [];
 
   const stats = [
-    { value: "500K+", label: "Men Treated" },
-    { value: "95%", label: "Effective Rate" },
+    { value: "Thousands", label: "of Men Treated" },
+    { value: "Clinically", label: "Proven Effective" },
     { value: "100%", label: "Discreet" },
     { value: "$2", label: "Per Dose" }
   ];

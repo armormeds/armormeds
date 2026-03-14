@@ -15,9 +15,9 @@ export default function HairLoss() {
   const products = allProducts?.filter(p => p.category === "hair-loss") || [];
 
   const stats = [
-    { value: "100K+", label: "Patients Treated" },
-    { value: "90%", label: "See Results" },
-    { value: "4.8", label: "Patient Rating" },
+    { value: "Thousands", label: "of Patients Treated" },
+    { value: "Clinically", label: "Proven Treatments" },
+    { value: "Highly", label: "Rated Providers" },
     { value: "$49", label: "Starting Price" }
   ];
 

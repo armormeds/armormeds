@@ -64,10 +64,10 @@ export default function Home() {
   ];
 
   const stats = [
-    { value: "50K+", label: "Happy Patients" },
-    { value: "15%", label: "Avg. Weight Loss" },
-    { value: "4.9", label: "Patient Rating" },
-    { value: "24hr", label: "Provider Review" }
+    { value: "Thousands", label: "of Patients Served" },
+    { value: "Clinically", label: "Proven Results" },
+    { value: "Highly", label: "Rated Providers" },
+    { value: "24-48hr", label: "Provider Review" }
   ];
 
   const faqs = [
@@ -371,7 +371,7 @@ export default function Home() {
               { icon: <ShieldCheck className="w-6 h-6" />, label: "HIPAA Compliant" },
               { icon: <Award className="w-6 h-6" />, label: "Licensed Providers" },
               { icon: <Truck className="w-6 h-6" />, label: "Free Shipping" },
-              { icon: <Users className="w-6 h-6" />, label: "50K+ Patients" }
+              { icon: <Users className="w-6 h-6" />, label: "Patients Nationwide" }
             ].map((badge, idx) => (
               <div key={idx} className="flex items-center justify-center gap-3 text-muted-foreground">
                 <span className="text-primary">{badge.icon}</span>
