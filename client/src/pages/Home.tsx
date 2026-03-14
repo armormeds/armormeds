@@ -356,6 +356,10 @@ export default function Home() {
               </Card>
             ))}
           </div>
+
+          <p className="text-center text-xs text-muted-foreground mt-8 max-w-2xl mx-auto" data-testid="text-testimonial-disclaimer">
+            * Results shown are not typical. Individual results vary based on starting weight, lifestyle, diet, and adherence to treatment. These testimonials reflect individual experiences.
+          </p>
         </div>
       </section>
 
