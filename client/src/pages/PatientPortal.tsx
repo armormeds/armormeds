@@ -94,6 +94,7 @@ export default function PatientPortal() {
       callback: (resp: any) => callbackRef.current?.(resp),
       ux_mode: "popup",
     });
+    const btnWidth = Math.max(googleBtnRef.current.offsetWidth || 0, 300);
     window.google.accounts.id.renderButton(googleBtnRef.current, {
       type: "standard",
       shape: "rectangular",
@@ -101,7 +102,7 @@ export default function PatientPortal() {
       text: "continue_with",
       size: "large",
       logo_alignment: "left",
-      width: googleBtnRef.current.offsetWidth || 400,
+      width: btnWidth,
     });
     setGoogleLoaded(true);
   }, []);
@@ -221,11 +222,7 @@ export default function PatientPortal() {
               {/* Google Sign-In */}
               {GOOGLE_CLIENT_ID && (
                 <>
-                  <div
-                    ref={googleBtnRef}
-                    className="w-full flex justify-center min-h-[44px]"
-                    data-testid="button-google-signin"
-                  >
+                  <div className="w-full min-h-[44px]" data-testid="button-google-signin">
                     {!googleLoaded && (
                       <div className="w-full h-11 border border-gray-300 rounded-md flex items-center justify-center gap-3 text-sm text-gray-500 bg-white">
                         <svg className="w-5 h-5 opacity-50" viewBox="0 0 24 24">
@@ -237,6 +234,8 @@ export default function PatientPortal() {
                         Loading Google Sign-In...
                       </div>
                     )}
+                    {/* GIS injects directly here — must stay empty for React */}
+                    <div ref={googleBtnRef} className={`w-full flex justify-center ${googleLoaded ? "" : "hidden"}`} />
                   </div>
                   <div className="flex items-center gap-3">
                     <Separator className="flex-1" />

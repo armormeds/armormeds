@@ -69,7 +69,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
     queryKey: ["/api/leads", lead.id, "timeline"],
     queryFn: async () => {
       const res = await fetch(`/api/leads/${lead.id}/timeline`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}` },
       });
       if (!res.ok) throw new Error("Failed to fetch timeline");
       return res.json();
@@ -81,7 +81,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
     queryKey: ["/api/leads", lead.id, "tags"],
     queryFn: async () => {
       const res = await fetch(`/api/leads/${lead.id}/tags`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}` },
       });
       if (!res.ok) throw new Error("Failed to fetch tags");
       return res.json();
@@ -93,7 +93,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
     queryKey: ["/api/leads", lead.id, "tasks"],
     queryFn: async () => {
       const res = await fetch(`/api/leads/${lead.id}/tasks`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}` },
       });
       if (!res.ok) throw new Error("Failed to fetch tasks");
       return res.json();
@@ -105,7 +105,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
     queryKey: ["/api/leads", lead.id, "notes"],
     queryFn: async () => {
       const res = await fetch(`/api/leads/${lead.id}/notes`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}` },
       });
       if (!res.ok) throw new Error("Failed to fetch notes");
       return res.json();
@@ -119,7 +119,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}`,
         },
         body: JSON.stringify({ content, authorName: currentUserName }),
       });
@@ -138,7 +138,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
     mutationFn: async (noteId: number) => {
       const res = await fetch(`/api/leads/${lead.id}/notes/${noteId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}` },
       });
       if (!res.ok) throw new Error("Failed to delete note");
     },
@@ -155,7 +155,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}`,
         },
         body: JSON.stringify({ tag }),
       });
@@ -180,7 +180,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
     mutationFn: async (tagId: number) => {
       const res = await fetch(`/api/leads/${lead.id}/tags/${tagId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}` },
       });
       if (!res.ok) throw new Error("Failed to delete tag");
     },
@@ -196,7 +196,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}`,
         },
         body: JSON.stringify({ ...data, createdBy: currentUserName }),
       });
@@ -219,7 +219,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}`,
         },
         body: JSON.stringify(updates),
       });
@@ -237,7 +237,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
     mutationFn: async (taskId: number) => {
       const res = await fetch(`/api/leads/${lead.id}/tasks/${taskId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}` },
       });
       if (!res.ok) throw new Error("Failed to delete task");
     },
@@ -253,7 +253,7 @@ export function LeadCrmPanel({ lead, open, onOpenChange, currentUserName }: Lead
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("wellness_admin_token")}`,
         },
         body: JSON.stringify({ leadSource: source || null }),
       });
