@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { ArmorAiChat } from "@/components/ArmorAiChat";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -90,6 +91,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <ArmorAiChat />
       </TooltipProvider>
     </QueryClientProvider>
   );

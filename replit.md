@@ -171,6 +171,16 @@ shared/           # Shared code between frontend and backend
 - **Admin Dashboard**: "SMS Log" tab shows all messages in a table — date/time, recipient, phone, message preview, type badge, sent by, sent/failed status
 - **API Endpoint**: GET /api/admin/sms-logs (requires viewLeads permission)
 
+### Armor AI Chat Assistant
+- **Widget**: Floating chat button in the bottom-right corner on all public pages (hidden on /admin and /patient routes)
+- **Component**: `client/src/components/ArmorAiChat.tsx` — fully self-contained floating widget with SSE streaming
+- **Backend**: `POST /api/armor-ai/chat` in `server/routes.ts` — stateless endpoint, no conversation storage needed
+- **AI Model**: `gpt-4.1` via Replit AI Integrations (OpenAI-compatible, billed to Replit credits; no user API key needed)
+- **System Prompt**: ArmorMeds-specific — knows about all 6 medications, guides users to /get-started, no diagnoses, HIPAA-aware
+- **Streaming**: Server-Sent Events (SSE) for real-time token streaming with typing cursor indicator
+- **Env Vars**: `AI_INTEGRATIONS_OPENAI_API_KEY` and `AI_INTEGRATIONS_OPENAI_BASE_URL` (set by Replit integration)
+- **DB Tables**: `conversations` and `messages` (created via db:push but not used by Armor AI widget — available for future use)
+
 ### Future Enhancements
 - **Email Integration**: Set up Resend or SendGrid integration for transactional emails when prescription is generated.
 - **Patient Authentication**: Add proper patient authentication for secure access to appointments and prescriptions

@@ -13,6 +13,41 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import type { AdminUser, AdminPermissions } from "@shared/schema";
 import { sendPrescriptionReadySMS, sendAppointmentScheduledSMS, sendCustomSMS, isTwilioConfigured } from "./twilio";
+import OpenAI from "openai";
+
+const armorAiClient = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
+
+const ARMOR_AI_SYSTEM_PROMPT = `You are Armor AI, the friendly virtual health assistant for ArmorMeds — a trusted telehealth platform specializing in weight management, hair loss, and sexual health treatments.
+
+YOUR ROLE:
+- Help visitors learn about ArmorMeds services and medications
+- Answer questions about treatment options, how the process works, and what to expect
+- Guide interested users to start their journey at /get-started
+- Be warm, professional, and reassuring
+
+ARMORMEDS SERVICES:
+1. Weight Management — Semaglutide (GLP-1 weekly injection) and Tirzepatide (GLP-1/GIP dual agonist weekly injection). Both are FDA-approved for weight loss. Pricing starts at $299/month.
+2. Hair Loss — Finasteride (oral DHT-blocker tablet, once daily) and Minoxidil (topical solution applied twice daily). Both clinically proven to slow hair loss and promote regrowth.
+3. Sexual Health — Sildenafil (Viagra generic, taken as needed), Tadalafil (Cialis generic, daily or as needed), and Vardenafil (Levitra generic, as needed). Discreet, affordable ED treatment.
+
+HOW ARMORMEDS WORKS:
+1. Complete a short online medical intake form at /get-started (takes about 5 minutes)
+2. A licensed provider reviews your intake and medical history
+3. If approved, a prescription is generated and medication is shipped to your door
+4. Optional video consultations are available if you'd like to speak with your provider
+
+IMPORTANT GUIDELINES:
+- NEVER provide a medical diagnosis or tell someone they are a candidate for any medication
+- Always recommend consulting with a licensed provider for medical decisions
+- Do NOT ask for or collect personal health information, insurance details, or payment info in this chat
+- Keep conversations focused on ArmorMeds services; politely redirect off-topic requests
+- For urgent medical concerns, always recommend calling 911 or seeing a doctor immediately
+- Maintain patient confidentiality — never ask for or store sensitive health data in chat
+
+TONE: Friendly, knowledgeable, empathetic, and concise. Use plain language. Avoid overly clinical jargon. Keep responses brief — 2-4 sentences unless a detailed explanation is truly needed.`;
 
 // Patient session store
 interface PatientSession {
@@ -2138,6 +2173,49 @@ export async function registerRoutes(
     } catch (err) {
       console.error("Patient status error:", err);
       return res.status(500).json({ error: "Failed to retrieve status" });
+    }
+  });
+
+  // ── Armor AI Chat ──────────────────────────────────────────────────────────
+  app.post("/api/armor-ai/chat", async (req: Request, res: Response) => {
+    try {
+      const { messages } = req.body as { messages: { role: string; content: string }[] };
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ error: "messages array is required" });
+      }
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+
+      const stream = await armorAiClient.chat.completions.create({
+        model: "gpt-4.1",
+        messages: [
+          { role: "system", content: ARMOR_AI_SYSTEM_PROMPT },
+          ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        ],
+        stream: true,
+        max_completion_tokens: 512,
+      });
+
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content || "";
+        if (delta) {
+          res.write(`data: ${JSON.stringify({ content: delta })}\n\n`);
+        }
+      }
+
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    } catch (error) {
+      console.error("Armor AI error:", error);
+      if (res.headersSent) {
+        res.write(`data: ${JSON.stringify({ error: "AI error" })}\n\n`);
+        res.end();
+      } else {
+        res.status(500).json({ error: "Failed to get AI response" });
+      }
     }
   });
 

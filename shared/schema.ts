@@ -2,6 +2,8 @@ import { pgTable, text, serial, jsonb, timestamp, integer, boolean } from "drizz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export * from "./models/chat";
+
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
