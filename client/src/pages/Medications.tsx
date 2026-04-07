@@ -17,7 +17,7 @@ export default function Medications() {
         <div className="text-center max-w-3xl mx-auto mb-20">
           <h1 className="text-5xl font-display font-bold text-slate-900 mb-6">Our Treatments</h1>
           <p className="text-xl text-slate-600">
-            We offer FDA-approved GLP-1 medications that help regulate appetite and blood sugar levels.
+            We offer precision-compounded GLP-1 medications, formulated and tailored for every individual to support healthy appetite regulation and lasting weight loss.
           </p>
         </div>
 

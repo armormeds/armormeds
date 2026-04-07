@@ -94,7 +94,7 @@ export default function Home() {
   ];
 
   const treatments = [
-    { href: "/medications", label: "Weight Loss", description: "FDA-approved GLP-1 medications" },
+    { href: "/medications", label: "Weight Loss", description: "Precision-compounded GLP-1 medications" },
     { href: "/hair-loss", label: "Hair Loss", description: "Prescription treatments for regrowth" },
     { href: "/sexual-health", label: "Sexual Health", description: "Discreet, effective solutions" }
   ];

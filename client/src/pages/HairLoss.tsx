@@ -42,7 +42,7 @@ export default function HairLoss() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
-              <span>FDA-Approved Treatments</span>
+              <span>Precision-Compounded Treatments</span>
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6">

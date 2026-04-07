@@ -10,7 +10,7 @@ interface ProductConfig {
 const products: ProductConfig[] = [
   {
     name: 'Semaglutide',
-    description: 'FDA-approved GLP-1 medication for weight management. Weekly injection that helps control appetite and blood sugar.',
+    description: 'Precision-compounded GLP-1 medication for weight management, tailored for every individual. Weekly injection that helps control appetite and blood sugar.',
     category: 'weight-loss',
     monthlyPrice: 29900,
   },
@@ -22,7 +22,7 @@ const products: ProductConfig[] = [
   },
   {
     name: 'Finasteride',
-    description: 'FDA-approved oral medication that blocks DHT to prevent further hair loss and promote regrowth.',
+    description: 'Precision-compounded oral medication that blocks DHT to prevent further hair loss and promote regrowth, formulated for your individual needs.',
     category: 'hair-loss',
     monthlyPrice: 2900,
   },
@@ -34,7 +34,7 @@ const products: ProductConfig[] = [
   },
   {
     name: 'Sildenafil',
-    description: 'FDA-approved medication for erectile dysfunction. Works within 30-60 minutes and lasts up to 4 hours.',
+    description: 'Precision-compounded medication for erectile dysfunction, tailored to your individual needs. Works within 30-60 minutes and lasts up to 4 hours.',
     category: 'sexual-health',
     monthlyPrice: 2900,
   },

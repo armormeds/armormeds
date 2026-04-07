@@ -52,7 +52,7 @@ export default function SexualHealth() {
             </h1>
             
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl">
-              FDA-approved ED treatments prescribed online by licensed providers. 
+              Precision-compounded ED treatments, prescribed online by licensed providers and tailored to your individual needs.
               Discreet packaging, free delivery, real results.
             </p>
             

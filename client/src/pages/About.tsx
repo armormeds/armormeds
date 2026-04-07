@@ -27,7 +27,7 @@ export default function About() {
               </div>
               <h3 className="text-2xl font-bold mb-4">Safety First</h3>
               <p className="text-slate-600">
-                We only partner with FDA-regulated 503B and 503A compounding pharmacies to ensure the highest quality medications.
+                We only partner with licensed 503B and 503A compounding pharmacies that precision-formulate every medication to the highest quality standards, tailored for each individual patient.
               </p>
             </div>
             

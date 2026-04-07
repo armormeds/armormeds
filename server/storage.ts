@@ -419,7 +419,7 @@ export class DatabaseStorage implements IStorage {
         },
         {
           name: "Finasteride",
-          description: "A prescription medication that treats male pattern baldness by blocking DHT, the hormone responsible for hair loss. FDA-approved and clinically proven to stop hair loss and regrow hair.",
+          description: "A prescription medication that treats male pattern baldness by blocking DHT, the hormone responsible for hair loss. Precision-compounded and clinically studied to stop hair loss and regrow hair.",
           price: "Starts at $49/mo",
           image: "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=600",
           benefits: ["Blocks DHT hormone", "Stops hair loss", "Promotes regrowth", "Daily oral tablet"],
