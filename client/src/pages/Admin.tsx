@@ -333,7 +333,20 @@ function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo)
   const [error, setError] = useState("");
   const [isSetupMode, setIsSetupMode] = useState(false);
   const [setupName, setSetupName] = useState("");
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotResetUrl, setForgotResetUrl] = useState("");
+  const [resetMode, setResetMode] = useState(false);
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("resetToken");
+    if (t) { setResetToken(t); setResetMode(true); }
+  }, []);
 
   useEffect(() => {
     const checkSetup = async () => {
@@ -353,6 +366,34 @@ function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo)
     };
     checkSetup();
   }, []);
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) { setError("Please enter your email"); return; }
+    setIsLoading(true); setError("");
+    try {
+      const res = await fetch("/api/admin/forgot-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: forgotEmail }) });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Failed"); return; }
+      if (data.resetUrl) setForgotResetUrl(data.resetUrl);
+    } catch { setError("Connection error"); } finally { setIsLoading(false); }
+  };
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || !confirmPassword) { setError("Please fill in all fields"); return; }
+    if (newPassword.length < 8) { setError("Password must be at least 8 characters"); return; }
+    if (newPassword !== confirmPassword) { setError("Passwords do not match"); return; }
+    setIsLoading(true); setError("");
+    try {
+      const res = await fetch("/api/admin/reset-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: resetToken, password: newPassword }) });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Failed to reset password"); return; }
+      toast({ title: "Password updated", description: "Please log in with your new password." });
+      setResetMode(false); setResetToken(""); setNewPassword(""); setConfirmPassword("");
+      window.history.replaceState({}, "", "/admin");
+    } catch { setError("Connection error"); } finally { setIsLoading(false); }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -428,81 +469,94 @@ function AdminLogin({ onLogin }: { onLogin: (token: string, user: AdminUserInfo)
             <Lock className="w-6 h-6 text-primary" />
           </div>
           <CardTitle className="text-2xl">
-            {isSetupMode ? "Create Admin Account" : "Admin Login"}
+            {resetMode ? "Set New Password" : forgotMode ? "Reset Password" : isSetupMode ? "Create Admin Account" : "Admin Login"}
           </CardTitle>
           <p className="text-muted-foreground text-sm mt-2">
-            {isSetupMode 
-              ? "Set up your first admin account to get started"
-              : "Enter your credentials to access the admin dashboard"
-            }
+            {resetMode ? "Choose a new password for your admin account" : forgotMode ? "Enter your email to receive a reset link" : isSetupMode ? "Set up your first admin account to get started" : "Enter your credentials to access the admin dashboard"}
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isSetupMode && (
+          {/* Reset Password Form */}
+          {resetMode && (
+            <form onSubmit={handleResetSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your name"
-                  value={setupName}
-                  onChange={(e) => setSetupName(e.target.value)}
-                  required
-                  data-testid="input-admin-name"
-                />
+                <Label htmlFor="new-password">New Password</Label>
+                <Input id="new-password" type="password" placeholder="Min. 8 characters" value={newPassword} onChange={e => setNewPassword(e.target.value)} data-testid="input-new-password" />
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="text"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                data-testid="input-admin-email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder={isSetupMode ? "Create a password" : "Enter your password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                data-testid="input-admin-password"
-              />
-            </div>
-            {error && (
-              <div className="text-destructive text-sm flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                {error}
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input id="confirm-password" type="password" placeholder="Repeat your password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} data-testid="input-confirm-password" />
               </div>
-            )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-              data-testid="button-admin-login"
-            >
-              {isLoading 
-                ? (isSetupMode ? "Creating account..." : "Logging in...") 
-                : (isSetupMode ? "Create Admin Account" : "Login")
-              }
-            </Button>
-          </form>
-          <div className="mt-6 pt-4 border-t">
-            <Link href="/">
-              <Button variant="ghost" className="w-full" data-testid="button-back-home">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
-              </Button>
-            </Link>
-          </div>
+              {error && <div className="text-destructive text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4" />{error}</div>}
+              <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-set-new-password">{isLoading ? "Updating..." : "Update Password"}</Button>
+              <button type="button" onClick={() => { setResetMode(false); setError(""); window.history.replaceState({}, "", "/admin"); }} className="w-full text-sm text-center text-primary hover:underline">Back to Login</button>
+            </form>
+          )}
+
+          {/* Forgot Password Form */}
+          {!resetMode && forgotMode && (
+            <div className="space-y-4">
+              {forgotResetUrl ? (
+                <div className="space-y-4">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+                    <p className="font-medium mb-1">Your reset link is ready:</p>
+                    <a href={forgotResetUrl} className="text-primary break-all underline text-xs" data-testid="link-reset-url">{forgotResetUrl}</a>
+                    <p className="text-xs mt-2 text-amber-700">This link expires in 1 hour. Copy and open it to reset your password.</p>
+                  </div>
+                  <Button variant="outline" className="w-full" onClick={() => { setForgotMode(false); setForgotResetUrl(""); setForgotEmail(""); setError(""); }} data-testid="button-back-to-login">Back to Login</Button>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="forgot-email">Email Address</Label>
+                    <Input id="forgot-email" type="email" placeholder="Enter your admin email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} data-testid="input-forgot-email" />
+                  </div>
+                  {error && <div className="text-destructive text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4" />{error}</div>}
+                  <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-send-reset">{isLoading ? "Generating link..." : "Generate Reset Link"}</Button>
+                  <button type="button" onClick={() => { setForgotMode(false); setError(""); }} className="w-full text-sm text-center text-primary hover:underline">Back to Login</button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* Normal Login / Setup Form */}
+          {!resetMode && !forgotMode && (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isSetupMode && (
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input id="name" type="text" placeholder="Enter your name" value={setupName} onChange={(e) => setSetupName(e.target.value)} required data-testid="input-admin-name" />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="text" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required data-testid="input-admin-email" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {!isSetupMode && (
+                      <button type="button" onClick={() => { setForgotEmail(email); setForgotMode(true); setError(""); }} className="text-xs text-primary hover:underline" data-testid="link-admin-forgot-password">Forgot password?</button>
+                    )}
+                  </div>
+                  <Input id="password" type="password" placeholder={isSetupMode ? "Create a password" : "Enter your password"} value={password} onChange={(e) => setPassword(e.target.value)} required data-testid="input-admin-password" />
+                </div>
+                {error && <div className="text-destructive text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4" />{error}</div>}
+                <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-admin-login">
+                  {isLoading ? (isSetupMode ? "Creating account..." : "Logging in...") : (isSetupMode ? "Create Admin Account" : "Login")}
+                </Button>
+              </form>
+              <div className="mt-6 pt-4 border-t">
+                <Link href="/">
+                  <Button variant="ghost" className="w-full" data-testid="button-back-home">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

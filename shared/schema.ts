@@ -277,6 +277,18 @@ export const insertPatientUserSchema = createInsertSchema(patientUsers).omit({ i
 export type PatientUser = typeof patientUsers.$inferSelect;
 export type InsertPatientUser = z.infer<typeof insertPatientUserSchema>;
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  token: text("token").notNull().unique(),
+  type: text("type").notNull(), // "patient" | "admin"
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+
 export const smsLogs = pgTable("sms_logs", {
   id: serial("id").primaryKey(),
   recipientPhone: text("recipient_phone").notNull(),

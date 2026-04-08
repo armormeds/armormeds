@@ -28,6 +28,7 @@ import ScheduleAppointment from "@/pages/ScheduleAppointment";
 import OrderStatus from "@/pages/OrderStatus";
 import PatientPortal from "@/pages/PatientPortal";
 import PatientDashboard from "@/pages/PatientDashboard";
+import PatientResetPassword from "@/pages/PatientResetPassword";
 import NotFound from "@/pages/not-found";
 
 function ScrollToTopWrapper() {
@@ -37,7 +38,7 @@ function ScrollToTopWrapper() {
 }
 
 // Pages that have their own full-page layout (no main nav/footer)
-const STANDALONE_PATHS = ["/admin", "/patient", "/patient/dashboard"];
+const STANDALONE_PATHS = ["/admin", "/patient", "/patient/dashboard", "/patient/reset-password"];
 
 function Router() {
   const [pathname] = useLocation();
@@ -52,6 +53,7 @@ function Router() {
           <Route path="/admin" component={Admin} />
           <Route path="/patient" component={PatientPortal} />
           <Route path="/patient/dashboard" component={PatientDashboard} />
+          <Route path="/patient/reset-password" component={PatientResetPassword} />
         </Switch>
       ) : (
         // Public layout — with nav and footer

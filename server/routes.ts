@@ -7,7 +7,7 @@ import { registerObjectStorageRoutes } from "./replit_integrations/object_storag
 import { getUncachableStripeClient } from "./stripeClient";
 import { db } from "./db";
 import { sql, eq } from "drizzle-orm";
-import { adminUsers } from "@shared/schema";
+import { adminUsers, passwordResetTokens } from "@shared/schema";
 import type { SmsLog } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -1989,6 +1989,123 @@ export async function registerRoutes(
     } catch (err) {
       console.error("Patient login error:", err);
       return res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Patient: forgot password — generates reset token, sends via SMS if phone on file
+  app.post("/api/patient/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: "Email is required" });
+      const patient = await storage.getPatientByEmail(email.toLowerCase().trim());
+      // Always return success to avoid email enumeration
+      if (!patient) return res.json({ success: true, message: "If an account exists, a reset link has been sent." });
+
+      // Invalidate existing tokens
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.email, patient.email));
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await db.insert(passwordResetTokens).values({ email: patient.email, token, type: "patient", expiresAt });
+
+      const appDomain = process.env.REPLIT_DOMAINS?.split(",")[0] || "localhost:5000";
+      const resetUrl = `https://${appDomain}/patient/reset-password?token=${token}`;
+
+      // Try SMS via Twilio if patient has a phone
+      let smsSent = false;
+      const lead = await storage.getLeadByEmail(patient.email);
+      const phone = patient.phone || lead?.phone;
+      if (phone && isTwilioConfigured()) {
+        try {
+          await sendCustomSMS(phone, `ArmorMeds: Reset your password here: ${resetUrl}\n\nThis link expires in 1 hour.`);
+          smsSent = true;
+        } catch (e) { console.error("SMS send error:", e); }
+      }
+
+      return res.json({ success: true, message: "If an account exists, a reset link has been sent.", smsSent });
+    } catch (err) {
+      console.error("Forgot password error:", err);
+      return res.status(500).json({ error: "Failed to process request" });
+    }
+  });
+
+  // Patient: reset password with token
+  app.post("/api/patient/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) return res.status(400).json({ error: "Token and password are required" });
+      if (password.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters" });
+
+      const rows = await db.select().from(passwordResetTokens)
+        .where(eq(passwordResetTokens.token, token));
+      const record = rows[0];
+      if (!record || record.type !== "patient") return res.status(400).json({ error: "Invalid or expired reset link" });
+      if (record.usedAt) return res.status(400).json({ error: "This reset link has already been used" });
+      if (new Date() > record.expiresAt) return res.status(400).json({ error: "This reset link has expired. Please request a new one." });
+
+      const patient = await storage.getPatientByEmail(record.email);
+      if (!patient) return res.status(400).json({ error: "Account not found" });
+
+      const passwordHash = bcrypt.hashSync(password, 10);
+      await storage.updatePatientProfile(patient.id, { passwordHash });
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+
+      return res.json({ success: true, message: "Password updated successfully" });
+    } catch (err) {
+      console.error("Reset password error:", err);
+      return res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
+
+  // Admin: forgot password — generates token, returns reset link directly (no email service)
+  app.post("/api/admin/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: "Email is required" });
+      const admin = await storage.getAdminUserByEmail(email.toLowerCase().trim());
+      if (!admin) return res.json({ success: true, message: "If an account exists, a reset link has been generated." });
+
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.email, admin.email));
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+      await db.insert(passwordResetTokens).values({ email: admin.email, token, type: "admin", expiresAt });
+
+      const appDomain = process.env.REPLIT_DOMAINS?.split(",")[0] || "localhost:5000";
+      const resetUrl = `https://${appDomain}/admin?resetToken=${token}`;
+
+      return res.json({ success: true, resetUrl });
+    } catch (err) {
+      console.error("Admin forgot password error:", err);
+      return res.status(500).json({ error: "Failed to process request" });
+    }
+  });
+
+  // Admin: reset password with token
+  app.post("/api/admin/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) return res.status(400).json({ error: "Token and password are required" });
+      if (password.length < 8) return res.status(400).json({ error: "Password must be at least 8 characters" });
+
+      const rows = await db.select().from(passwordResetTokens)
+        .where(eq(passwordResetTokens.token, token));
+      const record = rows[0];
+      if (!record || record.type !== "admin") return res.status(400).json({ error: "Invalid or expired reset link" });
+      if (record.usedAt) return res.status(400).json({ error: "This reset link has already been used" });
+      if (new Date() > record.expiresAt) return res.status(400).json({ error: "This reset link has expired. Please request a new one." });
+
+      const admin = await storage.getAdminUserByEmail(record.email);
+      if (!admin) return res.status(400).json({ error: "Account not found" });
+
+      const passwordHash = bcrypt.hashSync(password, 10);
+      await db.update(adminUsers).set({ passwordHash }).where(eq(adminUsers.id, admin.id));
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+
+      return res.json({ success: true, message: "Password updated successfully" });
+    } catch (err) {
+      console.error("Admin reset password error:", err);
+      return res.status(500).json({ error: "Failed to reset password" });
     }
   });
 

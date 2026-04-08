@@ -44,11 +44,13 @@ export function clearPatientSession() {
 export default function PatientPortal() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
 
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const googleBtnRef = useRef<HTMLDivElement>(null);
@@ -135,6 +137,27 @@ export default function PatientPortal() {
     }
   }, [initAndRenderGoogle]);
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) { setError("Please enter your email address"); return; }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/patient/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Something went wrong"); return; }
+      setForgotSent(true);
+    } catch {
+      setError("Connection error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) { setError("Please fill in all fields"); return; }
@@ -193,34 +216,71 @@ export default function PatientPortal() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className="shadow-xl border-0 bg-white/95 backdrop-blur">
             <CardHeader className="pb-0 text-center">
-              {/* Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-xl p-1 mb-4">
-                <button
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === "login" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
-                  onClick={() => { setMode("login"); setError(""); }}
-                  data-testid="tab-login"
-                >
-                  Sign In
-                </button>
-                <button
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === "signup" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
-                  onClick={() => { setMode("signup"); setError(""); }}
-                  data-testid="tab-signup"
-                >
-                  Create Account
-                </button>
-              </div>
+              {/* Mode Toggle — hidden in forgot mode */}
+              {mode !== "forgot" && (
+                <div className="flex bg-gray-100 rounded-xl p-1 mb-4">
+                  <button
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === "login" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+                    onClick={() => { setMode("login"); setError(""); }}
+                    data-testid="tab-login"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === "signup" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+                    onClick={() => { setMode("signup"); setError(""); }}
+                    data-testid="tab-signup"
+                  >
+                    Create Account
+                  </button>
+                </div>
+              )}
               <CardTitle className="text-xl font-semibold text-gray-800">
-                {mode === "login" ? "Welcome back" : "Create your account"}
+                {mode === "login" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
               </CardTitle>
               <CardDescription className="text-gray-500 text-sm mt-1">
-                {mode === "login" ? "Sign in to view your prescriptions and appointments" : "Join ArmorMeds to track your health journey"}
+                {mode === "login" ? "Sign in to view your prescriptions and appointments" : mode === "signup" ? "Join ArmorMeds to track your health journey" : "Enter your email and we'll send you a reset link"}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="pt-5 space-y-4">
+              {/* Forgot Password Form */}
+              {mode === "forgot" && (
+                <AnimatePresence mode="wait">
+                  {forgotSent ? (
+                    <motion.div key="sent" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4 py-4">
+                      <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                        <Shield className="w-7 h-7 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800 text-base">Check your messages</p>
+                        <p className="text-gray-500 text-sm mt-1">If an account exists for <span className="font-medium text-gray-700">{forgotEmail}</span>, we've sent a password reset link via SMS to the phone number on file.</p>
+                      </div>
+                      <p className="text-xs text-gray-400">Didn't receive it? Make sure your phone number is on file, or contact support.</p>
+                      <Button variant="outline" className="w-full" onClick={() => { setMode("login"); setForgotSent(false); setForgotEmail(""); setError(""); }} data-testid="button-back-to-login">Back to Sign In</Button>
+                    </motion.div>
+                  ) : (
+                    <motion.form key="form" onSubmit={handleForgotPassword} className="space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="forgot-email" className="text-sm font-medium text-gray-700">Email Address</Label>
+                        <Input id="forgot-email" type="email" placeholder="you@example.com" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} className="h-11" data-testid="input-forgot-email" />
+                      </div>
+                      {error && (
+                        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5">
+                          <AlertCircle className="w-4 h-4 flex-shrink-0" />{error}
+                        </div>
+                      )}
+                      <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-medium" disabled={loading} data-testid="button-send-reset">
+                        {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Sending...</span> : "Send Reset Link"}
+                      </Button>
+                      <button type="button" onClick={() => { setMode("login"); setError(""); }} className="w-full text-sm text-center text-primary hover:underline" data-testid="link-back-to-login">Back to Sign In</button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              )}
+
               {/* Google Sign-In */}
-              {GOOGLE_CLIENT_ID && (
+              {mode !== "forgot" && GOOGLE_CLIENT_ID && (
                 <>
                   <div className="w-full min-h-[44px]" data-testid="button-google-signin">
                     {!googleLoaded && (
@@ -245,7 +305,8 @@ export default function PatientPortal() {
                 </>
               )}
 
-              {/* Form */}
+              {/* Login/Signup Form */}
+              {mode !== "forgot" && (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <AnimatePresence>
                   {mode === "signup" && (
@@ -332,15 +393,24 @@ export default function PatientPortal() {
                     </span>
                   )}
                 </Button>
-              </form>
 
-              <p className="text-xs text-center text-gray-400 pt-1">
-                {mode === "login" ? (
-                  <>Don't have an account?{" "}<button onClick={() => { setMode("signup"); setError(""); }} className="text-primary font-medium hover:underline">Create one</button></>
-                ) : (
-                  <>Already have an account?{" "}<button onClick={() => { setMode("login"); setError(""); }} className="text-primary font-medium hover:underline">Sign in</button></>
+                {mode === "login" && (
+                  <div className="text-right -mt-1">
+                    <button type="button" onClick={() => { setMode("forgot"); setForgotEmail(form.email); setError(""); }} className="text-xs text-primary hover:underline" data-testid="link-forgot-password">Forgot password?</button>
+                  </div>
                 )}
-              </p>
+              </form>
+              )}
+
+              {mode !== "forgot" && (
+                <p className="text-xs text-center text-gray-400 pt-1">
+                  {mode === "login" ? (
+                    <>Don't have an account?{" "}<button onClick={() => { setMode("signup"); setError(""); }} className="text-primary font-medium hover:underline">Create one</button></>
+                  ) : (
+                    <>Already have an account?{" "}<button onClick={() => { setMode("login"); setError(""); }} className="text-primary font-medium hover:underline">Sign in</button></>
+                  )}
+                </p>
+              )}
 
               <div className="flex items-center gap-1.5 justify-center text-xs text-gray-400 pt-1">
                 <Shield className="w-3.5 h-3.5" />
