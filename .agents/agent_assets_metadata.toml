@@ -95,3 +95,147 @@ id = "wKf00QC6STdNxxFmtIZUd"
 uri = "file://client/public/images/medications/finasteride-minoxidil.png"
 type = "image"
 title = "Finasteride + Minoxidil Combo"
+
+[[outputs]]
+id = "OeSW8iYU8_CGwlsNVuOQ0"
+uri = "file://attached_assets/stock_images/medical_vial_injection_1.jpg"
+type = "image"
+title = "Vial B1"
+
+[[outputs]]
+id = "OVtEqGENu0d1Q0CyNogwB"
+uri = "file://attached_assets/stock_images/medical_vial_injection_2.jpg"
+type = "image"
+title = "Vial B2"
+
+[[outputs]]
+id = "sRW-zc_o5ud6t5idU7vTk"
+uri = "file://attached_assets/stock_images/medical_vial_injection_3.jpg"
+type = "image"
+title = "Vial B3"
+
+[[outputs]]
+id = "3V2Icu4XgdAMkZMov6oDY"
+uri = "file://attached_assets/stock_images/hair_pill_bottle_1.jpg"
+type = "image"
+title = "Hair Pill C1"
+
+[[outputs]]
+id = "MrJWo599TXT4lpq8DcY5g"
+uri = "file://attached_assets/stock_images/hair_pill_bottle_2.jpg"
+type = "image"
+title = "Hair Pill C2"
+
+[[outputs]]
+id = "pB9HBJXfHqyIvZgIr87f7"
+uri = "file://attached_assets/stock_images/hair_pill_bottle_3.jpg"
+type = "image"
+title = "Hair Pill C3"
+
+[[outputs]]
+id = "873y4yfa9Ruf4jrSH1VlK"
+uri = "file://attached_assets/stock_images/semaglutide_injection_pen_1.jpg"
+type = "image"
+title = "Inject A1"
+
+[[outputs]]
+id = "gPjuA0re4FO1k7RveSk94"
+uri = "file://attached_assets/stock_images/semaglutide_injection_pen_2.jpg"
+type = "image"
+title = "Inject A2"
+
+[[outputs]]
+id = "XCoAf1ZOTyk70KBLDSjNM"
+uri = "file://attached_assets/stock_images/semaglutide_injection_pen_3.jpg"
+type = "image"
+title = "Inject A3"
+
+[[outputs]]
+id = "m7mogf2DB4lO1NNPl17yY"
+uri = "file://attached_assets/stock_images/hair_dropper_bottle_1.jpg"
+type = "image"
+title = "Dropper D1"
+
+[[outputs]]
+id = "lXxA0jVp5eQrKChv-IdMG"
+uri = "file://attached_assets/stock_images/prescription_capsules_1.jpg"
+type = "image"
+title = "Capsules E1"
+
+[[outputs]]
+id = "CevLPQjUvcuh1AKQ9usvt"
+uri = "file://attached_assets/stock_images/hair_dropper_bottle_2.jpg"
+type = "image"
+title = "Dropper D2"
+
+[[outputs]]
+id = "gdUMj7PwxGlb5rj6WGdOx"
+uri = "file://attached_assets/stock_images/prescription_capsules_2.jpg"
+type = "image"
+title = "Capsules E2"
+
+[[outputs]]
+id = "hlXemGyQyNakA1Z_nz9Jm"
+uri = "file://attached_assets/stock_images/hair_dropper_bottle_3.jpg"
+type = "image"
+title = "Dropper D3"
+
+[[outputs]]
+id = "bMzsU4Djrcbw2YDLvV_1F"
+uri = "file://attached_assets/stock_images/prescription_capsules_3.jpg"
+type = "image"
+title = "Capsules E3"
+
+[[outputs]]
+id = "qfa89W4yMVpcAQ1wcf0yS"
+uri = "file://attached_assets/stock_images/blue_pill_tablet_1.jpg"
+type = "image"
+title = "Blue Pill F1"
+
+[[outputs]]
+id = "rIbKKZfxfdr04ap1wpvT_"
+uri = "file://attached_assets/stock_images/blue_pill_tablet_2.jpg"
+type = "image"
+title = "Blue Pill F2"
+
+[[outputs]]
+id = "POXsNn9wlM68lh7gTDPOm"
+uri = "file://attached_assets/stock_images/blue_pill_tablet_3.jpg"
+type = "image"
+title = "Blue Pill F3"
+
+[[outputs]]
+id = "wZgF3mxCGrUsHYAQg27CG"
+uri = "file://attached_assets/stock_images/medicine_pills_closeup_1.jpg"
+type = "image"
+title = "Pills G1"
+
+[[outputs]]
+id = "r0YlC8eNDVKgJc2I0ybv2"
+uri = "file://attached_assets/stock_images/medicine_pills_closeup_2.jpg"
+type = "image"
+title = "Pills G2"
+
+[[outputs]]
+id = "6DFUaN4LjxLGZTOfgeKvx"
+uri = "file://attached_assets/stock_images/medicine_pills_closeup_3.jpg"
+type = "image"
+title = "Pills G3"
+
+[[outputs]]
+id = "xqQmYZdaPBFme_Da6O91H"
+uri = "file://attached_assets/stock_images/pharmacy_medication_1.jpg"
+type = "image"
+title = "Pharmacy H1"
+
+[[outputs]]
+id = "Grm5tCwUYoIJEKy5zyxnC"
+uri = "file://attached_assets/stock_images/pharmacy_medication_2.jpg"
+type = "image"
+title = "Pharmacy H2"
+
+[[outputs]]
+id = "M-PtdMLj9Q0T2yI7FMxOw"
+uri = "file://attached_assets/stock_images/pharmacy_medication_3.jpg"
+type = "image"
+title = "Pharmacy H3"
