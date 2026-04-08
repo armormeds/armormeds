@@ -48,6 +48,13 @@ export const leads = pgTable("leads", {
   previousGlp: text("previous_glp"),
   glpDetails: text("glp_details"),
   consentGiven: text("consent_given"),
+  goalWeight: text("goal_weight"),
+  bloodPressureRange: text("blood_pressure_range"),
+  heartRateRange: text("heart_rate_range"),
+  hasOpiateUse: text("has_opiate_use"),
+  hasPriorSurgery: text("has_prior_surgery"),
+  hasDisqualifyingConditions: jsonb("has_disqualifying_conditions").$type<string[]>(),
+  hasMonitoringConditions: jsonb("has_monitoring_conditions").$type<string[]>(),
   // Document uploads (stored as JSON array of document paths)
   documentPaths: jsonb("document_paths").$type<string[]>(),
   leadSource: text("lead_source"),

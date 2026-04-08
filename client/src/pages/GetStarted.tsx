@@ -56,16 +56,54 @@ const SEXUAL_HEALTH_GOALS = [
   { id: "overall_wellness", label: "Overall Sexual Wellness" },
 ];
 
-const MEDICAL_CONDITIONS = [
-  { id: "high_blood_pressure", label: "High/Low Blood Pressure" },
-  { id: "heart_issues", label: "Heart Related Issues" },
-  { id: "irregular_heartbeat", label: "Irregular Heart Rhythm" },
-  { id: "liver_kidney", label: "Liver or Kidney Issues" },
-  { id: "chest_pain", label: "Chest Pain or Angina" },
-  { id: "blood_disorders", label: "Blood Disorders (Leukemia, Sickle Cell, etc.)" },
-  { id: "retinopathy", label: "Retinopathy" },
-  { id: "stroke", label: "Stroke History" },
-  { id: "none", label: "NONE" },
+// MEDVi Health Questions 1 — Disqualifying conditions
+const DISQUALIFYING_CONDITIONS = [
+  { id: "end_stage_kidney", label: "End-stage kidney disease (on or about to be on dialysis)" },
+  { id: "end_stage_liver", label: "End-stage liver disease (cirrhosis)" },
+  { id: "suicidal_thoughts", label: "Current suicidal thoughts and/or prior suicidal attempt" },
+  { id: "active_cancer", label: "Cancer (active diagnosis, active treatment, or in remission / cancer-free for less than 5 continuous years — does not apply to non-melanoma skin cancer cured via simple excision)" },
+  { id: "severe_gi", label: "Severe gastrointestinal condition (gastroparesis, blockage, inflammatory bowel disease)" },
+  { id: "substance_disorder", label: "Current diagnosis of or treatment for alcohol, opioid, or substance use disorder/dependence" },
+  { id: "none_disqualifying", label: "None of the above" },
+];
+
+// MEDVi Health Questions 2 — Monitoring conditions
+const MONITORING_CONDITIONS = [
+  { id: "gallbladder", label: "Gallbladder disease" },
+  { id: "hypertension", label: "Hypertension (high blood pressure)" },
+  { id: "seizures", label: "Seizures" },
+  { id: "glaucoma", label: "Glaucoma" },
+  { id: "sleep_apnea", label: "Sleep apnea" },
+  { id: "t2_diabetes_no_insulin", label: "Type 2 diabetes (not on insulin)" },
+  { id: "t2_diabetes_insulin", label: "Type 2 diabetes (on insulin)" },
+  { id: "t1_diabetes", label: "Type 1 diabetes" },
+  { id: "diabetic_retinopathy", label: "Diabetic retinopathy (diabetic eye disease), damage to the optic nerve from trauma or reduced blood flow, or blindness" },
+  { id: "warfarin", label: "Use of the blood thinner warfarin (Coumadin/Jantoven)" },
+  { id: "pancreatitis", label: "History of or current pancreatitis" },
+  { id: "thyroid_cancer", label: "Personal or family history of thyroid cyst/nodule, thyroid cancer, medullary thyroid carcinoma, or multiple endocrine neoplasia syndrome type 2" },
+  { id: "gout", label: "Gout" },
+  { id: "high_cholesterol", label: "High cholesterol or triglycerides" },
+  { id: "depression", label: "Depression" },
+  { id: "head_injury", label: "Head injury" },
+  { id: "brain_tumor", label: "Tumor/infection in brain/spinal cord" },
+  { id: "low_sodium", label: "Low sodium" },
+  { id: "liver_disease", label: "Liver disease, including fatty liver" },
+  { id: "kidney_disease", label: "Kidney disease" },
+  { id: "tachycardia", label: "Elevated resting heart rate (tachycardia)" },
+  { id: "heart_attack_stroke", label: "Coronary artery disease or heart attack/stroke in last 2 years" },
+  { id: "medication_allergy", label: "Allergic to any medication" },
+  { id: "heart_failure", label: "Congestive heart failure" },
+  { id: "qt_prolongation", label: "QT prolongation or other heart rhythm disorder" },
+  { id: "recent_hospitalization", label: "Hospitalization within the last 1 year" },
+  { id: "hiv", label: "Human immunodeficiency virus (HIV)" },
+  { id: "acid_reflux", label: "Acid reflux" },
+  { id: "asthma", label: "Asthma/reactive airway disease" },
+  { id: "urinary_incontinence", label: "Urinary stress incontinence" },
+  { id: "pcos", label: "Polycystic ovarian syndrome (PCOS)" },
+  { id: "low_testosterone", label: "Clinically proven low testosterone" },
+  { id: "osteoarthritis", label: "Osteoarthritis" },
+  { id: "constipation", label: "Constipation" },
+  { id: "none_monitoring", label: "None of the above" },
 ];
 
 const SOLUTION_TYPES = [
@@ -100,6 +138,13 @@ const formSchema = insertLeadSchema.extend({
   consentAccuracy: z.string().optional(),
   consentTelehealth: z.string().optional(),
   documentPaths: z.array(z.string()).optional(),
+  goalWeight: z.string().optional(),
+  bloodPressureRange: z.string().optional(),
+  heartRateRange: z.string().optional(),
+  hasOpiateUse: z.string().optional(),
+  hasPriorSurgery: z.string().optional(),
+  hasDisqualifyingConditions: z.array(z.string()).optional(),
+  hasMonitoringConditions: z.array(z.string()).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -248,6 +293,13 @@ export default function GetStarted() {
       consentAccuracy: "",
       consentTelehealth: "",
       documentPaths: [],
+      goalWeight: "",
+      bloodPressureRange: "",
+      heartRateRange: "",
+      hasOpiateUse: "",
+      hasPriorSurgery: "",
+      hasDisqualifyingConditions: [],
+      hasMonitoringConditions: [],
     }
   });
 
@@ -810,40 +862,84 @@ export default function GetStarted() {
                     />
 
                     {isWeightLoss && (
-                      <div className="grid grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="heightFeet"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Height (ft)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  placeholder="5" 
-                                  className="h-12 rounded-xl"
-                                  data-testid="input-height-feet"
-                                  {...field} 
-                                  value={field.value || ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <>
+                        <div className="grid grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="heightFeet"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Height (ft)</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 rounded-xl" data-testid="select-height-feet">
+                                      <SelectValue placeholder="Ft" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {[4,5,6,7].map(n => <SelectItem key={n} value={String(n)}>{n} ft</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="heightInches"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Height (in)</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 rounded-xl" data-testid="select-height-inches">
+                                      <SelectValue placeholder="In" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {[0,1,2,3,4,5,6,7,8,9,10,11].map(n => <SelectItem key={n} value={String(n)}>{n} in</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="weight"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Weight (lbs)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    placeholder="180" 
+                                    className="h-12 rounded-xl"
+                                    data-testid="input-weight"
+                                    {...field} 
+                                    value={field.value || ""}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
                         <FormField
                           control={form.control}
-                          name="heightInches"
+                          name="goalWeight"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Height (in)</FormLabel>
+                              <FormLabel>What is your goal weight? (lbs)</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  placeholder="8" 
+                                  placeholder="e.g. 160" 
                                   className="h-12 rounded-xl"
-                                  data-testid="input-height-inches"
+                                  data-testid="input-goal-weight"
                                   {...field} 
                                   value={field.value || ""}
                                 />
@@ -852,28 +948,7 @@ export default function GetStarted() {
                             </FormItem>
                           )}
                         />
-
-                        <FormField
-                          control={form.control}
-                          name="weight"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Weight (lbs)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  placeholder="180" 
-                                  className="h-12 rounded-xl"
-                                  data-testid="input-weight"
-                                  {...field} 
-                                  value={field.value || ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      </>
                     )}
                   </motion.div>
                 )}
@@ -887,52 +962,47 @@ export default function GetStarted() {
                     className="space-y-6"
                   >
                     <div className="text-center mb-6">
-                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Medical History</h2>
-                      <p className="text-slate-600">Help us understand your health background</p>
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Health Questions</h2>
+                      <p className="text-slate-600">Please select all conditions that apply to you</p>
                     </div>
 
                     <FormField
                       control={form.control}
-                      name="medicalConditions"
+                      name="hasDisqualifyingConditions"
                       render={() => (
                         <FormItem>
-                          <FormLabel>Do you have any of the following conditions?</FormLabel>
-                          <div className="grid gap-2 mt-2">
-                            {MEDICAL_CONDITIONS.map((condition) => (
+                          <div className="mb-3">
+                            <FormLabel className="text-base font-semibold">Do any of these apply to you?</FormLabel>
+                          </div>
+                          <div className="grid gap-2">
+                            {DISQUALIFYING_CONDITIONS.map((condition) => (
                               <FormField
                                 key={condition.id}
                                 control={form.control}
-                                name="medicalConditions"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={condition.id}
-                                      className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(condition.id)}
-                                          onCheckedChange={(checked) => {
-                                            if (condition.id === "none" && checked) {
-                                              field.onChange(["none"]);
-                                            } else if (checked) {
-                                              const filtered = field.value?.filter(v => v !== "none") || [];
-                                              field.onChange([...filtered, condition.id]);
-                                            } else {
-                                              field.onChange(
-                                                field.value?.filter((value) => value !== condition.id)
-                                              );
-                                            }
-                                          }}
-                                          data-testid={`checkbox-condition-${condition.id}`}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal cursor-pointer text-sm">
-                                        {condition.label}
-                                      </FormLabel>
-                                    </FormItem>
-                                  );
-                                }}
+                                name="hasDisqualifyingConditions"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-start space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 hover:bg-primary/5 transition-all">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(condition.id)}
+                                        onCheckedChange={(checked) => {
+                                          if (condition.id === "none_disqualifying" && checked) {
+                                            field.onChange(["none_disqualifying"]);
+                                          } else if (checked) {
+                                            const filtered = (field.value || []).filter(v => v !== "none_disqualifying");
+                                            field.onChange([...filtered, condition.id]);
+                                          } else {
+                                            field.onChange((field.value || []).filter(v => v !== condition.id));
+                                          }
+                                        }}
+                                        data-testid={`checkbox-disqualifying-${condition.id}`}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className={`font-normal cursor-pointer text-sm leading-relaxed ${condition.id === "none_disqualifying" ? "font-semibold text-primary" : ""}`}>
+                                      {condition.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                )}
                               />
                             ))}
                           </div>
@@ -941,45 +1011,15 @@ export default function GetStarted() {
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="currentMedications"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Current Medications</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="List any medications you are currently taking (or write 'None')" 
-                              className="min-h-[80px] rounded-xl resize-none"
-                              data-testid="textarea-medications"
-                              {...field} 
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="allergies"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Allergies</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="List any allergies (or write 'None')" 
-                              className="h-12 rounded-xl"
-                              data-testid="input-allergies"
-                              {...field} 
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Warning for disqualifying conditions selected */}
+                    {(form.watch("hasDisqualifyingConditions") || []).some(c => c !== "none_disqualifying") && (
+                      <div className="p-4 rounded-xl bg-amber-50 border border-amber-300" data-testid="disqualifying-warning">
+                        <p className="font-semibold text-amber-900 mb-1">⚠️ Important Notice</p>
+                        <p className="text-sm text-amber-800">
+                          Based on your answers, a licensed provider will carefully review your medical history before any prescription is issued. If you are found ineligible, you will receive a full refund.
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -989,229 +1029,358 @@ export default function GetStarted() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
+                    className="space-y-8"
                   >
                     <div className="text-center mb-6">
                       <h2 className="text-2xl font-bold text-slate-900 mb-2">{categoryLabels.step6Title}</h2>
                       <p className="text-slate-600">{categoryLabels.step6Subtitle}</p>
                     </div>
 
+                    {/* Weight-loss: MEDVi Health Questions 2 + additional questions */}
                     {isWeightLoss && (
                       <>
                         <FormField
                           control={form.control}
-                          name="hasPancreatitis"
-                          render={({ field }) => (
-                            <FormItem className="space-y-3">
-                              <FormLabel>Do you have pancreatitis or a history of pancreatitis?</FormLabel>
-                              <FormControl>
-                                <RadioGroup
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                  className="flex gap-4"
-                                >
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="yes" data-testid="radio-pancreatitis-yes" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                                  </FormItem>
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="no" data-testid="radio-pancreatitis-no" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                                  </FormItem>
-                                </RadioGroup>
-                              </FormControl>
+                          name="hasMonitoringConditions"
+                          render={() => (
+                            <FormItem>
+                              <div className="mb-3">
+                                <FormLabel className="text-base font-semibold">Do any of these apply to you? <span className="text-slate-500 font-normal text-sm">(select all that apply)</span></FormLabel>
+                              </div>
+                              <div className="grid gap-2">
+                                {MONITORING_CONDITIONS.map((condition) => (
+                                  <FormField
+                                    key={condition.id}
+                                    control={form.control}
+                                    name="hasMonitoringConditions"
+                                    render={({ field }) => (
+                                      <FormItem className="flex items-start space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 hover:bg-primary/5 transition-all">
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(condition.id)}
+                                            onCheckedChange={(checked) => {
+                                              if (condition.id === "none_monitoring" && checked) {
+                                                field.onChange(["none_monitoring"]);
+                                              } else if (checked) {
+                                                const filtered = (field.value || []).filter(v => v !== "none_monitoring");
+                                                field.onChange([...filtered, condition.id]);
+                                              } else {
+                                                field.onChange((field.value || []).filter(v => v !== condition.id));
+                                              }
+                                            }}
+                                            data-testid={`checkbox-monitoring-${condition.id}`}
+                                          />
+                                        </FormControl>
+                                        <FormLabel className={`font-normal cursor-pointer text-sm leading-relaxed ${condition.id === "none_monitoring" ? "font-semibold text-primary" : ""}`}>
+                                          {condition.label}
+                                        </FormLabel>
+                                      </FormItem>
+                                    )}
+                                  />
+                                ))}
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="hasThyroidCancer"
-                          render={({ field }) => (
-                            <FormItem className="space-y-3">
-                              <FormLabel>Do you have medullary thyroid cancer or a family history of it?</FormLabel>
-                              <FormControl>
-                                <RadioGroup
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                  className="flex gap-4"
-                                >
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="yes" data-testid="radio-thyroid-yes" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                                  </FormItem>
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="no" data-testid="radio-thyroid-no" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                                  </FormItem>
-                                </RadioGroup>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="hasKidneyIssues"
-                          render={({ field }) => (
-                            <FormItem className="space-y-3">
-                              <FormLabel>Do you have renal (kidney) impairment?</FormLabel>
-                              <FormControl>
-                                <RadioGroup
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                  className="flex gap-4"
-                                >
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="yes" data-testid="radio-kidney-yes" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                                  </FormItem>
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="no" data-testid="radio-kidney-no" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                                  </FormItem>
-                                </RadioGroup>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="previousGlp"
-                          render={({ field }) => (
-                            <FormItem className="space-y-3">
-                              <FormLabel>Have you previously taken a GLP-1 medication (Ozempic, Wegovy, Mounjaro, etc.)?</FormLabel>
-                              <FormControl>
-                                <RadioGroup
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                  className="flex gap-4"
-                                >
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="yes" data-testid="radio-glp-yes" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
-                                  </FormItem>
-                                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
-                                    <FormControl>
-                                      <RadioGroupItem value="no" data-testid="radio-glp-no" />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">No</FormLabel>
-                                  </FormItem>
-                                </RadioGroup>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {form.watch("previousGlp") === "yes" && (
+                        <div className="border-t pt-6 space-y-6">
+                          {/* Opiate use in last 3 months */}
                           <FormField
                             control={form.control}
-                            name="glpDetails"
+                            name="hasOpiateUse"
                             render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Please provide details about your previous GLP-1 experience</FormLabel>
+                              <FormItem className="space-y-3">
+                                <FormLabel className="font-medium">Within the last 3 months, have you taken opiate pain medications and/or opiate-based street drugs?</FormLabel>
                                 <FormControl>
-                                  <Textarea 
-                                    placeholder="Which medication did you take? What dosage? How long ago?" 
-                                    className="min-h-[80px] rounded-xl resize-none"
-                                    data-testid="textarea-glp-details"
-                                    {...field} 
-                                    value={field.value || ""}
-                                  />
+                                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="yes" data-testid="radio-opiate-yes" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="no" data-testid="radio-opiate-no" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                    </FormItem>
+                                  </RadioGroup>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                        )}
+
+                          {/* Prior weight loss surgery */}
+                          <FormField
+                            control={form.control}
+                            name="hasPriorSurgery"
+                            render={({ field }) => (
+                              <FormItem className="space-y-3">
+                                <FormLabel className="font-medium">Have you had prior weight loss surgeries?</FormLabel>
+                                <FormControl>
+                                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="yes" data-testid="radio-surgery-yes" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="no" data-testid="radio-surgery-no" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                    </FormItem>
+                                  </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Current prescription medications */}
+                          <FormField
+                            control={form.control}
+                            name="currentMedications"
+                            render={({ field }) => (
+                              <FormItem className="space-y-3">
+                                <FormLabel className="font-medium">Do you currently take any prescription medications?</FormLabel>
+                                <FormControl>
+                                  <RadioGroup onValueChange={(v) => { field.onChange(v); }} defaultValue={field.value === "" ? undefined : (field.value && field.value !== "no" ? "yes" : field.value)} className="flex gap-4">
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="yes" data-testid="radio-prescriptions-yes" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="no" data-testid="radio-prescriptions-no" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                    </FormItem>
+                                  </RadioGroup>
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          {form.watch("currentMedications") === "yes" && (
+                            <FormField
+                              control={form.control}
+                              name="allergies"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Please list your current prescription medications</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder="e.g. Metformin 500mg, Lisinopril 10mg..."
+                                      className="min-h-[80px] rounded-xl resize-none"
+                                      data-testid="textarea-medications"
+                                      {...field}
+                                      value={field.value || ""}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+
+                          {/* Blood pressure range */}
+                          <FormField
+                            control={form.control}
+                            name="bloodPressureRange"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="font-medium">What is your blood pressure range?</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 rounded-xl" data-testid="select-blood-pressure">
+                                      <SelectValue placeholder="Select your blood pressure range" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="normal">&lt;120/80 (Normal)</SelectItem>
+                                    <SelectItem value="elevated">120 to 129/&lt;80 (Elevated)</SelectItem>
+                                    <SelectItem value="high_stage1">130 to 139/80-89 (High Stage 1)</SelectItem>
+                                    <SelectItem value="high_stage2">≥140/90 (High Stage 2)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Heart rate range */}
+                          <FormField
+                            control={form.control}
+                            name="heartRateRange"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="font-medium">What is your average resting heart rate?</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 rounded-xl" data-testid="select-heart-rate">
+                                      <SelectValue placeholder="Select your resting heart rate" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="slow">&lt;60 beats per minute (Slow)</SelectItem>
+                                    <SelectItem value="normal">60 to 100 beats per minute (Normal)</SelectItem>
+                                    <SelectItem value="slightly_fast">101 to 110 beats per minute (Slightly Fast)</SelectItem>
+                                    <SelectItem value="fast">&gt;110 beats per minute (Fast)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Previous GLP-1 experience */}
+                          <FormField
+                            control={form.control}
+                            name="previousGlp"
+                            render={({ field }) => (
+                              <FormItem className="space-y-3">
+                                <FormLabel className="font-medium">Have you previously taken a GLP-1 medication (Ozempic, Wegovy, Mounjaro, etc.)?</FormLabel>
+                                <FormControl>
+                                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="yes" data-testid="radio-glp-yes" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">Yes</FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0 p-3 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors flex-1">
+                                      <FormControl><RadioGroupItem value="no" data-testid="radio-glp-no" /></FormControl>
+                                      <FormLabel className="font-normal cursor-pointer">No</FormLabel>
+                                    </FormItem>
+                                  </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {form.watch("previousGlp") === "yes" && (
+                            <FormField
+                              control={form.control}
+                              name="glpDetails"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Please describe your previous GLP-1 experience</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder="Which medication? What dosage? How long ago?"
+                                      className="min-h-[80px] rounded-xl resize-none"
+                                      data-testid="textarea-glp-details"
+                                      {...field}
+                                      value={field.value || ""}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
+                        </div>
+
+                        {/* Medication selection */}
+                        <FormField
+                          control={form.control}
+                          name="medicationInterest"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-medium">Which medication are you interested in?</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger className="h-12 rounded-xl" data-testid="select-medication">
+                                    <SelectValue placeholder="Select medication" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {medicationOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </>
                     )}
 
+                    {/* Hair loss: treatment-specific info + medication selection */}
                     {isHairLoss && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-                        <h4 className="font-semibold text-amber-900 mb-2">About Hair Loss Treatments</h4>
-                        <p className="text-sm text-amber-800">
-                          Our treatments target the root cause of male pattern baldness. Finasteride blocks DHT (the hormone that causes hair loss), 
-                          while Minoxidil stimulates hair follicles. Many patients see results in 3-6 months.
-                        </p>
-                      </div>
+                      <>
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                          <h4 className="font-semibold text-amber-900 mb-2">About Hair Loss Treatments</h4>
+                          <p className="text-sm text-amber-800">
+                            Our treatments target the root cause of male pattern baldness. Finasteride blocks DHT (the hormone that causes hair loss), while Minoxidil stimulates hair follicles. Many patients see results in 3–6 months.
+                          </p>
+                        </div>
+
+                        <FormField control={form.control} name="currentMedications" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Current Medications (or write "None")</FormLabel>
+                            <FormControl><Textarea placeholder="List any medications you currently take" className="min-h-[80px] rounded-xl resize-none" data-testid="textarea-medications" {...field} value={field.value || ""} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+
+                        <FormField control={form.control} name="allergies" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Allergies (or write "None")</FormLabel>
+                            <FormControl><Input placeholder="e.g. Penicillin, sulfa drugs..." className="h-12 rounded-xl" data-testid="input-allergies" {...field} value={field.value || ""} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+
+                        <FormField control={form.control} name="medicationInterest" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Which medication are you interested in?</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                              <FormControl><SelectTrigger className="h-12 rounded-xl" data-testid="select-medication"><SelectValue placeholder="Select medication" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                {medicationOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </>
                     )}
 
+                    {/* Sexual health: treatment-specific info + medication selection */}
                     {isSexualHealth && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                        <h4 className="font-semibold text-blue-900 mb-2">About ED Treatments</h4>
-                        <p className="text-sm text-blue-800">
-                          PDE5 inhibitors like Sildenafil and Tadalafil are safe and effective for most men. 
-                          They work by increasing blood flow. Your provider will help determine the right option for your needs.
-                        </p>
-                      </div>
-                    )}
+                      <>
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                          <h4 className="font-semibold text-blue-900 mb-2">About ED Treatments</h4>
+                          <p className="text-sm text-blue-800">
+                            PDE5 inhibitors like Sildenafil and Tadalafil are safe and effective for most men. They work by increasing blood flow. Your provider will help determine the right option for your needs.
+                          </p>
+                        </div>
 
-                    <FormField
-                      control={form.control}
-                      name="medicationInterest"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Which medication are you interested in?</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                            <FormControl>
-                              <SelectTrigger className="h-12 rounded-xl" data-testid="select-medication">
-                                <SelectValue placeholder="Select medication" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {medicationOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField control={form.control} name="currentMedications" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Current Medications (or write "None")</FormLabel>
+                            <FormControl><Textarea placeholder="List any medications you currently take" className="min-h-[80px] rounded-xl resize-none" data-testid="textarea-medications" {...field} value={field.value || ""} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
 
-                    {isWeightLoss && (
-                      form.watch("hasPancreatitis") === "yes" || form.watch("hasThyroidCancer") === "yes"
-                    ) && (
-                      <div className="p-4 rounded-xl bg-amber-50 border border-amber-300" data-testid="contraindication-warning">
-                        <p className="font-semibold text-amber-900 mb-1">⚠️ Important Notice</p>
-                        <p className="text-sm text-amber-800">
-                          Based on your answers, you may not be a candidate for GLP-1 medications.
-                          Our licensed provider will carefully review your medical history before any prescription is issued.
-                          If you are found ineligible, you will receive a full refund.
-                        </p>
-                      </div>
-                    )}
+                        <FormField control={form.control} name="allergies" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Allergies (or write "None")</FormLabel>
+                            <FormControl><Input placeholder="e.g. Penicillin, sulfa drugs..." className="h-12 rounded-xl" data-testid="input-allergies" {...field} value={field.value || ""} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
 
-                    {form.watch("currentMedications") && form.watch("currentMedications")!.trim().length > 2 && (
-                      <div className="p-4 rounded-xl bg-blue-50 border border-blue-200" data-testid="medication-interaction-notice">
-                        <p className="font-semibold text-blue-900 mb-1">💊 Medication Interaction Notice</p>
-                        <p className="text-sm text-blue-800">
-                          You've listed current medications. Please ensure all medications are accurately disclosed —
-                          your provider will review potential interactions before prescribing.
-                        </p>
-                      </div>
+                        <FormField control={form.control} name="medicationInterest" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Which medication are you interested in?</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                              <FormControl><SelectTrigger className="h-12 rounded-xl" data-testid="select-medication"><SelectValue placeholder="Select medication" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                {medicationOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </>
                     )}
                   </motion.div>
                 )}
