@@ -4,49 +4,49 @@ uploads = []
 id = "Mth8PTnHhQfO265LO3gWl"
 uri = "file://client/public/images/medications/semaglutide.png"
 type = "image"
-title = "armormeds semaglutide branded pen"
+title = "semaglutide armormeds pen photorealistic"
 
 [[generated]]
 id = "IsVt8i1XpWIn1gh47Mjnp"
 uri = "file://client/public/images/medications/tirzepatide.png"
 type = "image"
-title = "armormeds tirzepatide branded pen"
+title = "tirzepatide armormeds pen photorealistic"
 
 [[generated]]
 id = "M6Pqs_XtDx1uBZqL_ssY3"
 uri = "file://client/public/images/medications/finasteride.png"
 type = "image"
-title = "armormeds finasteride branded bottle"
+title = "finasteride armormeds bottle photorealistic"
 
 [[generated]]
 id = "gHb0ru2VgCyuFqnttzlUI"
 uri = "file://client/public/images/medications/finasteride-minoxidil.png"
 type = "image"
-title = "armormeds combo branded bottles"
+title = "finasteride minoxidil armormeds bottles photorealistic"
 
 [[generated]]
 id = "l8m43Egd8S6eX6q-jQ7MN"
 uri = "file://client/public/images/medications/minoxidil.png"
 type = "image"
-title = "armormeds minoxidil branded dropper"
+title = "minoxidil armormeds dropper photorealistic"
 
 [[generated]]
 id = "jg8obDtztMagFsRYcL1cC"
 uri = "file://client/public/images/medications/sildenafil.png"
 type = "image"
-title = "armormeds sildenafil branded blister"
+title = "sildenafil armormeds bottle photorealistic"
 
 [[generated]]
 id = "lMXusv5yNBbPYR3Jfizpu"
 uri = "file://client/public/images/medications/tadalafil.png"
 type = "image"
-title = "armormeds tadalafil branded bottle"
+title = "tadalafil armormeds bottle photorealistic"
 
 [[generated]]
 id = "M1p86qoSCGkgJPE-u42z0"
 uri = "file://client/public/images/medications/vardenafil.png"
 type = "image"
-title = "armormeds vardenafil branded packaging"
+title = "vardenafil armormeds packaging photorealistic"
 
 [[generated]]
 id = "2RO3stVMIbSIsHJP_dBnB"
@@ -106,49 +106,49 @@ title = "armormeds clean clinical tablet style C"
 id = "cuH7KzQUWAxIgMPVMv_fu"
 uri = "file://client/public/images/medications/semaglutide.png"
 type = "image"
-title = "Semaglutide — ArmorMeds injection pen"
+title = "Semaglutide — injection pen"
 
 [[outputs]]
 id = "ru05oXJTc7FfKUI1SpZJx"
 uri = "file://client/public/images/medications/tirzepatide.png"
 type = "image"
-title = "Tirzepatide — ArmorMeds injection pen"
+title = "Tirzepatide — injection pen"
 
 [[outputs]]
 id = "-8itjwyX2eAB4SlA19GZN"
 uri = "file://client/public/images/medications/finasteride.png"
 type = "image"
-title = "Finasteride — ArmorMeds pill bottle"
+title = "Finasteride — pill bottle"
 
 [[outputs]]
 id = "0yF5T1-8MXDc6HnooDpiM"
 uri = "file://client/public/images/medications/minoxidil.png"
 type = "image"
-title = "Minoxidil — ArmorMeds dropper"
+title = "Minoxidil — dropper bottle"
 
 [[outputs]]
 id = "KNLouLcqVlFxsdiglXU8o"
 uri = "file://client/public/images/medications/sildenafil.png"
 type = "image"
-title = "Sildenafil — ArmorMeds blister pack"
+title = "Sildenafil — pill bottle"
 
 [[outputs]]
 id = "A45HTfQB31-8J8LXRdjHD"
 uri = "file://client/public/images/medications/tadalafil.png"
 type = "image"
-title = "Tadalafil — ArmorMeds bottle"
+title = "Tadalafil — pill bottle"
 
 [[outputs]]
 id = "sQ-eKtmb-zqUD-VcoEGyO"
 uri = "file://client/public/images/medications/vardenafil.png"
 type = "image"
-title = "Vardenafil — ArmorMeds packaging"
+title = "Vardenafil — blister pack"
 
 [[outputs]]
 id = "wKf00QC6STdNxxFmtIZUd"
 uri = "file://client/public/images/medications/finasteride-minoxidil.png"
 type = "image"
-title = "Finasteride + Minoxidil Combo"
+title = "Finasteride + Minoxidil combo"
 
 [[outputs]]
 id = "OeSW8iYU8_CGwlsNVuOQ0"
