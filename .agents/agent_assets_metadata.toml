@@ -1,0 +1,97 @@
+uploads = []
+
+[[generated]]
+id = "Mth8PTnHhQfO265LO3gWl"
+uri = "file://client/public/images/medications/semaglutide.png"
+type = "image"
+title = "semaglutide vial navy"
+
+[[generated]]
+id = "IsVt8i1XpWIn1gh47Mjnp"
+uri = "file://client/public/images/medications/tirzepatide.png"
+type = "image"
+title = "tirzepatide vial blue"
+
+[[generated]]
+id = "M6Pqs_XtDx1uBZqL_ssY3"
+uri = "file://client/public/images/medications/finasteride.png"
+type = "image"
+title = "finasteride pill bottle amber"
+
+[[generated]]
+id = "gHb0ru2VgCyuFqnttzlUI"
+uri = "file://client/public/images/medications/finasteride-minoxidil.png"
+type = "image"
+title = "finasteride minoxidil combo bottles"
+
+[[generated]]
+id = "l8m43Egd8S6eX6q-jQ7MN"
+uri = "file://client/public/images/medications/minoxidil.png"
+type = "image"
+title = "minoxidil dropper bottle"
+
+[[generated]]
+id = "jg8obDtztMagFsRYcL1cC"
+uri = "file://client/public/images/medications/sildenafil.png"
+type = "image"
+title = "sildenafil pill bottle blue"
+
+[[generated]]
+id = "lMXusv5yNBbPYR3Jfizpu"
+uri = "file://client/public/images/medications/tadalafil.png"
+type = "image"
+title = "tadalafil pill bottle navy gold"
+
+[[generated]]
+id = "M1p86qoSCGkgJPE-u42z0"
+uri = "file://client/public/images/medications/vardenafil.png"
+type = "image"
+title = "vardenafil pill bottle white navy"
+
+[[outputs]]
+id = "cuH7KzQUWAxIgMPVMv_fu"
+uri = "file://client/public/images/medications/semaglutide.png"
+type = "image"
+title = "Semaglutide — GLP-1 injection vial"
+
+[[outputs]]
+id = "ru05oXJTc7FfKUI1SpZJx"
+uri = "file://client/public/images/medications/tirzepatide.png"
+type = "image"
+title = "Tirzepatide — dual-action injection vial"
+
+[[outputs]]
+id = "-8itjwyX2eAB4SlA19GZN"
+uri = "file://client/public/images/medications/finasteride.png"
+type = "image"
+title = "Finasteride — pill bottle"
+
+[[outputs]]
+id = "0yF5T1-8MXDc6HnooDpiM"
+uri = "file://client/public/images/medications/minoxidil.png"
+type = "image"
+title = "Minoxidil — dropper vial"
+
+[[outputs]]
+id = "KNLouLcqVlFxsdiglXU8o"
+uri = "file://client/public/images/medications/sildenafil.png"
+type = "image"
+title = "Sildenafil — pill bottle"
+
+[[outputs]]
+id = "A45HTfQB31-8J8LXRdjHD"
+uri = "file://client/public/images/medications/tadalafil.png"
+type = "image"
+title = "Tadalafil — pill bottle"
+
+[[outputs]]
+id = "sQ-eKtmb-zqUD-VcoEGyO"
+uri = "file://client/public/images/medications/vardenafil.png"
+type = "image"
+title = "Vardenafil — pill bottle"
+
+[[outputs]]
+id = "wKf00QC6STdNxxFmtIZUd"
+uri = "file://client/public/images/medications/finasteride-minoxidil.png"
+type = "image"
+title = "Finasteride + Minoxidil Combo"

@@ -405,7 +405,7 @@ export class DatabaseStorage implements IStorage {
           name: "Semaglutide",
           description: "A GLP-1 receptor agonist that mimics the GLP-1 hormone, which is released in the gastrointestinal tract in response to eating. It prompts the body to produce more insulin, which reduces blood sugar (glucose).",
           price: "Starts at $299/mo",
-          image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/semaglutide.png",
           benefits: ["Reduces appetite", "Supports weight loss", "Improves metabolic health", "Weekly injection"],
           category: "weight-loss"
         },
@@ -413,7 +413,7 @@ export class DatabaseStorage implements IStorage {
           name: "Tirzepatide",
           description: "The first and only unimolecular GIP and GLP-1 receptor agonist. It activates both the GLP-1 and GIP receptors to improve blood sugar control.",
           price: "Starts at $399/mo",
-          image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/tirzepatide.png",
           benefits: ["Dual action mechanism", "Significantly greater weight loss", "Improved glycemic control", "Weekly injection"],
           category: "weight-loss"
         },
@@ -421,7 +421,7 @@ export class DatabaseStorage implements IStorage {
           name: "Finasteride",
           description: "A prescription medication that treats male pattern baldness by blocking DHT, the hormone responsible for hair loss. Precision-compounded and clinically studied to stop hair loss and regrow hair.",
           price: "Starts at $49/mo",
-          image: "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/finasteride.png",
           benefits: ["Blocks DHT hormone", "Stops hair loss", "Promotes regrowth", "Daily oral tablet"],
           category: "hair-loss"
         },
@@ -429,7 +429,7 @@ export class DatabaseStorage implements IStorage {
           name: "Minoxidil",
           description: "A topical treatment that stimulates hair follicles and increases blood flow to the scalp. Can be used alone or combined with Finasteride for enhanced results.",
           price: "Starts at $35/mo",
-          image: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/minoxidil.png",
           benefits: ["Stimulates follicles", "Increases blood flow", "Easy topical application", "Works for all hair types"],
           category: "hair-loss"
         },
@@ -437,7 +437,7 @@ export class DatabaseStorage implements IStorage {
           name: "Finasteride + Minoxidil Combo",
           description: "The most effective combination for treating male pattern baldness. Dual-action approach that blocks DHT while stimulating hair growth.",
           price: "Starts at $69/mo",
-          image: "https://images.unsplash.com/photo-1559599101-f09722fb4948?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/finasteride-minoxidil.png",
           benefits: ["Maximum effectiveness", "Dual-action treatment", "Clinically proven combo", "Best value"],
           category: "hair-loss"
         },
@@ -445,7 +445,7 @@ export class DatabaseStorage implements IStorage {
           name: "Sildenafil (Generic Viagra)",
           description: "The most popular ED medication. Works by increasing blood flow to help achieve and maintain an erection when sexually stimulated.",
           price: "Starts at $2/dose",
-          image: "https://images.unsplash.com/photo-1550572017-edd951aa8f72?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/sildenafil.png",
           benefits: ["Works in 30-60 minutes", "Lasts 4-6 hours", "Proven effectiveness", "Available in multiple doses"],
           category: "sexual-health"
         },
@@ -453,7 +453,7 @@ export class DatabaseStorage implements IStorage {
           name: "Tadalafil (Generic Cialis)",
           description: "Known as the 'weekend pill' for its long-lasting effects. Provides up to 36 hours of effectiveness for spontaneous intimacy.",
           price: "Starts at $4/dose",
-          image: "https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/tadalafil.png",
           benefits: ["Lasts up to 36 hours", "Daily or as-needed options", "Spontaneous intimacy", "Lower dose daily option"],
           category: "sexual-health"
         },
@@ -461,7 +461,7 @@ export class DatabaseStorage implements IStorage {
           name: "Vardenafil (Generic Levitra)",
           description: "A fast-acting ED medication that works in as little as 25 minutes. May work better for some men who don't respond to other ED medications.",
           price: "Starts at $5/dose",
-          image: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&q=80&w=600",
+          image: "/images/medications/vardenafil.png",
           benefits: ["Fast-acting formula", "Works in 25 minutes", "Lasts 4-5 hours", "Alternative option"],
           category: "sexual-health"
         }
