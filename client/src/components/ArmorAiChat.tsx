@@ -33,23 +33,26 @@ export function ArmorAiChat() {
 
   const isStandalonePage =
     location.startsWith("/admin") || location.startsWith("/patient");
-  if (isStandalonePage) return null;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
+    if (isStandalonePage) return;
     if (isOpen) {
       scrollToBottom();
       setHasUnread(false);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen]);
+  }, [isOpen, isStandalonePage]);
 
   useEffect(() => {
+    if (isStandalonePage) return;
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isStandalonePage]);
+
+  if (isStandalonePage) return null;
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
