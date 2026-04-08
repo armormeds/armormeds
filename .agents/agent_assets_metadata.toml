@@ -4,13 +4,13 @@ uploads = []
 id = "Mth8PTnHhQfO265LO3gWl"
 uri = "file://client/public/images/medications/semaglutide.png"
 type = "image"
-title = "semaglutide elegant marble vial"
+title = "semaglutide elegant marble vial no needle"
 
 [[generated]]
 id = "IsVt8i1XpWIn1gh47Mjnp"
 uri = "file://client/public/images/medications/tirzepatide.png"
 type = "image"
-title = "tirzepatide elegant marble vial"
+title = "tirzepatide elegant marble vial no needle"
 
 [[generated]]
 id = "M6Pqs_XtDx1uBZqL_ssY3"
@@ -106,13 +106,13 @@ title = "armormeds clean clinical tablet style C"
 id = "cuH7KzQUWAxIgMPVMv_fu"
 uri = "file://client/public/images/medications/semaglutide.png"
 type = "image"
-title = "Semaglutide — marble vial"
+title = "Semaglutide — no needle"
 
 [[outputs]]
 id = "ru05oXJTc7FfKUI1SpZJx"
 uri = "file://client/public/images/medications/tirzepatide.png"
 type = "image"
-title = "Tirzepatide — marble vial"
+title = "Tirzepatide — no needle"
 
 [[outputs]]
 id = "-8itjwyX2eAB4SlA19GZN"
