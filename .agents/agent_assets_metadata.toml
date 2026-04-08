@@ -48,6 +48,60 @@ uri = "file://client/public/images/medications/vardenafil.png"
 type = "image"
 title = "armormeds vardenafil branded packaging"
 
+[[generated]]
+id = "2RO3stVMIbSIsHJP_dBnB"
+uri = "file://client/public/images/medications/style-a-injection.png"
+type = "image"
+title = "armormeds dark luxury injection style A"
+
+[[generated]]
+id = "fLKpJ6ceks1dlsKIVwEs6"
+uri = "file://client/public/images/medications/style-a-pill.png"
+type = "image"
+title = "armormeds dark luxury pill style A"
+
+[[generated]]
+id = "CN8PHdml-TFUcL_bBM1QM"
+uri = "file://client/public/images/medications/style-a-tablet.png"
+type = "image"
+title = "armormeds dark luxury tablet style A"
+
+[[generated]]
+id = "wtyiMGKKKCupqMnXZR2td"
+uri = "file://client/public/images/medications/style-b-injection.png"
+type = "image"
+title = "armormeds gradient hero injection style B"
+
+[[generated]]
+id = "sDGWm9Sk52WaEMASCTz8i"
+uri = "file://client/public/images/medications/style-b-pill.png"
+type = "image"
+title = "armormeds gradient hero pill style B"
+
+[[generated]]
+id = "xQWVTje8y-WwKOUf38m8D"
+uri = "file://client/public/images/medications/style-b-tablet.png"
+type = "image"
+title = "armormeds gradient hero tablet style B"
+
+[[generated]]
+id = "rqGwTABp4PfX92WXmaLmE"
+uri = "file://client/public/images/medications/style-c-injection.png"
+type = "image"
+title = "armormeds clean clinical injection style C"
+
+[[generated]]
+id = "hsPCJ7PvHsiANn0zIuWOk"
+uri = "file://client/public/images/medications/style-c-pill.png"
+type = "image"
+title = "armormeds clean clinical pill style C"
+
+[[generated]]
+id = "eTKgKwOZ0_TZzJHlhswY3"
+uri = "file://client/public/images/medications/style-c-tablet.png"
+type = "image"
+title = "armormeds clean clinical tablet style C"
+
 [[outputs]]
 id = "cuH7KzQUWAxIgMPVMv_fu"
 uri = "file://client/public/images/medications/semaglutide.png"
@@ -239,3 +293,57 @@ id = "M-PtdMLj9Q0T2yI7FMxOw"
 uri = "file://attached_assets/stock_images/pharmacy_medication_3.jpg"
 type = "image"
 title = "Pharmacy H3"
+
+[[outputs]]
+id = "gYAncFf3vWaE-B6bHMQU0"
+uri = "file://client/public/images/medications/style-a-injection.png"
+type = "image"
+title = "Style A — Dark Luxury (Injection)"
+
+[[outputs]]
+id = "zyuiWznpU7wfjeFOTjDcE"
+uri = "file://client/public/images/medications/style-a-pill.png"
+type = "image"
+title = "Style A — Dark Luxury (Pill)"
+
+[[outputs]]
+id = "2916cIkfmbOAswwBuYJtw"
+uri = "file://client/public/images/medications/style-a-tablet.png"
+type = "image"
+title = "Style A — Dark Luxury (Tablet)"
+
+[[outputs]]
+id = "-FQhT1F2u0v8ktQxKnnWc"
+uri = "file://client/public/images/medications/style-b-injection.png"
+type = "image"
+title = "Style B — Bold Gradient (Injection)"
+
+[[outputs]]
+id = "S5KG4zhjNlYm77vHa8891"
+uri = "file://client/public/images/medications/style-b-pill.png"
+type = "image"
+title = "Style B — Bold Gradient (Pill)"
+
+[[outputs]]
+id = "cQrKfGnAFo67tyzUerz30"
+uri = "file://client/public/images/medications/style-b-tablet.png"
+type = "image"
+title = "Style B — Bold Gradient (Tablet)"
+
+[[outputs]]
+id = "DRzeTh_JdSZsZzdAiszwf"
+uri = "file://client/public/images/medications/style-c-injection.png"
+type = "image"
+title = "Style C — Clean Clinical (Injection)"
+
+[[outputs]]
+id = "mLHVEIcrXlLJa9qaCIoO6"
+uri = "file://client/public/images/medications/style-c-pill.png"
+type = "image"
+title = "Style C — Clean Clinical (Pill)"
+
+[[outputs]]
+id = "ahIc2pg0nqVqN6kOD8h6R"
+uri = "file://client/public/images/medications/style-c-tablet.png"
+type = "image"
+title = "Style C — Clean Clinical (Tablet)"
