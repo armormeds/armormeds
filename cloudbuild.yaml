@@ -3,17 +3,9 @@ options:
 
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/armormeds'
-      - '.'
-
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/armormeds', '.']
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/armormeds'
-
+    args: ['push', 'gcr.io/$PROJECT_ID/armormeds']
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
