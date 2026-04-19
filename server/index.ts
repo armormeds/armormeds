@@ -150,9 +150,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Wait for Stripe to initialize before serving
-  await stripeInitPromise;
-  
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -180,4 +177,9 @@ app.use((req, res, next) => {
       log(`serving on port ${port}`);
     },
   );
+
+  // Wait for Stripe to finish initializing in the background (non-blocking)
+  stripeInitPromise.catch((err) => {
+    console.error('Stripe initialization failed (non-fatal):', err);
+  });
 })();
