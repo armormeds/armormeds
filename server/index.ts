@@ -27,22 +27,16 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-let stripeInitialized = false;
-
 async function initStripe() {
   const databaseUrl = process.env.DATABASE_URL;
-
   if (!databaseUrl) {
     console.warn('⚠️  DATABASE_URL not set — Stripe initialization skipped.');
-    stripeInitialized = true;
     return;
   }
 
   try {
     log('Initializing Stripe schema...', 'stripe');
-    await runMigrations({ 
-      databaseUrl
-    });
+    await runMigrations({ databaseUrl });
     log('Stripe schema ready', 'stripe');
 
     const stripeSync = await getStripeSync();
@@ -66,17 +60,13 @@ async function initStripe() {
     log('Syncing Stripe data...', 'stripe');
     await stripeSync.syncBackfill();
     log('Stripe data synced', 'stripe');
-    stripeInitialized = true;
   } catch (error) {
-    console.error('Failed to initialize Stripe:', error);
-    stripeInitialized = true; // Allow app to start even if Stripe fails
+    console.error('Failed to initialize Stripe (non-fatal):', error);
   }
 }
 
-// Attach .catch immediately so Node.js never sees an unhandled rejection
-const stripeInitPromise = initStripe().catch((err) => {
-  console.error('Stripe initialization failed (non-fatal):', err);
-});
+// Run in background — never block startup or surface unhandled rejections
+void initStripe();
 
 app.post(
   '/api/stripe/webhook',
