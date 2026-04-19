@@ -1,0 +1,173 @@
+{
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "status": {
+      "code": 9,
+      "message": "Ready condition status changed to False for Revision armormeds-00011-67s with message: The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00011-67s&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00011-67s%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start"
+    },
+    "serviceName": "run.googleapis.com",
+    "methodName": "/Services.ReplaceService",
+    "resourceName": "namespaces/armormeds/revisions/armormeds-00011-67s",
+    "response": {
+      "metadata": {
+        "name": "armormeds-00011-67s",
+        "namespace": "748393509801",
+        "selfLink": "/apis/serving.knative.dev/v1/namespaces/748393509801/revisions/armormeds-00011-67s",
+        "uid": "be690ab7-c25f-4e0c-9ca4-1f0c945e02e8",
+        "resourceVersion": "AAZPyJPMJo4",
+        "generation": 1,
+        "creationTimestamp": "2026-04-19T04:25:39.310517Z",
+        "labels": {
+          "client.knative.dev/nonce": "hsctgzgveu",
+          "serving.knative.dev/configuration": "armormeds",
+          "serving.knative.dev/configurationGeneration": "11",
+          "serving.knative.dev/service": "armormeds",
+          "serving.knative.dev/serviceUid": "01c655a7-a548-4cf1-840c-67d6acdf6b46",
+          "serving.knative.dev/route": "armormeds",
+          "cloud.googleapis.com/location": "us-central1",
+          "run.googleapis.com/startupProbeType": "Default"
+        },
+        "annotations": {
+          "autoscaling.knative.dev/maxScale": "20",
+          "run.googleapis.com/client-name": "gcloud",
+          "run.googleapis.com/client-version": "565.0.0",
+          "serving.knative.dev/creator": "748393509801-compute@developer.gserviceaccount.com",
+          "run.googleapis.com/operation-id": "b4c81a50-59ec-407e-bbfb-e1ae0b41c507",
+          "run.googleapis.com/startup-cpu-boost": "true"
+        },
+        "ownerReferences": [
+          {
+            "kind": "Configuration",
+            "name": "armormeds",
+            "uid": "7db05505-b65e-40b4-9399-ffc866777ffb",
+            "apiVersion": "serving.knative.dev/v1",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "apiVersion": "serving.knative.dev/v1",
+      "kind": "Revision",
+      "spec": {
+        "containerConcurrency": 80,
+        "timeoutSeconds": 300,
+        "serviceAccountName": "748393509801-compute@developer.gserviceaccount.com",
+        "containers": [
+          {
+            "name": "armormeds-1",
+            "image": "gcr.io/armormeds/armormeds@sha256:538a6f7071c55c88b3126496d23c6a4690b410752e5061617c316e0f4faa1113",
+            "ports": [
+              {
+                "name": "http1",
+                "containerPort": 8080
+              }
+            ],
+            "env": [
+              {
+                "name": "TWILIO_ACCOUNT_SID",
+                "value": "AC3067550620686d605208e5b52e252aa2"
+              },
+              {
+                "name": "TWILIO_AUTH_TOKEN",
+                "value": "bd579355c8fb8a06b61607f41f0ad3dc"
+              },
+              {
+                "name": "TWILIO_PHONE_NUMBER",
+                "value": "+18586677566"
+              },
+              {
+                "name": "DATABASE_URL",
+                "value": "postgresql://armormeds:Sprite@44@35.224.228.52/armormeds"
+              },
+              {
+                "name": "SESSION_SECRET",
+                "value": "JJc4QdXJsuXLB+SKZ1SpTdQAPZxEttAtkAQt4JiFLClSprEuXoAtzs+o5GhaJECWjp8kZHqXjv/imFkFhxti3g=="
+              },
+              {
+                "name": "NODE_ENV",
+                "value": "production"
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1000m",
+                "memory": "512Mi"
+              }
+            },
+            "startupProbe": {
+              "timeoutSeconds": 240,
+              "periodSeconds": 240,
+              "failureThreshold": 1,
+              "tcpSocket": {
+                "port": 8080
+              }
+            }
+          }
+        ]
+      },
+      "status": {
+        "observedGeneration": 1,
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "False",
+            "reason": "HealthCheckContainerError",
+            "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00011-67s&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00011-67s%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+            "lastTransitionTime": "2026-04-19T04:25:51.947406Z"
+          },
+          {
+            "type": "ContainerHealthy",
+            "status": "False",
+            "reason": "HealthCheckContainerError",
+            "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00011-67s&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00011-67s%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+            "lastTransitionTime": "2026-04-19T04:25:51.947406Z"
+          },
+          {
+            "type": "ContainerReady",
+            "status": "True",
+            "message": "Container image import completed in 8.16s.",
+            "lastTransitionTime": "2026-04-19T04:25:48.187439Z"
+          },
+          {
+            "type": "ResourcesAvailable",
+            "status": "True",
+            "message": "Provisioning imported containers completed in 1.39s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+            "lastTransitionTime": "2026-04-19T04:25:49.578739Z"
+          },
+          {
+            "type": "Retry",
+            "status": "True",
+            "reason": "ImmediateRetry",
+            "message": "System will retry after 00:00 from lastTransitionTime for attempt 0.",
+            "lastTransitionTime": "2026-04-19T04:25:49.578739Z",
+            "severity": "Info"
+          }
+        ],
+        "logUrl": "https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00011-67s&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00011-67s%22",
+        "imageDigest": "gcr.io/armormeds/armormeds@sha256:538a6f7071c55c88b3126496d23c6a4690b410752e5061617c316e0f4faa1113",
+        "containerStatuses": [
+          {
+            "name": "armormeds-1",
+            "imageDigest": "gcr.io/armormeds/armormeds@sha256:538a6f7071c55c88b3126496d23c6a4690b410752e5061617c316e0f4faa1113"
+          }
+        ]
+      },
+      "@type": "type.googleapis.com/google.cloud.run.v1.Revision"
+    }
+  },
+  "insertId": "-y3s0lfcrqy",
+  "resource": {
+    "type": "cloud_run_revision",
+    "labels": {
+      "project_id": "armormeds",
+      "revision_name": "armormeds-00011-67s",
+      "configuration_name": "armormeds",
+      "service_name": "armormeds",
+      "location": "us-central1"
+    }
+  },
+  "timestamp": "2026-04-19T04:25:51.961554Z",
+  "severity": "ERROR",
+  "logName": "projects/armormeds/logs/cloudaudit.googleapis.com%2Fsystem_event",
+  "receiveTimestamp": "2026-04-19T04:25:52.331533986Z"
+}
