@@ -16,4 +16,3 @@ steps:
       - '--region=us-central1'
       - '--platform=managed'
       - '--port=8080'
-      - '--allow-unauthenticated'
