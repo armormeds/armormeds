@@ -15,10 +15,25 @@ import type { AdminUser, AdminPermissions } from "@shared/schema";
 import { sendPrescriptionReadySMS, sendAppointmentScheduledSMS, sendCustomSMS, isTwilioConfigured } from "./twilio";
 import OpenAI from "openai";
 
-const armorAiClient = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+let _armorAiClient: OpenAI | null = null;
+function getArmorAiClient(): OpenAI | null {
+  if (_armorAiClient) return _armorAiClient;
+  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (!apiKey) {
+    console.warn("⚠️  AI_INTEGRATIONS_OPENAI_API_KEY not set — Armor AI chat will be disabled.");
+    return null;
+  }
+  try {
+    _armorAiClient = new OpenAI({
+      apiKey,
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+    });
+    return _armorAiClient;
+  } catch (err) {
+    console.error("⚠️  Failed to initialize OpenAI client:", (err as Error).message);
+    return null;
+  }
+}
 
 const ARMOR_AI_SYSTEM_PROMPT = `You are Armor AI, the friendly virtual health assistant for ArmorMeds — a trusted telehealth platform specializing in weight management, hair loss, and sexual health treatments.
 
@@ -2309,6 +2324,11 @@ export async function registerRoutes(
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
       res.setHeader("Access-Control-Allow-Origin", "*");
+
+      const armorAiClient = getArmorAiClient();
+      if (!armorAiClient) {
+        return res.status(503).json({ error: "Armor AI is not configured on this server." });
+      }
 
       const stream = await armorAiClient.chat.completions.create({
         model: "gpt-4.1",

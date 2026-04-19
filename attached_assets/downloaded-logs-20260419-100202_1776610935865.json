@@ -1,0 +1,500 @@
+[
+  {
+    "textPayload": "Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.",
+    "insertId": "69e4edc70000a6c3ab1a7f98",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "location": "us-central1",
+        "revision_name": "armormeds-00013-w5l",
+        "configuration_name": "armormeds",
+        "service_name": "armormeds",
+        "project_id": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:19.042691Z",
+    "severity": "INFO",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24",
+      "scaling_reason": "DEPLOYMENT_ROLLOUT"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-04-19T14:59:19.046227665Z"
+  },
+  {
+    "textPayload": "/app/dist/index.cjs:93",
+    "insertId": "69e4edc8000955a9531c200b",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "service_name": "armormeds",
+        "project_id": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.611753Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.618615405Z"
+  },
+  {
+    "textPayload": "${km(t)}`);return{...L,id:j,type:H,function:{...ue,name:Z,arguments:J}}})}}:{...f,message:{...S,content:h,role:T,refusal:c.refusal??null},finish_reason:u,index:p,logprobs:d}}),created:i,model:s,object:\"chat.completion\",...a?{system_fingerprint:a}:{}};return GN(l,e)}function km(t){return JSON.stringify(t)}var du=class t extends ts{static fromReadableStream(e){let r=new t(null);return r._run(()=>r._fromReadableStream(e)),r}static runTools(e,r,n){let i=new t(r),s={...n,headers:{...n?.headers,\"X-Stainless-Helper-Method\":\"runTools\"}};return i._run(()=>i._runTools(e,r,s)),i}};var dn=class extends A{constructor(){super(...arguments),this.messages=new Yi(this._client)}create(e,r){return this._client.post(\"/chat/completions\",{body:e,...r,stream:e.stream??!1})}retrieve(e,r){return this._client.get(P`/chat/completions/${e}`,r)}update(e,r,n){return this._client.post(P`/chat/completions/${e}`,{body:r,...n})}list(e={},r){return this._client.getAPIList(\"/chat/completions\",se,{query:e,...r})}delete(e,r){return this._client.delete(P`/chat/completions/${e}`,r)}parse(e,r){return VN(e.tools),this._client.chat.completions.create(e,{...r,headers:{...r?.headers,\"X-Stainless-Helper-Method\":\"chat.completions.parse\"}})._thenUnwrap(n=>au(n,e))}runTools(e,r){return e.stream?du.runTools(this._client,e,r):pu.runTools(this._client,e,r)}stream(e,r){return ts.createChatCompletion(this._client,e,r)}};dn.Messages=Yi;var Jn=class extends A{constructor(){super(...arguments),this.completions=new dn(this._client)}};Jn.Completions=dn;var YN=Symbol(\"brand.privateNullableHeaders\");function*AV(t){if(!t)return;if(YN in t){let{values:n,nulls:i}=t;yield*n.entries();for(let s of i)yield[s,null];return}let e=!1,r;t instanceof Headers?r=t.entries():Zx(t)?r=t:(e=!0,r=Object.entries(t??{}));for(let n of r){let i=n[0];if(typeof i!=\"string\")throw new TypeError(\"expected header name to be a string\");let s=Zx(n[1])?n[1]:[n[1]],a=!1;for(let o of s)o!==void 0&&(e&&!a&&(a=!0,yield[i,null]),yield[i,o])}}var q=t=>{let e=new Headers,r=new Set;for(let n of t){let i=new Set;for(let[s,a]of AV(n)){let o=s.toLowerCase();i.has(o)||(e.delete(s),i.add(o)),a===null?(e.delete(s),r.add(o)):(e.append(s,a),r.delete(o))}}return{[YN]:!0,values:e,nulls:r}};var ao=class extends A{create(e,r){return this._client.post(\"/audio/speech\",{body:e,...r,headers:q([{Accept:\"application/octet-stream\"},r?.headers]),__binaryResponse:!0})}};var oo=class extends A{create(e,r){return this._client.post(\"/audio/transcriptions\",xt({body:e,...r,stream:e.stream??!1,__metadata:{model:e.model}},this._client))}};var co=class extends A{create(e,r){return this._client.post(\"/audio/translations\",xt({body:e,...r,__metadata:{model:e.model}},this._client))}};var Gr=class extends A{constructor(){super(...arguments),this.transcriptions=new oo(this._client),this.translations=new co(this._client),this.speech=new ao(this._client)}};Gr.Transcriptions=oo;Gr.Translations=co;Gr.Speech=ao;var rs=class extends A{create(e,r){return this._client.post(\"/batches\",{body:e,...r})}retrieve(e,r){return this._client.get(P`/batches/${e}`,r)}list(e={},r){return this._client.getAPIList(\"/batches\",se,{query:e,...r})}cancel(e,r){return this._client.post(P`/batches/${e}/cancel`,r)}};var lo=class extends A{create(e,r){return this._client.post(\"/assistants\",{body:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}retrieve(e,r){return this._client.get(P`/assistants/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}update(e,r,n){return this._client.post(P`/assistants/${e}`,{body:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}list(e={},r){return this._client.getAPIList(\"/assistants\",se,{query:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}delete(e,r){return this._client.delete(P`/assistants/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}};var uo=class extends A{create(e,r){return this._client.post(\"/realtime/sessions\",{body:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}};var po=class extends A{create(e,r){return this._client.post(\"/realtime/transcription_sessions\",{body:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}};var Xn=class extends A{constructor(){super(...arguments),this.sessions=new uo(this._client),this.transcriptionSessions=new po(this._client)}};Xn.Sessions=uo;Xn.TranscriptionSessions=po;var mo=class extends A{create(e,r){return this._client.post(\"/chatkit/sessions\",{body:e,...r,headers:q([{\"OpenAI-Beta\":\"chatkit_beta=v1\"},r?.headers])})}cancel(e,r){return this._client.post(P`/chatkit/sessions/${e}/cancel`,{...r,headers:q([{\"OpenAI-Beta\":\"chatkit_beta=v1\"},r?.headers])})}};var fo=class extends A{retrieve(e,r){return this._client.get(P`/chatkit/threads/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"chatkit_beta=v1\"},r?.headers])})}list(e={},r){return this._client.getAPIList(\"/chatkit/threads\",yr,{query:e,...r,headers:q([{\"OpenAI-Beta\":\"chatkit_beta=v1\"},r?.headers])})}delete(e,r){return this._client.delete(P`/chatkit/threads/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"chatkit_beta=v1\"},r?.headers])})}listItems(e,r={},n){return this._client.getAPIList(P`/chatkit/threads/${e}/items`,yr,{query:r,...n,headers:q([{\"OpenAI-Beta\":\"chatkit_beta=v1\"},n?.headers])})}};var Zn=class extends A{constructor(){super(...arguments),this.sessions=new mo(this._client),this.threads=new fo(this._client)}};Zn.Sessions=mo;Zn.Threads=fo;var ho=class extends A{create(e,r,n){return this._client.post(P`/threads/${e}/messages`,{body:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}retrieve(e,r,n){let{thread_id:i}=r;return this._client.get(P`/threads/${i}/messages/${e}`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}update(e,r,n){let{thread_id:i,...s}=r;return this._client.post(P`/threads/${i}/messages/${e}`,{body:s,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}list(e,r={},n){return this._client.getAPIList(P`/threads/${e}/messages`,se,{query:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}delete(e,r,n){let{thread_id:i}=r;return this._client.delete(P`/threads/${i}/messages/${e}`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}};var go=class extends A{retrieve(e,r,n){let{thread_id:i,run_id:s,...a}=r;return this._client.get(P`/threads/${i}/runs/${s}/steps/${e}`,{query:a,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}list(e,r,n){let{thread_id:i,...s}=r;return this._client.getAPIList(P`/threads/${i}/runs/${e}/steps`,se,{query:s,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}};var e6=t=>{if(typeof Buffer<\"u\"){let e=Buffer.from(t,\"base64\");return Array.from(new Float32Array(e.buffer,e.byteOffset,e.length/Float32Array.BYTES_PER_ELEMENT))}else{let e=atob(t),r=e.length,n=new Uint8Array(r);for(let i=0;i<r;i++)n[i]=e.charCodeAt(i);return Array.from(new Float32Array(n.buffer))}};var Yn=t=>{if(typeof globalThis.process<\"u\")return globalThis.process.env?.[t]?.trim()??void 0;if(typeof globalThis.Deno<\"u\")return globalThis.Deno.env?.get?.(t)?.trim()};var dt,is,Rb,Hr,Cm,xr,ss,vo,ns,Rm,Xt,Im,Om,hu,mu,fu,t6,r6,n6,i6,s6,a6,o6,mn=class extends Wn{constructor(){super(...arguments),dt.add(this),Rb.set(this,[]),Hr.set(this,{}),Cm.set(this,{}),xr.set(this,void 0),ss.set(this,void 0),vo.set(this,void 0),ns.set(this,void 0),Rm.set(this,void 0),Xt.set(this,void 0),Im.set(this,void 0),Om.set(this,void 0),hu.set(this,void 0)}[(Rb=new WeakMap,Hr=new WeakMap,Cm=new WeakMap,xr=new WeakMap,ss=new WeakMap,vo=new WeakMap,ns=new WeakMap,Rm=new WeakMap,Xt=new WeakMap,Im=new WeakMap,Om=new WeakMap,hu=new WeakMap,dt=new WeakSet,Symbol.asyncIterator)](){let e=[],r=[],n=!1;return this.on(\"event\",i=>{let s=r.shift();s?s.resolve(i):e.push(i)}),this.on(\"end\",()=>{n=!0;for(let i of r)i.resolve(void 0);r.length=0}),this.on(\"abort\",i=>{n=!0;for(let s of r)s.reject(i);r.length=0}),this.on(\"error\",i=>{n=!0;for(let s of r)s.reject(i);r.length=0}),{next:async()=>e.length?{value:e.shift(),done:!1}:n?{value:void 0,done:!0}:new Promise((s,a)=>r.push({resolve:s,reject:a})).then(s=>s?{value:s,done:!1}:{value:void 0,done:!0}),return:async()=>(this.abort(),{value:void 0,done:!0})}}static fromReadableStream(e){let r=new is;return r._run(()=>r._fromReadableStream(e)),r}async _fromReadableStream(e,r){let n=r?.signal;n&&(n.aborted&&this.controller.abort(),n.addEventListener(\"abort\",()=>this.controller.abort())),this._connected();let i=Ur.fromReadableStream(e,this.controller);for await(let s of i)w(this,dt,\"m\",mu).call(this,s);if(i.controller.signal?.aborted)throw new Qe;return this._addRun(w(this,dt,\"m\",fu).call(this))}toReadableStream(){return new Ur(this[Symbol.asyncIterator].bind(this),this.controller).toReadableStream()}static createToolAssistantStream(e,r,n,i){let s=new is;return s._run(()=>s._runToolAssistantStream(e,r,n,{...i,headers:{...i?.headers,\"X-Stainless-Helper-Method\":\"stream\"}})),s}async _createToolAssistantStream(e,r,n,i){let s=i?.signal;s&&(s.aborted&&this.controller.abort(),s.addEventListener(\"abort\",()=>this.controller.abort()));let a={...n,stream:!0},o=await e.submitToolOutputs(r,a,{...i,signal:this.controller.signal});this._connected();for await(let l of o)w(this,dt,\"m\",mu).call(this,l);if(o.controller.signal?.aborted)throw new Qe;return this._addRun(w(this,dt,\"m\",fu).call(this))}static createThreadAssistantStream(e,r,n){let i=new is;return i._run(()=>i._threadAssistantStream(e,r,{...n,headers:{...n?.headers,\"X-Stainless-Helper-Method\":\"stream\"}})),i}static createAssistantStream(e,r,n,i){let s=new is;return s._run(()=>s._runAssistantStream(e,r,n,{...i,headers:{...i?.headers,\"X-Stainless-Helper-Method\":\"stream\"}})),s}currentEvent(){return w(this,Im,\"f\")}currentRun(){return w(this,Om,\"f\")}currentMessageSnapshot(){return w(this,xr,\"f\")}currentRunStepSnapshot(){return w(this,hu,\"f\")}async finalRunSteps(){return await this.done(),Object.values(w(this,Hr,\"f\"))}async finalMessages(){return await this.done(),Object.values(w(this,Cm,\"f\"))}async finalRun(){if(await this.done(),!w(this,ss,\"f\"))throw Error(\"Final run was not received.\");return w(this,ss,\"f\")}async _createThreadAssistantStream(e,r,n){let i=n?.signal;i&&(i.aborted&&this.controller.abort(),i.addEventListener(\"abort\",()=>this.controller.abort()));let s={...r,stream:!0},a=await e.createAndRun(s,{...n,signal:this.controller.signal});this._connected();for await(let o of a)w(this,dt,\"m\",mu).call(this,o);if(a.controller.signal?.aborted)throw new Qe;return this._addRun(w(this,dt,\"m\",fu).call(this))}async _createAssistantStream(e,r,n,i){let s=i?.signal;s&&(s.aborted&&this.controller.abort(),s.addEventListener(\"abort\",()=>this.controller.abort()));let a={...n,stream:!0},o=await e.create(r,a,{...i,signal:this.controller.signal});this._connected();for await(let l of o)w(this,dt,\"m\",mu).call(this,l);if(o.controller.signal?.aborted)throw new Qe;return this._addRun(w(this,dt,\"m\",fu).call(this))}static accumulateDelta(e,r){for(let[n,i]of Object.entries(r)){if(!e.hasOwnProperty(n)){e[n]=i;continue}let s=e[n];if(s==null){e[n]=i;continue}if(n===\"index\"||n===\"type\"){e[n]=i;continue}if(typeof s==\"string\"&&typeof i==\"string\")s+=i;else if(typeof s==\"number\"&&typeof i==\"number\")s+=i;else if(Xl(s)&&Xl(i))s=this.accumulateDelta(s,i);else if(Array.isArray(s)&&Array.isArray(i)){if(s.every(a=>typeof a==\"string\"||typeof a==\"number\")){s.push(...i);continue}for(let a of i){if(!Xl(a))throw new Error(`Expected array delta entry to be an object but got: ${a}`);let o=a.index;if(o==null)throw console.error(a),new Error(\"Expected array delta entry to have an `index` property\");if(typeof o!=\"number\")throw new Error(`Expected array delta entry \\`index\\` property to be a number but got ${o}`);let l=s[o];l==null?s.push(a):s[o]=this.accumulateDelta(l,a)}continue}else throw Error(`Unhandled record type: ${n}, deltaValue: ${i}, accValue: ${s}`);e[n]=s}return e}_addRun(e){return e}async _threadAssistantStream(e,r,n){return await this._createThreadAssistantStream(r,e,n)}async _runAssistantStream(e,r,n,i){return await this._createAssistantStream(r,e,n,i)}async _runToolAssistantStream(e,r,n,i){return await this._createToolAssistantStream(r,e,n,i)}};is=mn,mu=function(e){if(!this.ended)switch(K(this,Im,e,\"f\"),w(this,dt,\"m\",n6).call(this,e),e.event){case\"thread.created\":break;case\"thread.run.created\":case\"thread.run.queued\":case\"thread.run.in_progress\":case\"thread.run.requires_action\":case\"thread.run.completed\":case\"thread.run.incomplete\":case\"thread.run.failed\":case\"thread.run.cancelling\":case\"thread.run.cancelled\":case\"thread.run.expired\":w(this,dt,\"m\",o6).call(this,e);break;case\"thread.run.step.created\":case\"thread.run.step.in_progress\":case\"thread.run.step.delta\":case\"thread.run.step.completed\":case\"thread.run.step.failed\":case\"thread.run.step.cancelled\":case\"thread.run.step.expired\":w(this,dt,\"m\",r6).call(this,e);break;case\"thread.message.created\":case\"thread.message.in_progress\":case\"thread.message.delta\":case\"thread.message.completed\":case\"thread.message.incomplete\":w(this,dt,\"m\",t6).call(this,e);break;case\"error\":throw new Error(\"Encountered an error event in event processing - errors should be processed earlier\");default:}},fu=function(){if(this.ended)throw new B(\"stream has ended, this shouldn't happen\");if(!w(this,ss,\"f\"))throw Error(\"Final run has not been received\");return w(this,ss,\"f\")},t6=function(e){let[r,n]=w(this,dt,\"m\",s6).call(this,e,w(this,xr,\"f\"));K(this,xr,r,\"f\"),w(this,Cm,\"f\")[r.id]=r;for(let i of n){let s=r.content[i.index];s?.type==\"text\"&&this._emit(\"textCreated\",s.text)}switch(e.event){case\"thread.message.created\":this._emit(\"messageCreated\",e.data);break;case\"thread.message.in_progress\":break;case\"thread.message.delta\":if(this._emit(\"messageDelta\",e.data.delta,r),e.data.delta.content)for(let i of e.data.delta.content){if(i.type==\"text\"&&i.text){let s=i.text,a=r.content[i.index];if(a&&a.type==\"text\")this._emit(\"textDelta\",s,a.text);else throw Error(\"The snapshot associated with this text delta is not text or missing\")}if(i.index!=w(this,vo,\"f\")){if(w(this,ns,\"f\"))switch(w(this,ns,\"f\").type){case\"text\":this._emit(\"textDone\",w(this,ns,\"f\").text,w(this,xr,\"f\"));break;case\"image_file\":this._emit(\"imageFileDone\",w(this,ns,\"f\").image_file,w(this,xr,\"f\"));break}K(this,vo,i.index,\"f\")}K(this,ns,r.content[i.index],\"f\")}break;case\"thread.message.completed\":case\"thread.message.incomplete\":if(w(this,vo,\"f\")!==void 0){let i=e.data.content[w(this,vo,\"f\")];if(i)switch(i.type){case\"image_file\":this._emit(\"imageFileDone\",i.image_file,w(this,xr,\"f\"));break;case\"text\":this._emit(\"textDone\",i.text,w(this,xr,\"f\"));break}}w(this,xr,\"f\")&&this._emit(\"messageDone\",e.data),K(this,xr,void 0,\"f\")}},r6=function(e){let r=w(this,dt,\"m\",i6).call(this,e);switch(K(this,hu,r,\"f\"),e.event){case\"thread.run.step.created\":this._emit(\"runStepCreated\",e.data);break;case\"thread.run.step.delta\":let n=e.data.delta;if(n.step_details&&n.step_details.type==\"tool_calls\"&&n.step_details.tool_calls&&r.step_details.type==\"tool_calls\")for(let s of n.step_details.tool_calls)s.index==w(this,Rm,\"f\")?this._emit(\"toolCallDelta\",s,r.step_details.tool_calls[s.index]):(w(this,Xt,\"f\")&&this._emit(\"toolCallDone\",w(this,Xt,\"f\")),K(this,Rm,s.index,\"f\"),K(this,Xt,r.step_details.tool_calls[s.index],\"f\"),w(this,Xt,\"f\")&&this._emit(\"toolCallCreated\",w(this,Xt,\"f\")));this._emit(\"runStepDelta\",e.data.delta,r);break;case\"thread.run.step.completed\":case\"thread.run.step.failed\":case\"thread.run.step.cancelled\":case\"thread.run.step.expired\":K(this,hu,void 0,\"f\"),e.data.step_details.type==\"tool_calls\"&&w(this,Xt,\"f\")&&(this._emit(\"toolCallDone\",w(this,Xt,\"f\")),K(this,Xt,void 0,\"f\")),this._emit(\"runStepDone\",e.data,r);break;case\"thread.run.step.in_progress\":break}},n6=function(e){w(this,Rb,\"f\").push(e),this._emit(\"event\",e)},i6=function(e){switch(e.event){case\"thread.run.step.created\":return w(this,Hr,\"f\")[e.data.id]=e.data,e.data;case\"thread.run.step.delta\":let r=w(this,Hr,\"f\")[e.data.id];if(!r)throw Error(\"Received a RunStepDelta before creation of a snapshot\");let n=e.data;if(n.delta){let i=is.accumulateDelta(r,n.delta);w(this,Hr,\"f\")[e.data.id]=i}return w(this,Hr,\"f\")[e.data.id];case\"thread.run.step.completed\":case\"thread.run.step.failed\":case\"thread.run.step.cancelled\":case\"thread.run.step.expired\":case\"thread.run.step.in_progress\":w(this,Hr,\"f\")[e.data.id]=e.data;break}if(w(this,Hr,\"f\")[e.data.id])return w(this,Hr,\"f\")[e.data.id];throw new Error(\"No snapshot available\")},s6=function(e,r){let n=[];switch(e.event){case\"thread.message.created\":return[e.data,n];case\"thread.message.delta\":if(!r)throw Error(\"Received a delta with no existing snapshot (there should be one from message creation)\");let i=e.data;if(i.delta.content)for(let s of i.delta.content)if(s.index in r.content){let a=r.content[s.index];r.content[s.index]=w(this,dt,\"m\",a6).call(this,s,a)}else r.content[s.index]=s,n.push(s);return[r,n];case\"thread.message.in_progress\":case\"thread.message.completed\":case\"thread.message.incomplete\":if(r)return[r,n];throw Error(\"Received thread message event with no existing snapshot\")}throw Error(\"Tried to accumulate a non-message event\")},a6=function(e,r){return is.accumulateDelta(r,e)},o6=function(e){switch(K(this,Om,e.data,\"f\"),e.event){case\"thread.run.created\":break;case\"thread.run.queued\":break;case\"thread.run.in_progress\":break;case\"thread.run.requires_action\":case\"thread.run.cancelled\":case\"thread.run.failed\":case\"thread.run.completed\":case\"thread.run.expired\":case\"thread.run.incomplete\":K(this,ss,e.data,\"f\"),w(this,Xt,\"f\")&&(this._emit(\"toolCallDone\",w(this,Xt,\"f\")),K(this,Xt,void 0,\"f\"));break;case\"thread.run.cancelling\":break}};var as=class extends A{constructor(){super(...arguments),this.steps=new go(this._client)}create(e,r,n){let{include:i,...s}=r;return this._client.post(P`/threads/${e}/runs`,{query:{include:i},body:s,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers]),stream:r.stream??!1,__synthesizeEventData:!0})}retrieve(e,r,n){let{thread_id:i}=r;return this._client.get(P`/threads/${i}/runs/${e}`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}update(e,r,n){let{thread_id:i,...s}=r;return this._client.post(P`/threads/${i}/runs/${e}`,{body:s,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}list(e,r={},n){return this._client.getAPIList(P`/threads/${e}/runs`,se,{query:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}cancel(e,r,n){let{thread_id:i}=r;return this._client.post(P`/threads/${i}/runs/${e}/cancel`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}async createAndPoll(e,r,n){let i=await this.create(e,r,n);return await this.poll(i.id,{thread_id:e},n)}createAndStream(e,r,n){return mn.createAssistantStream(e,this._client.beta.threads.runs,r,n)}async poll(e,r,n){let i=q([n?.headers,{\"X-Stainless-Poll-Helper\":\"true\",\"X-Stainless-Custom-Poll-Interval\":n?.pollIntervalMs?.toString()??void 0}]);for(;;){let{data:s,response:a}=await this.retrieve(e,r,{...n,headers:{...n?.headers,...i}}).withResponse();switch(s.status){case\"queued\":case\"in_progress\":case\"cancelling\":let o=5e3;if(n?.pollIntervalMs)o=n.pollIntervalMs;else{let l=a.headers.get(\"openai-poll-after-ms\");if(l){let c=parseInt(l);isNaN(c)||(o=c)}}await Fr(o);break;case\"requires_action\":case\"incomplete\":case\"cancelled\":case\"completed\":case\"failed\":case\"expired\":return s}}}stream(e,r,n){return mn.createAssistantStream(e,this._client.beta.threads.runs,r,n)}submitToolOutputs(e,r,n){let{thread_id:i,...s}=r;return this._client.post(P`/threads/${i}/runs/${e}/submit_tool_outputs`,{body:s,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers]),stream:r.stream??!1,__synthesizeEventData:!0})}async submitToolOutputsAndPoll(e,r,n){let i=await this.submitToolOutputs(e,r,n);return await this.poll(i.id,r,n)}submitToolOutputsStream(e,r,n){return mn.createToolAssistantStream(e,this._client.beta.threads.runs,r,n)}};as.Steps=go;var ei=class extends A{constructor(){super(...arguments),this.runs=new as(this._client),this.messages=new ho(this._client)}create(e={},r){return this._client.post(\"/threads\",{body:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}retrieve(e,r){return this._client.get(P`/threads/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}update(e,r,n){return this._client.post(P`/threads/${e}`,{body:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}delete(e,r){return this._client.delete(P`/threads/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}createAndRun(e,r){return this._client.post(\"/threads/runs\",{body:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers]),stream:e.stream??!1,__synthesizeEventData:!0})}async createAndRunPoll(e,r){let n=await this.createAndRun(e,r);return await this.runs.poll(n.id,{thread_id:n.thread_id},r)}createAndRunStream(e,r){return mn.createThreadAssistantStream(e,this._client.beta.threads,r)}};ei.Runs=as;ei.Messages=ho;var br=class extends A{constructor(){super(...arguments),this.realtime=new Xn(this._client),this.chatkit=new Zn(this._client),this.assistants=new lo(this._client),this.threads=new ei(this._client)}};br.Realtime=Xn;br.ChatKit=Zn;br.Assistants=lo;br.Threads=ei;var os=class extends A{create(e,r){return this._client.post(\"/completions\",{body:e,...r,stream:e.stream??!1})}};var yo=class extends A{retrieve(e,r,n){let{container_id:i}=r;return this._client.get(P`/containers/${i}/files/${e}/content`,{...n,headers:q([{Accept:\"application/binary\"},n?.headers]),__binaryResponse:!0})}};var cs=class extends A{constructor(){super(...arguments),this.content=new yo(this._client)}create(e,r,n){return this._client.post(P`/containers/${e}/files`,Vn({body:r,...n},this._client))}retrieve(e,r,n){let{container_id:i}=r;return this._client.get(P`/containers/${i}/files/${e}`,n)}list(e,r={},n){return this._client.getAPIList(P`/containers/${e}/files`,se,{query:r,...n})}delete(e,r,n){let{container_id:i}=r;return this._client.delete(P`/containers/${i}/files/${e}`,{...n,headers:q([{Accept:\"*/*\"},n?.headers])})}};cs.Content=yo;var ti=class extends A{constructor(){super(...arguments),this.files=new cs(this._client)}create(e,r){return this._client.post(\"/containers\",{body:e,...r})}retrieve(e,r){return this._client.get(P`/containers/${e}`,r)}list(e={},r){return this._client.getAPIList(\"/containers\",se,{query:e,...r})}delete(e,r){return this._client.delete(P`/containers/${e}`,{...r,headers:q([{Accept:\"*/*\"},r?.headers])})}};ti.Files=cs;var xo=class extends A{create(e,r,n){let{include:i,...s}=r;return this._client.post(P`/conversations/${e}/items`,{query:{include:i},body:s,...n})}retrieve(e,r,n){let{conversation_id:i,...s}=r;return this._client.get(P`/conversations/${i}/items/${e}`,{query:s,...n})}list(e,r={},n){return this._client.getAPIList(P`/conversations/${e}/items`,yr,{query:r,...n})}delete(e,r,n){let{conversation_id:i}=r;return this._client.delete(P`/conversations/${i}/items/${e}`,n)}};var ri=class extends A{constructor(){super(...arguments),this.items=new xo(this._client)}create(e={},r){return this._client.post(\"/conversations\",{body:e,...r})}retrieve(e,r){return this._client.get(P`/conversations/${e}`,r)}update(e,r,n){return this._client.post(P`/conversations/${e}`,{body:r,...n})}delete(e,r){return this._client.delete(P`/conversations/${e}`,r)}};ri.Items=xo;var ls=class extends A{create(e,r){let n=!!e.encoding_format,i=n?e.encoding_format:\"base64\";n&&Ue(this._client).debug(\"embeddings/user defined encoding_format:\",e.encoding_format);let s=this._client.post(\"/embeddings\",{body:{...e,encoding_format:i},...r});return n?s:(Ue(this._client).debug(\"embeddings/decoding base64 embeddings from base64\"),s._thenUnwrap(a=>(a&&a.data&&a.data.forEach(o=>{let l=o.embedding;o.embedding=e6(l)}),a)))}};var bo=class extends A{retrieve(e,r,n){let{eval_id:i,run_id:s}=r;return this._client.get(P`/evals/${i}/runs/${s}/output_items/${e}`,n)}list(e,r,n){let{eval_id:i,...s}=r;return this._client.getAPIList(P`/evals/${i}/runs/${e}/output_items`,se,{query:s,...n})}};var us=class extends A{constructor(){super(...arguments),this.outputItems=new bo(this._client)}create(e,r,n){return this._client.post(P`/evals/${e}/runs`,{body:r,...n})}retrieve(e,r,n){let{eval_id:i}=r;return this._client.get(P`/evals/${i}/runs/${e}`,n)}list(e,r={},n){return this._client.getAPIList(P`/evals/${e}/runs`,se,{query:r,...n})}delete(e,r,n){let{eval_id:i}=r;return this._client.delete(P`/evals/${i}/runs/${e}`,n)}cancel(e,r,n){let{eval_id:i}=r;return this._client.post(P`/evals/${i}/runs/${e}`,n)}};us.OutputItems=bo;var ni=class extends A{constructor(){super(...arguments),this.runs=new us(this._client)}create(e,r){return this._client.post(\"/evals\",{body:e,...r})}retrieve(e,r){return this._client.get(P`/evals/${e}`,r)}update(e,r,n){return this._client.post(P`/evals/${e}`,{body:r,...n})}list(e={},r){return this._client.getAPIList(\"/evals\",se,{query:e,...r})}delete(e,r){return this._client.delete(P`/evals/${e}`,r)}};ni.Runs=us;var ps=class extends A{create(e,r){return this._client.post(\"/files\",xt({body:e,...r},this._client))}retrieve(e,r){return this._client.get(P`/files/${e}`,r)}list(e={},r){return this._client.getAPIList(\"/files\",se,{query:e,...r})}delete(e,r){return this._client.delete(P`/files/${e}`,r)}content(e,r){return this._client.get(P`/files/${e}/content`,{...r,headers:q([{Accept:\"application/binary\"},r?.headers]),__binaryResponse:!0})}async waitForProcessing(e,{pollInterval:r=5e3,maxWait:n=1800*1e3}={}){let i=new Set([\"processed\",\"error\",\"deleted\"]),s=Date.now(),a=await this.retrieve(e);for(;!a.status||!i.has(a.status);)if(await Fr(r),a=await this.retrieve(e),Date.now()-s>n)throw new Hn({message:`Giving up on waiting for file ${e} to finish processing after ${n} milliseconds.`});return a}};var wo=class extends A{};var _o=class extends A{run(e,r){return this._client.post(\"/fine_tuning/alpha/graders/run\",{body:e,...r})}validate(e,r){return this._client.post(\"/fine_tuning/alpha/graders/validate\",{body:e,...r})}};var ds=class extends A{constructor(){super(...arguments),this.graders=new _o(this._client)}};ds.Graders=_o;var So=class extends A{create(e,r,n){return this._client.getAPIList(P`/fine_tuning/checkpoints/${e}/permissions`,zr,{body:r,method:\"post\",...n})}retrieve(e,r={},n){return this._client.get(P`/fine_tuning/checkpoints/${e}/permissions`,{query:r,...n})}list(e,r={},n){return this._client.getAPIList(P`/fine_tuning/checkpoints/${e}/permissions`,yr,{query:r,...n})}delete(e,r,n){let{fine_tuned_model_checkpoint:i}=r;return this._client.delete(P`/fine_tuning/checkpoints/${i}/permissions/${e}`,n)}};var ms=class extends A{constructor(){super(...arguments),this.permissions=new So(this._client)}};ms.Permissions=So;var Po=class extends A{list(e,r={},n){return this._client.getAPIList(P`/fine_tuning/jobs/${e}/checkpoints`,se,{query:r,...n})}};var fs=class extends A{constructor(){super(...arguments),this.checkpoints=new Po(this._client)}create(e,r){return this._client.post(\"/fine_tuning/jobs\",{body:e,...r})}retrieve(e,r){return this._client.get(P`/fine_tuning/jobs/${e}`,r)}list(e={},r){return this._client.getAPIList(\"/fine_tuning/jobs\",se,{query:e,...r})}cancel(e,r){return this._client.post(P`/fine_tuning/jobs/${e}/cancel`,r)}listEvents(e,r={},n){return this._client.getAPIList(P`/fine_tuning/jobs/${e}/events`,se,{query:r,...n})}pause(e,r){return this._client.post(P`/fine_tuning/jobs/${e}/pause`,r)}resume(e,r){return this._client.post(P`/fine_tuning/jobs/${e}/resume`,r)}};fs.Checkpoints=Po;var wr=class extends A{constructor(){super(...arguments),this.methods=new wo(this._client),this.jobs=new fs(this._client),this.checkpoints=new ms(this._client),this.alpha=new ds(this._client)}};wr.Methods=wo;wr.Jobs=fs;wr.Checkpoints=ms;wr.Alpha=ds;var To=class extends A{};var ii=class extends A{constructor(){super(...arguments),this.graderModels=new To(this._client)}};ii.GraderModels=To;var hs=class extends A{createVariation(e,r){return this._client.post(\"/images/variations\",xt({body:e,...r},this._client))}edit(e,r){return this._client.post(\"/images/edits\",xt({body:e,...r,stream:e.stream??!1},this._client))}generate(e,r){return this._client.post(\"/images/generations\",{body:e,...r,stream:e.stream??!1})}};var gs=class extends A{retrieve(e,r){return this._client.get(P`/models/${e}`,r)}list(e){return this._client.getAPIList(\"/models\",zr,e)}delete(e,r){return this._client.delete(P`/models/${e}`,r)}};var vs=class extends A{create(e,r){return this._client.post(\"/moderations\",{body:e,...r})}};var Eo=class extends A{accept(e,r,n){return this._client.post(P`/realtime/calls/${e}/accept`,{body:r,...n,headers:q([{Accept:\"*/*\"},n?.headers])})}hangup(e,r){return this._client.post(P`/realtime/calls/${e}/hangup`,{...r,headers:q([{Accept:\"*/*\"},r?.headers])})}refer(e,r,n){return this._client.post(P`/realtime/calls/${e}/refer`,{body:r,...n,headers:q([{Accept:\"*/*\"},n?.headers])})}reject(e,r={},n){return this._client.post(P`/realtime/calls/${e}/reject`,{body:r,...n,headers:q([{Accept:\"*/*\"},n?.headers])})}};var Ao=class extends A{create(e,r){return this._client.post(\"/realtime/client_secrets\",{body:e,...r})}};var fn=class extends A{constructor(){super(...arguments),this.clientSecrets=new Ao(this._client),this.calls=new Eo(this._client)}};fn.ClientSecrets=Ao;fn.Calls=Eo;function c6(t,e){return!e||!iW(e)?{...t,output_parsed:null,output:t.output.map(r=>r.type===\"function_call\"?{...r,parsed_arguments:null}:r.type===\"message\"?{...r,content:r.content.map(n=>({...n,parsed:null}))}:r)}:Nb(t,e)}function Nb(t,e){let r=t.output.map(i=>{if(i.type===\"function_call\")return{...i,parsed_arguments:oW(e,i)};if(i.type===\"message\"){let s=i.content.map(a=>a.type===\"output_text\"?{...a,parsed:nW(e,a.text)}:a);return{...i,content:s}}return i}),n=Object.assign({},t,{output:r});return Object.getOwnPropertyDescriptor(t,\"output_text\")||Nm(n),Object.defineProperty(n,\"output_parsed\",{enumerable:!0,get(){for(let i of n.output)if(i.type===\"message\"){for(let s of i.content)if(s.type===\"output_text\"&&s.parsed!==null)return s.parsed}return null}}),n}function nW(t,e){return t.text?.format?.type!==\"json_schema\"?null:\"$parseRaw\"in t.text?.format?(t.text?.format).$parseRaw(e):JSON.parse(e)}function iW(t){return!!su(t.text?.format)}function sW(t){return t?.$brand===\"auto-parseable-tool\"}function aW(t,e){return t.find(r=>r.type===\"function\"&&r.name===e)}function oW(t,e){let r=aW(t.tools??[],e.name);return{...e,...e,parsed_arguments:sW(r)?r.$parseRaw(e.arguments):r?.strict?JSON.parse(e.arguments):null}}function Nm(t){let e=[];for(let r of t.output)if(r.type===\"message\")for(let n of r.content)n.type===\"output_text\"&&e.push(n.text);t.output_text=e.join(\"\")}var ko,jm,si,qm,l6,u6,p6,d6,Mm=class t extends Wn{constructor(e){super(),ko.add(this),jm.set(this,void 0),si.set(this,void 0),qm.set(this,void 0),K(this,jm,e,\"f\")}static createResponse(e,r,n){let i=new t(r);return i._run(()=>i._createOrRetrieveResponse(e,r,{...n,headers:{...n?.headers,\"X-Stainless-Helper-Method\":\"stream\"}})),i}async _createOrRetrieveResponse(e,r,n){let i=n?.signal;i&&(i.aborted&&this.controller.abort(),i.addEventListener(\"abort\",()=>this.controller.abort())),w(this,ko,\"m\",l6).call(this);let s,a=null;\"response_id\"in r?(s=await e.responses.retrieve(r.response_id,{stream:!0},{...n,signal:this.controller.signal,stream:!0}),a=r.starting_after??null):s=await e.responses.create({...r,stream:!0},{...n,signal:this.controller.signal}),this._connected();for await(let o of s)w(this,ko,\"m\",u6).call(this,o,a);if(s.controller.signal?.aborted)throw new Qe;return w(this,ko,\"m\",p6).call(this)}[(jm=new WeakMap,si=new WeakMap,qm=new WeakMap,ko=new WeakSet,l6=function(){this.ended||K(this,si,void 0,\"f\")},u6=function(r,n){if(this.ended)return;let i=(a,o)=>{(n==null||o.sequence_number>n)&&this._emit(a,o)},s=w(this,ko,\"m\",d6).call(this,r);switch(i(\"event\",r),r.type){case\"response.output_text.delta\":{let a=s.output[r.output_index];if(!a)throw new B(`missing output at index ${r.output_index}`);if(a.type===\"message\"){let o=a.content[r.content_index];if(!o)throw new B(`missing content at index ${r.content_index}`);if(o.type!==\"output_text\")throw new B(`expected content to be 'output_text', got ${o.type}`);i(\"response.output_text.delta\",{...r,snapshot:o.text})}break}case\"response.function_call_arguments.delta\":{let a=s.output[r.output_index];if(!a)throw new B(`missing output at index ${r.output_index}`);a.type===\"function_call\"&&i(\"response.function_call_arguments.delta\",{...r,snapshot:a.arguments});break}default:i(r.type,r);break}},p6=function(){if(this.ended)throw new B(\"stream has ended, this shouldn't happen\");let r=w(this,si,\"f\");if(!r)throw new B(\"request ended without sending any events\");K(this,si,void 0,\"f\");let n=cW(r,w(this,jm,\"f\"));return K(this,qm,n,\"f\"),n},d6=function(r){let n=w(this,si,\"f\");if(!n){if(r.type!==\"response.created\")throw new B(`When snapshot hasn't been set yet, expected 'response.created' event, got ${r.type}`);return n=K(this,si,r.response,\"f\"),n}switch(r.type){case\"response.output_item.added\":{n.output.push(r.item);break}case\"response.content_part.added\":{let i=n.output[r.output_index];if(!i)throw new B(`missing output at index ${r.output_index}`);let s=i.type,a=r.part;s===\"message\"&&a.type!==\"reasoning_text\"?i.content.push(a):s===\"reasoning\"&&a.type===\"reasoning_text\"&&(i.content||(i.content=[]),i.content.push(a));break}case\"response.output_text.delta\":{let i=n.output[r.output_index];if(!i)throw new B(`missing output at index ${r.output_index}`);if(i.type===\"message\"){let s=i.content[r.content_index];if(!s)throw new B(`missing content at index ${r.content_index}`);if(s.type!==\"output_text\")throw new B(`expected content to be 'output_text', got ${s.type}`);s.text+=r.delta}break}case\"response.function_call_arguments.delta\":{let i=n.output[r.output_index];if(!i)throw new B(`missing output at index ${r.output_index}`);i.type===\"function_call\"&&(i.arguments+=r.delta);break}case\"response.reasoning_text.delta\":{let i=n.output[r.output_index];if(!i)throw new B(`missing output at index ${r.output_index}`);if(i.type===\"reasoning\"){let s=i.content?.[r.content_index];if(!s)throw new B(`missing content at index ${r.content_index}`);if(s.type!==\"reasoning_text\")throw new B(`expected content to be 'reasoning_text', got ${s.type}`);s.text+=r.delta}break}case\"response.completed\":{K(this,si,r.response,\"f\");break}}return n},Symbol.asyncIterator)](){let e=[],r=[],n=!1;return this.on(\"event\",i=>{let s=r.shift();s?s.resolve(i):e.push(i)}),this.on(\"end\",()=>{n=!0;for(let i of r)i.resolve(void 0);r.length=0}),this.on(\"abort\",i=>{n=!0;for(let s of r)s.reject(i);r.length=0}),this.on(\"error\",i=>{n=!0;for(let s of r)s.reject(i);r.length=0}),{next:async()=>e.length?{value:e.shift(),done:!1}:n?{value:void 0,done:!0}:new Promise((s,a)=>r.push({resolve:s,reject:a})).then(s=>s?{value:s,done:!1}:{value:void 0,done:!0}),return:async()=>(this.abort(),{value:void 0,done:!0})}}async finalResponse(){await this.done();let e=w(this,qm,\"f\");if(!e)throw new B(\"stream ended without producing a ChatCompletion\");return e}};function cW(t,e){return c6(t,e)}var Co=class extends A{list(e,r={},n){return this._client.getAPIList(P`/responses/${e}/input_items`,se,{query:r,...n})}};var Io=class extends A{count(e={},r){return this._client.post(\"/responses/input_tokens\",{body:e,...r})}};var hn=class extends A{constructor(){super(...arguments),this.inputItems=new Co(this._client),this.inputTokens=new Io(this._client)}create(e,r){return this._client.post(\"/responses\",{body:e,...r,stream:e.stream??!1})._thenUnwrap(n=>(\"object\"in n&&n.object===\"response\"&&Nm(n),n))}retrieve(e,r={},n){return this._client.get(P`/responses/${e}`,{query:r,...n,stream:r?.stream??!1})._thenUnwrap(i=>(\"object\"in i&&i.object===\"response\"&&Nm(i),i))}delete(e,r){return this._client.delete(P`/responses/${e}`,{...r,headers:q([{Accept:\"*/*\"},r?.headers])})}parse(e,r){return this._client.responses.create(e,r)._thenUnwrap(n=>Nb(n,e))}stream(e,r){return Mm.createResponse(this._client,e,r)}cancel(e,r){return this._client.post(P`/responses/${e}/cancel`,r)}compact(e,r){return this._client.post(\"/responses/compact\",{body:e,...r})}};hn.InputItems=Co;hn.InputTokens=Io;var Oo=class extends A{retrieve(e,r){return this._client.get(P`/skills/${e}/content`,{...r,headers:q([{Accept:\"application/binary\"},r?.headers]),__binaryResponse:!0})}};var Ro=class extends A{retrieve(e,r,n){let{skill_id:i}=r;return this._client.get(P`/skills/${i}/versions/${e}/content`,{...n,headers:q([{Accept:\"application/binary\"},n?.headers]),__binaryResponse:!0})}};var ys=class extends A{constructor(){super(...arguments),this.content=new Ro(this._client)}create(e,r={},n){return this._client.post(P`/skills/${e}/versions`,Vn({body:r,...n},this._client))}retrieve(e,r,n){let{skill_id:i}=r;return this._client.get(P`/skills/${i}/versions/${e}`,n)}list(e,r={},n){return this._client.getAPIList(P`/skills/${e}/versions`,se,{query:r,...n})}delete(e,r,n){let{skill_id:i}=r;return this._client.delete(P`/skills/${i}/versions/${e}`,n)}};ys.Content=Ro;var gn=class extends A{constructor(){super(...arguments),this.content=new Oo(this._client),this.versions=new ys(this._client)}create(e={},r){return this._client.post(\"/skills\",Vn({body:e,...r},this._client))}retrieve(e,r){return this._client.get(P`/skills/${e}`,r)}update(e,r,n){return this._client.post(P`/skills/${e}`,{body:r,...n})}list(e={},r){return this._client.getAPIList(\"/skills\",se,{query:e,...r})}delete(e,r){return this._client.delete(P`/skills/${e}`,r)}};gn.Content=Oo;gn.Versions=ys;var No=class extends A{create(e,r,n){return this._client.post(P`/uploads/${e}/parts`,xt({body:r,...n},this._client))}};var ai=class extends A{constructor(){super(...arguments),this.parts=new No(this._client)}create(e,r){return this._client.post(\"/uploads\",{body:e,...r})}cancel(e,r){return this._client.post(P`/uploads/${e}/cancel`,r)}complete(e,r,n){return this._client.post(P`/uploads/${e}/complete`,{body:r,...n})}};ai.Parts=No;var m6=async t=>{let e=await Promise.allSettled(t),r=e.filter(i=>i.status===\"rejected\");if(r.length){for(let i of r)console.error(i.reason);throw new Error(`${r.length} promise(s) failed - see the above errors`)}let n=[];for(let i of e)i.status===\"fulfilled\"&&n.push(i.value);return n};var jo=class extends A{create(e,r,n){return this._client.post(P`/vector_stores/${e}/file_batches`,{body:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}retrieve(e,r,n){let{vector_store_id:i}=r;return this._client.get(P`/vector_stores/${i}/file_batches/${e}`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}cancel(e,r,n){let{vector_store_id:i}=r;return this._client.post(P`/vector_stores/${i}/file_batches/${e}/cancel`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}async createAndPoll(e,r,n){let i=await this.create(e,r);return await this.poll(e,i.id,n)}listFiles(e,r,n){let{vector_store_id:i,...s}=r;return this._client.getAPIList(P`/vector_stores/${i}/file_batches/${e}/files`,se,{query:s,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}async poll(e,r,n){let i=q([n?.headers,{\"X-Stainless-Poll-Helper\":\"true\",\"X-Stainless-Custom-Poll-Interval\":n?.pollIntervalMs?.toString()??void 0}]);for(;;){let{data:s,response:a}=await this.retrieve(r,{vector_store_id:e},{...n,headers:i}).withResponse();switch(s.status){case\"in_progress\":let o=5e3;if(n?.pollIntervalMs)o=n.pollIntervalMs;else{let l=a.headers.get(\"openai-poll-after-ms\");if(l){let c=parseInt(l);isNaN(c)||(o=c)}}await Fr(o);break;case\"failed\":case\"cancelled\":case\"completed\":return s}}}async uploadAndPoll(e,{files:r,fileIds:n=[]},i){if(r==null||r.length==0)throw new Error(\"No `files` provided to process. If you've already uploaded files you should use `.createAndPoll()` instead\");let s=i?.maxConcurrency??5,a=Math.min(s,r.length),o=this._client,l=r.values(),c=[...n];async function u(d){for(let f of d){let h=await o.files.create({file:f,purpose:\"assistants\"},i);c.push(h.id)}}let p=Array(a).fill(l).map(u);return await m6(p),await this.createAndPoll(e,{file_ids:c})}};var qo=class extends A{create(e,r,n){return this._client.post(P`/vector_stores/${e}/files`,{body:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}retrieve(e,r,n){let{vector_store_id:i}=r;return this._client.get(P`/vector_stores/${i}/files/${e}`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}update(e,r,n){let{vector_store_id:i,...s}=r;return this._client.post(P`/vector_stores/${i}/files/${e}`,{body:s,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}list(e,r={},n){return this._client.getAPIList(P`/vector_stores/${e}/files`,se,{query:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}delete(e,r,n){let{vector_store_id:i}=r;return this._client.delete(P`/vector_stores/${i}/files/${e}`,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}async createAndPoll(e,r,n){let i=await this.create(e,r,n);return await this.poll(e,i.id,n)}async poll(e,r,n){let i=q([n?.headers,{\"X-Stainless-Poll-Helper\":\"true\",\"X-Stainless-Custom-Poll-Interval\":n?.pollIntervalMs?.toString()??void 0}]);for(;;){let s=await this.retrieve(r,{vector_store_id:e},{...n,headers:i}).withResponse(),a=s.data;switch(a.status){case\"in_progress\":let o=5e3;if(n?.pollIntervalMs)o=n.pollIntervalMs;else{let l=s.response.headers.get(\"openai-poll-after-ms\");if(l){let c=parseInt(l);isNaN(c)||(o=c)}}await Fr(o);break;case\"failed\":case\"completed\":return a}}}async upload(e,r,n){let i=await this._client.files.create({file:r,purpose:\"assistants\"},n);return this.create(e,{file_id:i.id},n)}async uploadAndPoll(e,r,n){let i=await this.upload(e,r,n);return await this.poll(e,i.id,n)}content(e,r,n){let{vector_store_id:i}=r;return this._client.getAPIList(P`/vector_stores/${i}/files/${e}/content`,zr,{...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}};var vn=class extends A{constructor(){super(...arguments),this.files=new qo(this._client),this.fileBatches=new jo(this._client)}create(e,r){return this._client.post(\"/vector_stores\",{body:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}retrieve(e,r){return this._client.get(P`/vector_stores/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}update(e,r,n){return this._client.post(P`/vector_stores/${e}`,{body:r,...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}list(e={},r){return this._client.getAPIList(\"/vector_stores\",se,{query:e,...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}delete(e,r){return this._client.delete(P`/vector_stores/${e}`,{...r,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},r?.headers])})}search(e,r,n){return this._client.getAPIList(P`/vector_stores/${e}/search`,zr,{body:r,method:\"post\",...n,headers:q([{\"OpenAI-Beta\":\"assistants=v2\"},n?.headers])})}};vn.Files=qo;vn.FileBatches=jo;var xs=class extends A{create(e,r){return this._client.post(\"/videos\",xt({body:e,...r},this._client))}retrieve(e,r){return this._client.get(P`/videos/${e}`,r)}list(e={},r){return this._client.getAPIList(\"/videos\",yr,{query:e,...r})}delete(e,r){return this._client.delete(P`/videos/${e}`,r)}createCharacter(e,r){return this._client.post(\"/videos/characters\",xt({body:e,...r},this._client))}downloadContent(e,r={},n){return this._client.get(P`/videos/${e}/content`,{query:r,...n,headers:q([{Accept:\"application/binary\"},n?.headers]),__binaryResponse:!0})}edit(e,r){return this._client.post(\"/videos/edits\",xt({body:e,...r},this._client))}extend(e,r){return this._client.post(\"/videos/extensions\",xt({body:e,...r},this._client))}getCharacter(e,r){return this._client.get(P`/videos/characters/${e}`,r)}remix(e,r,n){return this._client.post(P`/videos/${e}/remix`,Vn({body:r,...n},this._client))}};var Mo,f6,Lm,bs=class extends A{constructor(){super(...arguments),Mo.add(this)}async unwrap(e,r,n=this._client.webhookSecret,i=300){return await this.verifySignature(e,r,n,i),JSON.parse(e)}async verifySignature(e,r,n=this._client.webhookSecret,i=300){if(typeof crypto>\"u\"||typeof crypto.subtle.importKey!=\"function\"||typeof crypto.subtle.verify!=\"function\")throw new Error(\"Webhook signature verification is only supported when the `crypto` global is defined\");w(this,Mo,\"m\",f6).call(this,n);let s=q([r]).values,a=w(this,Mo,\"m\",Lm).call(this,s,\"webhook-signature\"),o=w(this,Mo,\"m\",Lm).call(this,s,\"webhook-timestamp\"),l=w(this,Mo,\"m\",Lm).call(this,s,\"webhook-id\"),c=parseInt(o,10);if(isNaN(c))throw new $r(\"Invalid webhook timestamp format\");let u=Math.floor(Date.now()/1e3);if(u-c>i)throw new $r(\"Webhook timestamp is too old\");if(c>u+i)throw new $r(\"Webhook timestamp is too new\");let p=a.split(\" \").map(g=>g.startsWith(\"v1,\")?g.substring(3):g),d=n.startsWith(\"whsec_\")?Buffer.from(n.replace(\"whsec_\",\"\"),\"base64\"):Buffer.from(n,\"utf-8\"),f=l?`${l}.${o}.${e}`:`${o}.${e}`,h=await crypto.subtle.importKey(\"raw\",d,{name:\"HMAC\",hash:\"SHA-256\"},!1,[\"verify\"]);for(let g of p)try{let b=Buffer.from(g,\"base64\");if(await crypto.subtle.verify(\"HMAC\",h,b,new TextEncoder().encode(f)))return}catch{continue}throw new $r(\"The given webhook signature does not match the expected signature\")}};Mo=new WeakSet,f6=function(e){if(typeof e!=\"string\"||e.length===0)throw new Error(\"The webhook secret must either be set using the env var, OPENAI_WEBHOOK_SECRET, on the client class, OpenAI({ webhookSecret: '123' }), or passed to this function\")},Lm=function(e,r){if(!e)throw new Error(\"Headers are required\");let n=e.get(r);if(n==null)throw new Error(`Missing required header: ${r}`);return n};var jb,qb,Dm,h6,re=class{constructor({baseURL:e=Yn(\"OPENAI_BASE_URL\"),apiKey:r=Yn(\"OPENAI_API_KEY\"),organization:n=Yn(\"OPENAI_ORG_ID\")??null,project:i=Yn(\"OPENAI_PROJECT_ID\")??null,webhookSecret:s=Yn(\"OPENAI_WEBHOOK_SECRET\")??null,...a}={}){if(jb.add(this),Dm.set(this,void 0),this.completions=new os(this),this.chat=new Jn(this),this.embeddings=new ls(this),this.files=new ps(this),this.images=new hs(this),this.audio=new Gr(this),this.moderations=new vs(this),this.models=new gs(this),this.fineTuning=new wr(this),this.graders=new ii(this),this.vectorStores=new vn(this),this.webhooks=new bs(this),this.beta=new br(this),this.batches=new rs(this),this.uploads=new ai(this),this.responses=new hn(this),this.realtime=new fn(this),this.conversations=new ri(this),this.evals=new ni(this),this.containers=new ti(this),this.skills=new gn(this),this.videos=new xs(this),r===void 0)throw new B(\"Missing credentials. Please pass an `apiKey`, or set the `OPENAI_API_KEY` environment variable.\");let o={apiKey:r,organization:n,project:i,webhookSecret:s,...a,baseURL:e||\"https://api.openai.com/v1\"};if(!o.dangerouslyAllowBrowser&&xN())throw new B(`It looks like you're running in a browser-like environment.",
+    "insertId": "69e4edc800095764b0c8d2f8",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "configuration_name": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "project_id": "armormeds",
+        "service_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612196Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ",
+    "insertId": "69e4edc800095772e6c52005",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds",
+        "service_name": "armormeds",
+        "project_id": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612210Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "B [Error]: Missing credentials. Please pass an `apiKey`, or set the `OPENAI_API_KEY` environment variable.",
+    "insertId": "69e4edc80009577bfe78decb",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "location": "us-central1",
+        "revision_name": "armormeds-00013-w5l",
+        "configuration_name": "armormeds",
+        "service_name": "armormeds",
+        "project_id": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612219Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at new re (/app/dist/index.cjs:93:46189)",
+    "insertId": "69e4edc80009577fff927fcf",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds",
+        "service_name": "armormeds",
+        "project_id": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612223Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at Object.<anonymous> (/app/dist/index.cjs:102:8898)",
+    "insertId": "69e4edc800095783676a300a",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "service_name": "armormeds",
+        "project_id": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612227Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at Module._compile (node:internal/modules/cjs/loader:1521:14)",
+    "insertId": "69e4edc80009578701e835aa",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds",
+        "service_name": "armormeds",
+        "project_id": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612231Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)",
+    "insertId": "69e4edc80009578ab09074b6",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "configuration_name": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "project_id": "armormeds",
+        "service_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612234Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at Module.load (node:internal/modules/cjs/loader:1266:32)",
+    "insertId": "69e4edc80009578e3e5d41be",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "service_name": "armormeds",
+        "project_id": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612238Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at Module._load (node:internal/modules/cjs/loader:1091:12)",
+    "insertId": "69e4edc8000957917191daf2",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds",
+        "service_name": "armormeds",
+        "project_id": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612241Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)",
+    "insertId": "69e4edc800095797b43b9aec",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "service_name": "armormeds",
+        "project_id": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612247Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "    at node:internal/main/run_main_module:28:49",
+    "insertId": "69e4edc80009579a96239f51",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "service_name": "armormeds",
+        "project_id": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612250Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "Node.js v20.20.2",
+    "insertId": "69e4edc80009579e0bf18a8f",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "project_id": "armormeds",
+        "service_name": "armormeds",
+        "configuration_name": "armormeds",
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:20.612254Z",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-04-19T14:59:20.949510630Z"
+  },
+  {
+    "textPayload": "Container called exit(1).",
+    "insertId": "69e4edc9000255e410ca31a4",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "revision_name": "armormeds-00013-w5l",
+        "location": "us-central1",
+        "configuration_name": "armormeds",
+        "service_name": "armormeds",
+        "project_id": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:21.152987850Z",
+    "severity": "WARNING",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24",
+      "container_name": "armormeds-1"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-04-19T14:59:21.378574232Z"
+  },
+  {
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"armormeds-1\" on port 8080. The instance was not started.\nConnection failed with status CANCELLED.",
+    "insertId": "69e4edc900060dbdb4a1c973",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "configuration_name": "armormeds",
+        "location": "us-central1",
+        "revision_name": "armormeds-00013-w5l",
+        "project_id": "armormeds",
+        "service_name": "armormeds"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:21.396733Z",
+    "severity": "ERROR",
+    "labels": {
+      "instanceId": "008c15ff085849845254e417aac35e934b791fdec71e3948d2ab412e0f4c8e3c186c7d050f48f7371c6bfb44b37455242e69cadee17949365772e3f83c213c7ee4a1a118b7fb3e35861f58172e24"
+    },
+    "logName": "projects/armormeds/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-04-19T14:59:21.714228527Z"
+  },
+  {
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {
+        "code": 9,
+        "message": "Ready condition status changed to False for Revision armormeds-00013-w5l with message: The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00013-w5l&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00013-w5l%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start"
+      },
+      "serviceName": "run.googleapis.com",
+      "methodName": "/Services.ReplaceService",
+      "resourceName": "namespaces/armormeds/revisions/armormeds-00013-w5l",
+      "response": {
+        "metadata": {
+          "name": "armormeds-00013-w5l",
+          "namespace": "748393509801",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/748393509801/revisions/armormeds-00013-w5l",
+          "uid": "7e00103f-718b-448f-ab06-0bd63c836be8",
+          "resourceVersion": "AAZP0W1WUT0",
+          "generation": 1,
+          "creationTimestamp": "2026-04-19T14:59:07.610201Z",
+          "labels": {
+            "client.knative.dev/nonce": "wzsaxubgdp",
+            "serving.knative.dev/configuration": "armormeds",
+            "serving.knative.dev/configurationGeneration": "13",
+            "serving.knative.dev/service": "armormeds",
+            "serving.knative.dev/serviceUid": "01c655a7-a548-4cf1-840c-67d6acdf6b46",
+            "serving.knative.dev/route": "armormeds",
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/startupProbeType": "Default"
+          },
+          "annotations": {
+            "autoscaling.knative.dev/maxScale": "20",
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "565.0.0",
+            "serving.knative.dev/creator": "748393509801-compute@developer.gserviceaccount.com",
+            "run.googleapis.com/operation-id": "19029828-188f-4105-ba91-cfe936b2a7e3",
+            "run.googleapis.com/startup-cpu-boost": "true"
+          },
+          "ownerReferences": [
+            {
+              "kind": "Configuration",
+              "name": "armormeds",
+              "uid": "7db05505-b65e-40b4-9399-ffc866777ffb",
+              "apiVersion": "serving.knative.dev/v1",
+              "controller": true,
+              "blockOwnerDeletion": true
+            }
+          ]
+        },
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Revision",
+        "spec": {
+          "containerConcurrency": 80,
+          "timeoutSeconds": 300,
+          "serviceAccountName": "748393509801-compute@developer.gserviceaccount.com",
+          "containers": [
+            {
+              "name": "armormeds-1",
+              "image": "gcr.io/armormeds/armormeds@sha256:5f9c5e73d0cb5fd457dce930b0c94317525408a5346f8ce3d1390d1cff88fe8c",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "env": [
+                {
+                  "name": "TWILIO_ACCOUNT_SID",
+                  "value": "AC3067550620686d605208e5b52e252aa2"
+                },
+                {
+                  "name": "TWILIO_AUTH_TOKEN",
+                  "value": "bd579355c8fb8a06b61607f41f0ad3dc"
+                },
+                {
+                  "name": "TWILIO_PHONE_NUMBER",
+                  "value": "+18586677566"
+                },
+                {
+                  "name": "DATABASE_URL",
+                  "value": "postgresql://armormeds:Sprite%4044@35.224.228.52/armormeds?sslmode=require"
+                },
+                {
+                  "name": "SESSION_SECRET",
+                  "value": "JJc4QdXJsuXLB+SKZ1SpTdQAPZxEttAtkAQt4JiFLClSprEuXoAtzs+o5GhaJECWjp8kZHqXjv/imFkFhxti3g=="
+                },
+                {
+                  "name": "NODE_ENV",
+                  "value": "production"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1000m",
+                  "memory": "512Mi"
+                }
+              },
+              "startupProbe": {
+                "timeoutSeconds": 240,
+                "periodSeconds": 240,
+                "failureThreshold": 1,
+                "tcpSocket": {
+                  "port": 8080
+                }
+              }
+            }
+          ]
+        },
+        "status": {
+          "observedGeneration": 1,
+          "conditions": [
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "HealthCheckContainerError",
+              "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00013-w5l&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00013-w5l%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+              "lastTransitionTime": "2026-04-19T14:59:21.396541Z"
+            },
+            {
+              "type": "ContainerHealthy",
+              "status": "False",
+              "reason": "HealthCheckContainerError",
+              "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00013-w5l&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00013-w5l%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+              "lastTransitionTime": "2026-04-19T14:59:21.396541Z"
+            },
+            {
+              "type": "ContainerReady",
+              "status": "True",
+              "message": "Container image import completed in 7.12s.",
+              "lastTransitionTime": "2026-04-19T14:59:15.357235Z"
+            },
+            {
+              "type": "ResourcesAvailable",
+              "status": "True",
+              "message": "Provisioning imported containers completed in 3.59s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+              "lastTransitionTime": "2026-04-19T14:59:18.952103Z"
+            },
+            {
+              "type": "Retry",
+              "status": "True",
+              "reason": "ImmediateRetry",
+              "message": "System will retry after 00:00 from lastTransitionTime for attempt 0.",
+              "lastTransitionTime": "2026-04-19T14:59:18.952103Z",
+              "severity": "Info"
+            }
+          ],
+          "logUrl": "https://console.cloud.google.com/logs/viewer?project=armormeds&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00013-w5l&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00013-w5l%22",
+          "imageDigest": "gcr.io/armormeds/armormeds@sha256:5f9c5e73d0cb5fd457dce930b0c94317525408a5346f8ce3d1390d1cff88fe8c",
+          "containerStatuses": [
+            {
+              "name": "armormeds-1",
+              "imageDigest": "gcr.io/armormeds/armormeds@sha256:5f9c5e73d0cb5fd457dce930b0c94317525408a5346f8ce3d1390d1cff88fe8c"
+            }
+          ]
+        },
+        "@type": "type.googleapis.com/google.cloud.run.v1.Revision"
+      }
+    },
+    "insertId": "-g1jr47de59g",
+    "resource": {
+      "type": "cloud_run_revision",
+      "labels": {
+        "project_id": "armormeds",
+        "service_name": "armormeds",
+        "configuration_name": "armormeds",
+        "location": "us-central1",
+        "revision_name": "armormeds-00013-w5l"
+      }
+    },
+    "timestamp": "2026-04-19T14:59:21.408281Z",
+    "severity": "ERROR",
+    "logName": "projects/armormeds/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "receiveTimestamp": "2026-04-19T14:59:22.026535531Z"
+  }
+]
