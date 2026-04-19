@@ -226,23 +226,27 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Seed data on startup
-  await storage.seedProducts();
-
-  // Reset admin password if ADMIN_RESET env var is set
-  if (process.env.ADMIN_RESET === 'true') {
+  // Run startup DB tasks in the background — do NOT await so the port opens immediately
+  (async () => {
     try {
-      const allAdmins = await storage.getAdminUsers();
-      const superAdmin = allAdmins.find(u => u.role === 'super_admin');
-      if (superAdmin) {
-        const newHash = bcrypt.hashSync('ArmorAdmin2024!', 10);
-        await storage.updateAdminUser(superAdmin.id, { email: 'admin@armormeds.com', passwordHash: newHash });
-        console.log(`Admin credentials reset for super_admin to admin@armormeds.com`);
-      }
+      await storage.seedProducts();
     } catch (err) {
-      console.error("Admin reset error:", err);
+      console.error("Startup seed error:", err);
     }
-  }
+    if (process.env.ADMIN_RESET === 'true') {
+      try {
+        const allAdmins = await storage.getAdminUsers();
+        const superAdmin = allAdmins.find(u => u.role === 'super_admin');
+        if (superAdmin) {
+          const newHash = bcrypt.hashSync('ArmorAdmin2024!', 10);
+          await storage.updateAdminUser(superAdmin.id, { email: 'admin@armormeds.com', passwordHash: newHash });
+          console.log(`Admin credentials reset for super_admin to admin@armormeds.com`);
+        }
+      } catch (err) {
+        console.error("Admin reset error:", err);
+      }
+    }
+  })();
 
   // Register object storage routes for secure file uploads
   registerObjectStorageRoutes(app);
