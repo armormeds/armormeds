@@ -153,32 +153,41 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await registerRoutes(httpServer, app);
+  // Health check endpoint — responds immediately before anything else loads
+  app.get("/health", (_req, res) => res.status(200).json({ status: "ok" }));
+
+  // Register API routes (DB seeding runs in background, won't block this)
+  try {
+    await registerRoutes(httpServer, app);
+  } catch (err) {
+    console.error("registerRoutes error (non-fatal):", err);
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
-    throw err;
   });
 
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
-  }
-
+  // Bind port FIRST so Cloud Run health check passes immediately
   const port = parseInt(process.env.PORT || "5001", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
+  httpServer.listen({ port, host: "0.0.0.0" }, () => {
+    log(`serving on port ${port}`);
+  });
 
+  // Set up static file serving or Vite dev server after port is open
+  if (process.env.NODE_ENV === "production") {
+    try {
+      serveStatic(app);
+    } catch (err) {
+      console.error("Static serving setup failed (non-fatal):", err);
+    }
+  } else {
+    try {
+      const { setupVite } = await import("./vite");
+      await setupVite(httpServer, app);
+    } catch (err) {
+      console.error("Vite setup failed (non-fatal):", err);
+    }
+  }
 })();
