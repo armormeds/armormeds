@@ -10,7 +10,7 @@ import {
 import { ArrowRight, Check, Star, ShieldCheck, Truck, Clock, Users, Award, Stethoscope, Package, HeartPulse, Sparkles, BadgeCheck, CreditCard, RefreshCcw, Headphones } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "@/hooks/use-products";
-import heroVideo from "@assets/generated_videos/pexels_diverse_faces_running.mp4";
+const heroVideo = "/videos/pexels_diverse_faces_running.mp4";
 
 export default function Home() {
   const { data: products } = useProducts();
