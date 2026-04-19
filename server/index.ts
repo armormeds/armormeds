@@ -33,9 +33,9 @@ async function initStripe() {
   const databaseUrl = process.env.DATABASE_URL;
 
   if (!databaseUrl) {
-    throw new Error(
-      'DATABASE_URL environment variable is required for Stripe integration.'
-    );
+    console.warn('⚠️  DATABASE_URL not set — Stripe initialization skipped.');
+    stripeInitialized = true;
+    return;
   }
 
   try {
@@ -73,7 +73,10 @@ async function initStripe() {
   }
 }
 
-const stripeInitPromise = initStripe();
+// Attach .catch immediately so Node.js never sees an unhandled rejection
+const stripeInitPromise = initStripe().catch((err) => {
+  console.error('Stripe initialization failed (non-fatal):', err);
+});
 
 app.post(
   '/api/stripe/webhook',
@@ -178,8 +181,4 @@ app.use((req, res, next) => {
     },
   );
 
-  // Wait for Stripe to finish initializing in the background (non-blocking)
-  stripeInitPromise.catch((err) => {
-    console.error('Stripe initialization failed (non-fatal):', err);
-  });
 })();
