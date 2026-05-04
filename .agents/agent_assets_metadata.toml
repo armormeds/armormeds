@@ -138,6 +138,24 @@ uri = "file://artifacts/mockup-sandbox/public/images/rebel-poster-hero.png"
 type = "image"
 title = "Sci-fi propaganda poster hero"
 
+[[generated]]
+id = "-ZvY5na2wZsTdzlz3odxZ"
+uri = "file://artifacts/mockup-sandbox/public/images/anime-action-hero.png"
+type = "image"
+title = "Shounen anime hero with capsule"
+
+[[generated]]
+id = "4XPq2bj99TU_2FRBL34Ph"
+uri = "file://artifacts/mockup-sandbox/public/images/cyberpunk-city.png"
+type = "image"
+title = "cyberpunk night city street"
+
+[[generated]]
+id = "jkWXj08AYXMA0SwBISEuz"
+uri = "file://artifacts/mockup-sandbox/public/images/western-outlaw-hero.png"
+type = "image"
+title = "Sepia gunslinger portrait"
+
 [[outputs]]
 id = "cuH7KzQUWAxIgMPVMv_fu"
 uri = "file://client/public/images/medications/semaglutide.png"
