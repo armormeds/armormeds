@@ -120,6 +120,24 @@ uri = "file://artifacts/mockup-sandbox/public/images/punched-out-hero.png"
 type = "image"
 title = "Comic pop-art doctor holding pill"
 
+[[generated]]
+id = "k5PjVIe9LBmUAVKQGsCTN"
+uri = "file://artifacts/mockup-sandbox/public/images/sci_fi_planet_horizon.png"
+type = "image"
+title = "Sci-fi planet horizon from space"
+
+[[generated]]
+id = "b_RREMTRz4Yy3wZCGm3e0"
+uri = "file://artifacts/mockup-sandbox/public/images/hologram-medical.png"
+type = "image"
+title = "holographic medical capsule and DNA"
+
+[[generated]]
+id = "wum7qc0L0_sCjnHyd8oL9"
+uri = "file://artifacts/mockup-sandbox/public/images/rebel-poster-hero.png"
+type = "image"
+title = "Sci-fi propaganda poster hero"
+
 [[outputs]]
 id = "cuH7KzQUWAxIgMPVMv_fu"
 uri = "file://client/public/images/medications/semaglutide.png"
