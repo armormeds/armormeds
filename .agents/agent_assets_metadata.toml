@@ -102,6 +102,24 @@ uri = "file://client/public/images/medications/style-c-tablet.png"
 type = "image"
 title = "armormeds clean clinical tablet style C"
 
+[[generated]]
+id = "8TRCvmkF0HmOFeTS3f0Qb"
+uri = "file://artifacts/mockup-sandbox/public/images/comic-hero-man.png"
+type = "image"
+title = "Comic style man holding pill"
+
+[[generated]]
+id = "0yRj3ug8XPl8nS5VYmRtG"
+uri = "file://artifacts/mockup-sandbox/public/images/comic-guy-pill-explosion.png"
+type = "image"
+title = "comic confident person holding pill"
+
+[[generated]]
+id = "v_WJHdGkCyItVb_3lX8h0"
+uri = "file://artifacts/mockup-sandbox/public/images/punched-out-hero.png"
+type = "image"
+title = "Comic pop-art doctor holding pill"
+
 [[outputs]]
 id = "cuH7KzQUWAxIgMPVMv_fu"
 uri = "file://client/public/images/medications/semaglutide.png"
