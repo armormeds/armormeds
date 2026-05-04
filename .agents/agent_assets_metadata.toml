@@ -156,6 +156,24 @@ uri = "file://artifacts/mockup-sandbox/public/images/western-outlaw-hero.png"
 type = "image"
 title = "Sepia gunslinger portrait"
 
+[[generated]]
+id = "1YnH_nbgwsQYEcZH5NIPg"
+uri = "file://artifacts/mockup-sandbox/public/images/luxury-editorial-model.png"
+type = "image"
+title = "High-fashion editorial model holding bottle"
+
+[[generated]]
+id = "mOl5JLOl8EAPoDv2zaadC"
+uri = "file://artifacts/mockup-sandbox/public/images/synthwave-sun.png"
+type = "image"
+title = "Synthwave retro grid sun"
+
+[[generated]]
+id = "Nz3EedMMy8eDvS9zKtChw"
+uri = "file://artifacts/mockup-sandbox/public/images/brutalist-pills-accent.png"
+type = "image"
+title = "black and white macro pills"
+
 [[outputs]]
 id = "cuH7KzQUWAxIgMPVMv_fu"
 uri = "file://client/public/images/medications/semaglutide.png"
