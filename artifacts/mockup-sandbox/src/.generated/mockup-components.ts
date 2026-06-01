@@ -12,5 +12,8 @@ export const modules: ModuleMap = {
   "./components/mockups/armormeds-hero/PunchedOut.tsx": () => import("../components/mockups/armormeds-hero/PunchedOut.tsx"),
   "./components/mockups/armormeds-hero/RebelPoster.tsx": () => import("../components/mockups/armormeds-hero/RebelPoster.tsx"),
   "./components/mockups/armormeds-hero/Synthwave80s.tsx": () => import("../components/mockups/armormeds-hero/Synthwave80s.tsx"),
+  "./components/mockups/armormeds-hero/Synthwave80sAsymmetric.tsx": () => import("../components/mockups/armormeds-hero/Synthwave80sAsymmetric.tsx"),
+  "./components/mockups/armormeds-hero/Synthwave80sCentered.tsx": () => import("../components/mockups/armormeds-hero/Synthwave80sCentered.tsx"),
+  "./components/mockups/armormeds-hero/Synthwave80sSplit.tsx": () => import("../components/mockups/armormeds-hero/Synthwave80sSplit.tsx"),
   "./components/mockups/armormeds-hero/WesternOutlaw.tsx": () => import("../components/mockups/armormeds-hero/WesternOutlaw.tsx")
 };
