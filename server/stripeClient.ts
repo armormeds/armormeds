@@ -3,6 +3,15 @@ import Stripe from 'stripe';
 let connectionSettings: any;
 
 async function getCredentials() {
+  // Prefer direct env var keys (set via Replit Secrets) — fastest path
+  const envSecret = process.env.STRIPE_SECRET_KEY;
+  const envPublishable = process.env.VITE_STRIPE_PUBLIC_KEY;
+  if (envSecret && envPublishable) {
+    console.log('Using Stripe credentials from environment secrets');
+    return { publishableKey: envPublishable, secretKey: envSecret };
+  }
+
+  // Fall back to Replit connector proxy
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? 'repl ' + process.env.REPL_IDENTITY
@@ -49,7 +58,7 @@ async function getCredentials() {
     }
   }
 
-  throw new Error('No Stripe credentials found for any environment');
+  throw new Error('No Stripe credentials found. Set STRIPE_SECRET_KEY and VITE_STRIPE_PUBLIC_KEY secrets.');
 }
 
 export async function getUncachableStripeClient() {
