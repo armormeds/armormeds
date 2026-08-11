@@ -6,3 +6,7 @@ replit.nix
 attached_assets
 .local
 *.log
+.env
+.env.*
+artifacts
+screenshots
