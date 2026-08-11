@@ -37,12 +37,12 @@ gcloud compute networks subnets create "$SUBNET_NAME" \
   --range="10.8.0.0/28" \
   --quiet || echo "  (already exists)"
 
-# ── Serverless VPC Access connector ─────────────────────────────────────────
-echo "▶ Creating VPC Access connector (Cloud Run → Cloud SQL)..."
-gcloud compute networks vpc-access connectors create "$CONNECTOR_NAME" \
+# ── Subnet for Cloud Run Direct VPC egress ───────────────────────────────────
+echo "▶ Creating Cloud Run egress subnet (Direct VPC egress, no connector)..."
+gcloud compute networks subnets create armormeds-run-subnet \
   --network="$VPC_NAME" \
   --region="$REGION" \
-  --range="10.8.0.0/28" \
+  --range="10.10.0.0/24" \
   --quiet || echo "  (already exists)"
 
 # ── Service Account for Cloud Run ────────────────────────────────────────────

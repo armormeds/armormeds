@@ -35,7 +35,8 @@ steps:
       - '--concurrency=80'
       - '--set-env-vars=NODE_ENV=production'
       - '--set-secrets=SESSION_SECRET=SESSION_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,VITE_STRIPE_PUBLIC_KEY=VITE_STRIPE_PUBLIC_KEY:latest,TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN:latest,TWILIO_PHONE_NUMBER=TWILIO_PHONE_NUMBER:latest'
-      - '--vpc-connector=armormeds-connector'
+      - '--network=armormeds-vpc'
+      - '--subnet=armormeds-run-subnet'
       - '--vpc-egress=private-ranges-only'
 
 images:
