@@ -2035,10 +2035,10 @@ export default function Admin() {
         description: `Prescription ${prescription.prescriptionNumber} has been generated.`,
       });
     },
-    onError: () => {
+    onError: (err: Error) => {
       toast({
         title: "Error",
-        description: "Failed to create prescription.",
+        description: err.message || "Failed to create prescription.",
         variant: "destructive",
       });
     },
