@@ -1,0 +1,83 @@
+
+# Retry
+gcloud builds submit --config cloudbuild.yaml \
+  --substitutions=COMMIT_SHA=$(git rev-parse HEAD) .
+Updated IAM policy for project [armormeds-production].
+bindings:
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-artifactregistry.iam.gserviceaccount.com
+  role: roles/artifactregistry.serviceAgent
+- members:
+  - serviceAccount:562518692979-compute@developer.gserviceaccount.com
+  role: roles/artifactregistry.writer
+- members:
+  - serviceAccount:562518692979@cloudbuild.gserviceaccount.com
+  role: roles/cloudbuild.builds.builder
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-cloudbuild.iam.gserviceaccount.com
+  role: roles/cloudbuild.serviceAgent
+- members:
+  - serviceAccount:armormeds-run@armormeds-production.iam.gserviceaccount.com
+  role: roles/cloudsql.client
+- members:
+  - serviceAccount:562518692979@cloudservices.gserviceaccount.com
+  role: roles/compute.instanceGroupManagerServiceAgent
+- members:
+  - serviceAccount:service-562518692979@compute-system.iam.gserviceaccount.com
+  role: roles/compute.serviceAgent
+- members:
+  - serviceAccount:service-562518692979@containerregistry.iam.gserviceaccount.com
+  role: roles/containerregistry.ServiceAgent
+- members:
+  - serviceAccount:562518692979@cloudservices.gserviceaccount.com
+  role: roles/editor
+- members:
+  - serviceAccount:562518692979-compute@developer.gserviceaccount.com
+  role: roles/logging.logWriter
+- members:
+  - user:armor.medss@gmail.com
+  role: roles/owner
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-pubsub.iam.gserviceaccount.com
+  role: roles/pubsub.serviceAgent
+- members:
+  - serviceAccount:562518692979-compute@developer.gserviceaccount.com
+  - serviceAccount:562518692979@cloudbuild.gserviceaccount.com
+  role: roles/run.admin
+- members:
+  - serviceAccount:service-562518692979@serverless-robot-prod.iam.gserviceaccount.com
+  role: roles/run.serviceAgent
+- members:
+  - serviceAccount:562518692979-compute@developer.gserviceaccount.com
+  - serviceAccount:armormeds-run@armormeds-production.iam.gserviceaccount.com
+  role: roles/secretmanager.secretAccessor
+- members:
+  - serviceAccount:service-562518692979@service-networking.iam.gserviceaccount.com
+  role: roles/servicenetworking.serviceAgent
+- members:
+  - serviceAccount:562518692979-compute@developer.gserviceaccount.com
+  role: roles/storage.objectAdmin
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-vpcaccess.iam.gserviceaccount.com
+  role: roles/vpcaccess.serviceAgent
+etag: BwZYzJ5Aq_Q=
+version: 1
+Creating temporary archive of 325 file(s) totalling 133.7 MiB before compression.
+Some files were not included in the source upload.
+
+Check the gcloud log [/tmp/tmp.TC1pr2HIwm/logs/2026.08.11/22.01.53.097303.log] to see which files and the contents of the
+default gcloudignore file used (see `$ gcloud topic gcloudignore` to learn
+more).
+
+Uploading tarball of [.] to [gs://armormeds-production_cloudbuild/source/1786485713.331793-034a405bcbd24c6bb7be2390bab4a08c.tgz]
+Created [https://cloudbuild.googleapis.com/v1/projects/armormeds-production/locations/global/builds/d1ed3b15-77db-4212-be5c-23e20565d2ff].
+Logs are available at [ https://console.cloud.google.com/cloud-build/builds/d1ed3b15-77db-4212-be5c-23e20565d2ff?project=562518692979 ].
+
+gcloud builds submit only displays logs from Cloud Storage. To view logs from Cloud Logging, run:
+gcloud beta builds submit
+
+Waiting for build to complete. Polling interval: 1 second(s).
+
+BUILD FAILURE: Build step failure: build step 2 "gcr.io/google.com/cloudsdktool/cloud-sdk" failed: step exited with non-zero status: 1
+ERROR: (gcloud.builds.submit) build d1ed3b15-77db-4212-be5c-23e20565d2ff completed with status "FAILURE"
+armor_medss@cloudshell:~/armormeds (armormeds-production)$ 

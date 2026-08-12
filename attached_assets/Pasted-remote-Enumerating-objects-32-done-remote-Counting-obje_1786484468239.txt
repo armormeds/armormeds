@@ -1,0 +1,90 @@
+remote: Enumerating objects: 32, done.
+remote: Counting objects: 100% (32/32), done.
+remote: Compressing objects: 100% (18/18), done.
+remote: Total 32 (delta 14), reused 32 (delta 14), pack-reused 0 (from 0)
+Unpacking objects: 100% (32/32), 1.89 MiB | 7.95 MiB/s, done.
+From https://github.com/armormeds/armormeds
+   c89d844..fa3d111  replit-import -> origin/replit-import
+Updating c89d844..fa3d111
+Fast-forward
+ .dockerignore                                      |   4 +
+ Dockerfile                                         |  26 +++-
+ ...ECT-ID-iam-gserviceaccount-co_1786480566802.txt | 136 +++++++++++++++++++++
+ attached_assets/image_1785515167528.png            | Bin 0 -> 1027262 bytes
+ attached_assets/image_1785515315677.png            | Bin 0 -> 1009879 bytes
+ cloudbuild.yaml                                    |  47 +++++--
+ gcp/secrets-populate.sh                            |  34 ++++++
+ gcp/setup.sh                                       | 115 +++++++++++++++++
+ server/stripeClient.ts                             |  11 +-
+ 9 files changed, 360 insertions(+), 13 deletions(-)
+ create mode 100644 attached_assets/Pasted-A-EMAIL-armormeds-run-PROJECT-ID-iam-gserviceaccount-co_1786480566802.txt
+ create mode 100644 attached_assets/image_1785515167528.png
+ create mode 100644 attached_assets/image_1785515315677.png
+ create mode 100644 gcp/secrets-populate.sh
+ create mode 100644 gcp/setup.sh
+Updated IAM policy for project [armormeds-production].
+bindings:
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-artifactregistry.iam.gserviceaccount.com
+  role: roles/artifactregistry.serviceAgent
+- members:
+  - serviceAccount:562518692979@cloudbuild.gserviceaccount.com
+  role: roles/cloudbuild.builds.builder
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-cloudbuild.iam.gserviceaccount.com
+  role: roles/cloudbuild.serviceAgent
+- members:
+  - serviceAccount:armormeds-run@armormeds-production.iam.gserviceaccount.com
+  role: roles/cloudsql.client
+- members:
+  - serviceAccount:562518692979@cloudservices.gserviceaccount.com
+  role: roles/compute.instanceGroupManagerServiceAgent
+- members:
+  - serviceAccount:service-562518692979@compute-system.iam.gserviceaccount.com
+  role: roles/compute.serviceAgent
+- members:
+  - serviceAccount:service-562518692979@containerregistry.iam.gserviceaccount.com
+  role: roles/containerregistry.ServiceAgent
+- members:
+  - serviceAccount:562518692979@cloudservices.gserviceaccount.com
+  role: roles/editor
+- members:
+  - user:armor.medss@gmail.com
+  role: roles/owner
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-pubsub.iam.gserviceaccount.com
+  role: roles/pubsub.serviceAgent
+- members:
+  - serviceAccount:562518692979@cloudbuild.gserviceaccount.com
+  role: roles/run.admin
+- members:
+  - serviceAccount:service-562518692979@serverless-robot-prod.iam.gserviceaccount.com
+  role: roles/run.serviceAgent
+- members:
+  - serviceAccount:armormeds-run@armormeds-production.iam.gserviceaccount.com
+  role: roles/secretmanager.secretAccessor
+- members:
+  - serviceAccount:service-562518692979@service-networking.iam.gserviceaccount.com
+  role: roles/servicenetworking.serviceAgent
+- members:
+  - serviceAccount:service-562518692979@gcp-sa-vpcaccess.iam.gserviceaccount.com
+  role: roles/vpcaccess.serviceAgent
+etag: BwZYzE4C2Oc=
+version: 1
+Updated IAM policy for serviceAccount [armormeds-run@armormeds-production.iam.gserviceaccount.com].
+bindings:
+- members:
+  - serviceAccount:562518692979@cloudbuild.gserviceaccount.com
+  role: roles/iam.serviceAccountUser
+etag: BwZYzE4fEwg=
+version: 1
+Creating temporary archive of 325 file(s) totalling 133.7 MiB before compression.
+Some files were not included in the source upload.
+
+Check the gcloud log [/tmp/tmp.TC1pr2HIwm/logs/2026.08.11/21.39.28.637169.log] to see which files and the contents of the
+default gcloudignore file used (see `$ gcloud topic gcloudignore` to learn
+more).
+
+Uploading tarball of [.] to [gs://armormeds-production_cloudbuild/source/1786484368.980179-88aca0398ef04b4b835355bf80302102.tgz]
+ERROR: (gcloud.builds.submit) INVALID_ARGUMENT: could not resolve source: googleapi: Error 403: 562518692979-compute@developer.gserviceaccount.com does not have storage.objects.get access to the Google Cloud Storage object. Permission 'storage.objects.get' denied on resource '//storage.googleapis.com/projects/_/buckets/armormeds-production_cloudbuild/objects/source/1786484368.980179-88aca0398ef04b4b835355bf80302102.tgz' (or it may not exist). Remediate access with this Troubleshooter URL or share it with your administrator - https://console.cloud.google.com/iam-admin/troubleshooter/summary;errorId=CiQwMTlmZjJjNC00MjQ0LTdhMGMtODI3Yi00ZDNjMWNiMjY2MjUSeHByb2plY3RzL18vYnVja2V0cy9hcm1vcm1lZHMtcHJvZHVjdGlvbl9jbG91ZGJ1aWxkL29iamVjdHMvc291cmNlLzE3ODY0ODQzNjguOTgwMTc5LTg4YWNhMDM5OGVmMDRiNGI4MzUzNTViZjgwMzAyMTAyLnRneg%3D%3D ., forbidden
+armor_medss@cloudshell:~/armormeds (armormeds-production)$

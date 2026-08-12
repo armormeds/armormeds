@@ -1,0 +1,57 @@
+gcloud run services update armormeds \
+  --region=us-central1 \
+  --update-secrets=DATABASE_URL=DATABASE_URL:latest
+
+# Get your live URL
+gcloud run services describe armormeds \
+  --region=us-central1 --format="value(status.url)"
+Deploying...                                                                                                                                                                              
+  Creating Revision...done                                                                                                                                                                
+  Routing traffic...done                                                                                                                                                                  
+Done.                                                                                                                                                                                     
+Service [armormeds] revision [armormeds-00004-xmc] has been deployed and is serving 100 percent of traffic.
+Service URL: https://armormeds-562518692979.us-central1.run.app
+https://armormeds-qz3iehdv7q-uc.a.run.app
+armor_medss@cloudshell:~/armormeds (armormeds-production)$ gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="armormeds" AND logName:("projects/armormeds-production/logs/run.googleapis.com%2Fstderr" OR "projects/armormeds-production/logs/run.googleapis.com%2Fstdout")' \
+  --limit=40 --freshness=30m --format="value(textPayload)"
+2:40:03 AM [stripe] Stripe data synced
+2:40:03 AM [stripe] Syncing Stripe data...
+2:40:03 AM [stripe] Webhook setup completed (no URL returned)
+} Found orphaned managed webhook in Stripe, deleting
+  url: 'https://eb156990-d071-4750-817f-ffee1d2edfcd-00-3ceexybqivv92.janeway.replit.dev/api/stripe/webhook'
+  webhookId: 'we_1U2dyEGsgulFjrgbXQaNmw4n',
+{
+2:39:24 AM [stripe] Setting up managed webhook...
+{ autoExpandLists: undefined, stripeApiVersion: undefined } StripeSync initialized
+Using Stripe credentials from environment secrets
+2:38:42 AM [stripe] Stripe schema ready
+}
+  routine: 'parserOpenTable'
+  line: '1395',
+  file: 'parse_relation.c',
+  constraint: undefined,
+  dataType: undefined,
+  column: undefined,
+  table: undefined,
+  schema: undefined,
+  where: undefined,
+  internalQuery: undefined,
+  internalPosition: undefined,
+  position: '83',
+  hint: undefined,
+  detail: undefined,
+  code: '42P01',
+  severity: 'ERROR',
+  length: 107,
+    at async /app/dist/index.cjs:129:2284 {
+    at async sx.seedProducts (/app/dist/index.cjs:80:113314)
+    at async sx.getProducts (/app/dist/index.cjs:80:107175)
+    at async /app/dist/index.cjs:80:103714
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at /app/dist/index.cjs:64:13330
+Startup seed error: error: relation "products" does not exist
+2:38:42 AM [express] serving on port 8080
+2:38:42 AM [stripe] Initializing Stripe schema...
+Node.js v20.20.2
+}
+armor_medss@cloudshell:~/armormeds (armormeds-production)$ 

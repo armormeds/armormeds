@@ -1,0 +1,68 @@
+armor_medss@cloudshell:~/armormeds (armormeds-production)$ gcloud builds log 55f9c3e3-a7df-443c-81dd-9f4acf6af724 | tail -60
+/usr/bin/../lib/google-cloud-sdk/lib/third_party/google/cloud/__init__.py:20: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+/usr/bin/../lib/google-cloud-sdk/lib/third_party/google/cloud/appengine_v1alpha/proto/version_pb2.py:1659: SyntaxWarning: "\ " is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\ "? A raw string is also an option.
+  '__doc__': """\ `Cloud Endpoints <https://cloud.google.com/endpoints>`__
+/usr/bin/../lib/google-cloud-sdk/lib/third_party/google/cloud/appengine_v1alpha/proto/app_yaml_pb2.py:991: SyntaxWarning: "\ " is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\ "? A raw string is also an option.
+  \ ``30x`` code to use when performing redirects for the
+Step #1: 6b231ffe26c0: Preparing
+Step #1: 130a41bed684: Preparing
+Step #1: 9050e3e36f4a: Preparing
+Step #1: 17b5b39866ec: Preparing
+Step #1: d592f6b23cfa: Preparing
+Step #1: f991bccee0f1: Preparing
+Step #1: 631e9f799a80: Preparing
+Step #1: 4337a9b79b84: Preparing
+Step #1: 0da811fd3ed4: Preparing
+Step #1: 0ebc314cf5c0: Layer already exists
+Step #1: 6b231ffe26c0: Layer already exists
+Step #1: 130a41bed684: Layer already exists
+Step #1: 9050e3e36f4a: Layer already exists
+Step #1: 17b5b39866ec: Layer already exists
+Step #1: d592f6b23cfa: Layer already exists
+Step #1: f991bccee0f1: Layer already exists
+Step #1: 631e9f799a80: Layer already exists
+Step #1: 4337a9b79b84: Layer already exists
+Step #1: 0da811fd3ed4: Layer already exists
+Step #1: latest: digest: sha256:46ac7847dba5377cc03b2cec2e577a2057bd2f32727829d6cc6252aea7046f41 size: 2414
+Finished Step #1
+Starting Step #2
+Step #2: Pulling image: gcr.io/google.com/cloudsdktool/cloud-sdk
+Step #2: Using default tag: latest
+Step #2: latest: Pulling from google.com/cloudsdktool/cloud-sdk
+Step #2: 26c307b5e35a: Pulling fs layer
+Step #2: 9936d66e009c: Pulling fs layer
+Step #2: 6917334c2e77: Pulling fs layer
+Step #2: 15794ef19fd8: Pulling fs layer
+Step #2: 83861c7f6792: Pulling fs layer
+Step #2: 15b9cfbc12da: Pulling fs layer
+Step #2: 83861c7f6792: Download complete
+Step #2: 15b9cfbc12da: Verifying Checksum
+Step #2: 15b9cfbc12da: Download complete
+Step #2: 9936d66e009c: Verifying Checksum
+Step #2: 9936d66e009c: Download complete
+Step #2: 26c307b5e35a: Verifying Checksum
+Step #2: 26c307b5e35a: Download complete
+Step #2: 15794ef19fd8: Verifying Checksum
+Step #2: 15794ef19fd8: Download complete
+Step #2: 26c307b5e35a: Pull complete
+Step #2: 9936d66e009c: Pull complete
+Step #2: 6917334c2e77: Verifying Checksum
+Step #2: 6917334c2e77: Download complete
+Step #2: 6917334c2e77: Pull complete
+Step #2: 15794ef19fd8: Pull complete
+Step #2: 83861c7f6792: Pull complete
+Step #2: 15b9cfbc12da: Pull complete
+Step #2: Digest: sha256:35ae671900df3e48a82334cb9ded2a06f555c2193a0e57f2f56dfa626e2cfb8e
+Step #2: Status: Downloaded newer image for gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+Step #2: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+Step #2: Deploying container to Cloud Run service [armormeds] in project [armormeds-production] region [us-central1]
+Step #2: Deploying new service...
+Step #2: failed
+Step #2: Deployment failed
+Step #2: ERROR: (gcloud.run.deploy) [562518692979-compute@developer.gserviceaccount.com] does not have permission to access namespaces instance [armormeds-production] (or it may not exist): Permission 'iam.serviceaccounts.actAs' denied on service account 562518692979-compute@developer.gserviceaccount.com (or it may not exist). This command is authenticated as 562518692979-compute@developer.gserviceaccount.com which is the active account specified by the [core/account] property.
+Finished Step #2
+ERROR
+ERROR: build step 2 "gcr.io/google.com/cloudsdktool/cloud-sdk" failed: step exited with non-zero status: 1
+--------------------------------------------------------------------------------
+armor_medss@cloudshell:~/armormeds (armormeds-production)$ 

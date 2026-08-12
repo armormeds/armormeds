@@ -419,3 +419,10 @@ id = "ahIc2pg0nqVqN6kOD8h6R"
 uri = "file://client/public/images/medications/style-c-tablet.png"
 type = "image"
 title = "Style C — Clean Clinical (Tablet)"
+
+[[outputs]]
+id = "f1ji9jihqdAdKcLNoa19Z"
+uri = "file://db-export/armormeds-dump.txt"
+type = "text"
+title = "Database export (armormeds-dump)"
+description = "Your Replit database export (46 tables). Download this, then upload it to Cloud Shell. Rename to armormeds-dump.sql after downloading if needed."

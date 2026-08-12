@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import { getPublicBaseUrl } from "./baseUrl";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
@@ -772,7 +773,7 @@ export async function registerRoutes(
       }
 
       const stripe = await getUncachableStripeClient();
-      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const baseUrl = getPublicBaseUrl(req);
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -802,7 +803,7 @@ export async function registerRoutes(
       }
 
       const stripe = await getUncachableStripeClient();
-      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const baseUrl = getPublicBaseUrl(req);
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -2027,8 +2028,7 @@ export async function registerRoutes(
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
       await db.insert(passwordResetTokens).values({ email: patient.email, token, type: "patient", expiresAt });
 
-      const appDomain = process.env.REPLIT_DOMAINS?.split(",")[0] || "localhost:5000";
-      const resetUrl = `https://${appDomain}/patient/reset-password?token=${token}`;
+      const resetUrl = `${getPublicBaseUrl(req)}/patient/reset-password?token=${token}`;
 
       // Try SMS via Twilio if patient has a phone
       let smsSent = false;
@@ -2090,8 +2090,7 @@ export async function registerRoutes(
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
       await db.insert(passwordResetTokens).values({ email: admin.email, token, type: "admin", expiresAt });
 
-      const appDomain = process.env.REPLIT_DOMAINS?.split(",")[0] || "localhost:5000";
-      const resetUrl = `https://${appDomain}/admin?resetToken=${token}`;
+      const resetUrl = `${getPublicBaseUrl(req)}/admin?resetToken=${token}`;
 
       return res.json({ success: true, resetUrl });
     } catch (err) {

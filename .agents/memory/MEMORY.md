@@ -1,0 +1,1 @@
+- [GCP deployment quirks](gcp-deployment.md) — Cloud Run uses Direct VPC egress (connectors fail here); builds run as compute SA; PG15 schema grants; DB import recipe.

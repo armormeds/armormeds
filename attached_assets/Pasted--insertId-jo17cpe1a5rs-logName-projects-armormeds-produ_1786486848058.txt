@@ -1,0 +1,587 @@
+{
+    "insertId": "-jo17cpe1a5rs",
+    "logName": "projects/armormeds-production/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.ReplaceService",
+      "resourceName": "namespaces/armormeds-production/services/armormeds",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Service",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "annotations": {
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "580.0.0",
+            "run.googleapis.com/ingress": "all",
+            "run.googleapis.com/ingress-status": "all",
+            "run.googleapis.com/maxScale": "20",
+            "run.googleapis.com/operation-id": "b88737e7-63dd-4d5c-af70-17c6282b1e7d",
+            "run.googleapis.com/urls": "[\"https://armormeds-562518692979.us-central1.run.app\"]",
+            "serving.knative.dev/creator": "562518692979-compute@developer.gserviceaccount.com",
+            "serving.knative.dev/lastModifier": "562518692979-compute@developer.gserviceaccount.com"
+          },
+          "creationTimestamp": "2026-08-11T21:56:15.529396Z",
+          "generation": 2,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1"
+          },
+          "name": "armormeds",
+          "namespace": "562518692979",
+          "resourceVersion": "AAZYzKowBw4",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/562518692979/services/armormeds",
+          "uid": "41242ddc-d287-4ce2-8488-40339dcb7eec"
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/maxScale": "10",
+                "autoscaling.knative.dev/minScale": "1",
+                "run.googleapis.com/client-name": "gcloud",
+                "run.googleapis.com/client-version": "580.0.0",
+                "run.googleapis.com/network-interfaces": "[{\"network\":\"armormeds-vpc\",\"subnetwork\":\"armormeds-run-subnet\"}]",
+                "run.googleapis.com/startup-cpu-boost": "true",
+                "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+              },
+              "labels": {
+                "client.knative.dev/nonce": "bebbtckxih",
+                "run.googleapis.com/startupProbeType": "Default"
+              }
+            },
+            "spec": {
+              "containerConcurrency": 80,
+              "containers": [
+                {
+                  "env": [
+                    {
+                      "name": "NODE_ENV",
+                      "value": "production"
+                    },
+                    {
+                      "name": "SESSION_SECRET",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "SESSION_SECRET"
+                        }
+                      }
+                    },
+                    {
+                      "name": "STRIPE_SECRET_KEY",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "STRIPE_SECRET_KEY"
+                        }
+                      }
+                    },
+                    {
+                      "name": "VITE_STRIPE_PUBLIC_KEY",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "VITE_STRIPE_PUBLIC_KEY"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TWILIO_ACCOUNT_SID",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "TWILIO_ACCOUNT_SID"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TWILIO_AUTH_TOKEN",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "TWILIO_AUTH_TOKEN"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TWILIO_PHONE_NUMBER",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "TWILIO_PHONE_NUMBER"
+                        }
+                      }
+                    }
+                  ],
+                  "image": "us-central1-docker.pkg.dev/armormeds-production/armormeds/app:fa3d1111d10c14776591e102f3a7fad8334c3543",
+                  "ports": [
+                    {
+                      "containerPort": 8080,
+                      "name": "http1"
+                    }
+                  ],
+                  "resources": {
+                    "limits": {
+                      "cpu": "1",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "startupProbe": {
+                    "failureThreshold": 1,
+                    "periodSeconds": 240,
+                    "tcpSocket": {
+                      "port": 8080
+                    },
+                    "timeoutSeconds": 240
+                  }
+                }
+              ],
+              "serviceAccountName": "562518692979-compute@developer.gserviceaccount.com",
+              "timeoutSeconds": 300
+            }
+          },
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100
+            }
+          ]
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-08-11T22:05:12.053006Z",
+              "message": "spec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Secret projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest was not found",
+              "reason": "SecretsAccessCheckFailed",
+              "status": "False",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-08-11T22:05:12.053006Z",
+              "message": "spec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Secret projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest was not found",
+              "reason": "SecretsAccessCheckFailed",
+              "status": "False",
+              "type": "ConfigurationsReady"
+            },
+            {
+              "lastTransitionTime": "2026-08-11T22:05:11.899328Z",
+              "message": "Provisioning revision instances to receive traffic.",
+              "status": "Unknown",
+              "type": "RoutesReady"
+            }
+          ],
+          "latestCreatedRevisionName": "armormeds-00002-6t4",
+          "observedGeneration": 2
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "code": 9,
+        "message": "Ready condition status changed to False for Service armormeds with message: spec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Secret projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest was not found"
+      }
+    },
+    "receiveTimestamp": "2026-08-11T22:05:13.045588145Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "armormeds-production",
+        "revision_name": "",
+        "service_name": "armormeds"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "timestamp": "2026-08-11T22:05:12.136179Z"
+  },
+  {
+    "insertId": "-enou76dvka2",
+    "logName": "projects/armormeds-production/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.ReplaceService",
+      "resourceName": "namespaces/armormeds-production/revisions/armormeds-00002-6t4",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Revision",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Revision",
+        "metadata": {
+          "annotations": {
+            "autoscaling.knative.dev/maxScale": "10",
+            "autoscaling.knative.dev/minScale": "1",
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "580.0.0",
+            "run.googleapis.com/network-interfaces": "[{\"network\": \"armormeds-vpc\", \"subnetwork\": \"armormeds-run-subnet\"}]",
+            "run.googleapis.com/operation-id": "b88737e7-63dd-4d5c-af70-17c6282b1e7d",
+            "run.googleapis.com/startup-cpu-boost": "true",
+            "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+            "serving.knative.dev/creator": "562518692979-compute@developer.gserviceaccount.com"
+          },
+          "creationTimestamp": "2026-08-11T22:05:04.767394Z",
+          "generation": 1,
+          "labels": {
+            "client.knative.dev/nonce": "bebbtckxih",
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/startupProbeType": "Default",
+            "serving.knative.dev/configuration": "armormeds",
+            "serving.knative.dev/configurationGeneration": "2",
+            "serving.knative.dev/route": "armormeds",
+            "serving.knative.dev/service": "armormeds",
+            "serving.knative.dev/serviceUid": "41242ddc-d287-4ce2-8488-40339dcb7eec"
+          },
+          "name": "armormeds-00002-6t4",
+          "namespace": "562518692979",
+          "ownerReferences": [
+            {
+              "apiVersion": "serving.knative.dev/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "Configuration",
+              "name": "armormeds",
+              "uid": "3bca696c-5c2c-4a1e-a029-e1f8d4fa55c8"
+            }
+          ],
+          "resourceVersion": "AAZYzKouVqw",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/562518692979/revisions/armormeds-00002-6t4",
+          "uid": "0d5c7fe6-377f-497c-a7c1-9afb4987daeb"
+        },
+        "spec": {
+          "containerConcurrency": 80,
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "NODE_ENV",
+                  "value": "production"
+                },
+                {
+                  "name": "SESSION_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "SESSION_SECRET"
+                    }
+                  }
+                },
+                {
+                  "name": "STRIPE_SECRET_KEY",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "STRIPE_SECRET_KEY"
+                    }
+                  }
+                },
+                {
+                  "name": "VITE_STRIPE_PUBLIC_KEY",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "VITE_STRIPE_PUBLIC_KEY"
+                    }
+                  }
+                },
+                {
+                  "name": "TWILIO_ACCOUNT_SID",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "TWILIO_ACCOUNT_SID"
+                    }
+                  }
+                },
+                {
+                  "name": "TWILIO_AUTH_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "TWILIO_AUTH_TOKEN"
+                    }
+                  }
+                },
+                {
+                  "name": "TWILIO_PHONE_NUMBER",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "TWILIO_PHONE_NUMBER"
+                    }
+                  }
+                }
+              ],
+              "image": "us-central1-docker.pkg.dev/armormeds-production/armormeds/app@sha256:9815767aba5026b0db576b2156ebdfd3bb595b3fc6180d1365fc5c38ebe1b0c3",
+              "name": "app-1",
+              "ports": [
+                {
+                  "containerPort": 8080,
+                  "name": "http1"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              },
+              "startupProbe": {
+                "failureThreshold": 1,
+                "periodSeconds": 240,
+                "tcpSocket": {
+                  "port": 8080
+                },
+                "timeoutSeconds": 240
+              }
+            }
+          ],
+          "serviceAccountName": "562518692979-compute@developer.gserviceaccount.com",
+          "timeoutSeconds": 300
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-08-11T22:05:12.000172Z",
+              "message": "spec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Secret projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest was not found",
+              "reason": "SecretsAccessCheckFailed",
+              "status": "False",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-08-11T22:05:11.399148Z",
+              "message": "Container image import completed in 5.85s.",
+              "status": "True",
+              "type": "ContainerReady"
+            },
+            {
+              "lastTransitionTime": "2026-08-11T22:05:12.000172Z",
+              "message": "spec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Secret projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest was not found",
+              "reason": "SecretsAccessCheckFailed",
+              "status": "False",
+              "type": "ResourcesAvailable"
+            }
+          ],
+          "containerStatuses": [
+            {
+              "imageDigest": "us-central1-docker.pkg.dev/armormeds-production/armormeds/app@sha256:9815767aba5026b0db576b2156ebdfd3bb595b3fc6180d1365fc5c38ebe1b0c3",
+              "name": "app-1"
+            }
+          ],
+          "imageDigest": "us-central1-docker.pkg.dev/armormeds-production/armormeds/app@sha256:9815767aba5026b0db576b2156ebdfd3bb595b3fc6180d1365fc5c38ebe1b0c3",
+          "logUrl": "https://console.cloud.google.com/logs/viewer?project=armormeds-production&resource=cloud_run_revision/service_name/armormeds/revision_name/armormeds-00002-6t4&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22armormeds%22%0Aresource.labels.revision_name%3D%22armormeds-00002-6t4%22",
+          "observedGeneration": 1
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "code": 9,
+        "message": "Ready condition status changed to False for Revision armormeds-00002-6t4 with message: spec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Secret projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest was not found"
+      }
+    },
+    "receiveTimestamp": "2026-08-11T22:05:12.291074617Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "armormeds",
+        "location": "us-central1",
+        "project_id": "armormeds-production",
+        "revision_name": "armormeds-00002-6t4",
+        "service_name": "armormeds"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "timestamp": "2026-08-11T22:05:12.016241Z"
+  },
+  {
+    "insertId": "-du3vaodpnps",
+    "logName": "projects/armormeds-production/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.CreateService",
+      "resourceName": "namespaces/armormeds-production/services/armormeds",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Service",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "annotations": {
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "580.0.0",
+            "run.googleapis.com/ingress": "all",
+            "run.googleapis.com/ingress-status": "all",
+            "run.googleapis.com/maxScale": "20",
+            "run.googleapis.com/operation-id": "63e517a1-b007-4489-9447-3bb526c14a63",
+            "run.googleapis.com/urls": "[\"https://armormeds-562518692979.us-central1.run.app\"]",
+            "serving.knative.dev/creator": "562518692979-compute@developer.gserviceaccount.com",
+            "serving.knative.dev/lastModifier": "562518692979-compute@developer.gserviceaccount.com"
+          },
+          "creationTimestamp": "2026-08-11T21:56:15.529396Z",
+          "generation": 1,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1"
+          },
+          "name": "armormeds",
+          "namespace": "562518692979",
+          "resourceVersion": "AAZYzIrAj9g",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/562518692979/services/armormeds",
+          "uid": "41242ddc-d287-4ce2-8488-40339dcb7eec"
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/maxScale": "10",
+                "autoscaling.knative.dev/minScale": "1",
+                "run.googleapis.com/client-name": "gcloud",
+                "run.googleapis.com/client-version": "580.0.0",
+                "run.googleapis.com/network-interfaces": "[{\"network\":\"armormeds-vpc\",\"subnetwork\":\"armormeds-run-subnet\"}]",
+                "run.googleapis.com/startup-cpu-boost": "true",
+                "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+              },
+              "labels": {
+                "client.knative.dev/nonce": "shwjeyryba",
+                "run.googleapis.com/startupProbeType": "Default"
+              }
+            },
+            "spec": {
+              "containerConcurrency": 80,
+              "containers": [
+                {
+                  "env": [
+                    {
+                      "name": "NODE_ENV",
+                      "value": "production"
+                    },
+                    {
+                      "name": "SESSION_SECRET",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "SESSION_SECRET"
+                        }
+                      }
+                    },
+                    {
+                      "name": "STRIPE_SECRET_KEY",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "STRIPE_SECRET_KEY"
+                        }
+                      }
+                    },
+                    {
+                      "name": "VITE_STRIPE_PUBLIC_KEY",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "VITE_STRIPE_PUBLIC_KEY"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TWILIO_ACCOUNT_SID",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "TWILIO_ACCOUNT_SID"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TWILIO_AUTH_TOKEN",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "TWILIO_AUTH_TOKEN"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TWILIO_PHONE_NUMBER",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "TWILIO_PHONE_NUMBER"
+                        }
+                      }
+                    }
+                  ],
+                  "image": "us-central1-docker.pkg.dev/armormeds-production/armormeds/app:fa3d1111d10c14776591e102f3a7fad8334c3543",
+                  "ports": [
+                    {
+                      "containerPort": 8080,
+                      "name": "http1"
+                    }
+                  ],
+                  "resources": {
+                    "limits": {
+                      "cpu": "1",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "startupProbe": {
+                    "failureThreshold": 1,
+                    "periodSeconds": 240,
+                    "tcpSocket": {
+                      "port": 8080
+                    },
+                    "timeoutSeconds": 240
+                  }
+                }
+              ],
+              "serviceAccountName": "562518692979-compute@developer.gserviceaccount.com",
+              "timeoutSeconds": 300
+            }
+          },
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100
+            }
+          ]
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-08-11T21:56:24.666947Z",
+              "message": "spec.template.spec.containers[0].env[1].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/SESSION_SECRET/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[2].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/STRIPE_SECRET_KEY/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[3].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/VITE_STRIPE_PUBLIC_KEY/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[4].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_ACCOUNT_SID/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[5].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_AUTH_TOKEN/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.",
+              "reason": "SecretsAccessCheckFailed",
+              "status": "False",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-08-11T21:56:24.666947Z",
+              "message": "spec.template.spec.containers[0].env[1].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/SESSION_SECRET/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[2].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/STRIPE_SECRET_KEY/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[3].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/VITE_STRIPE_PUBLIC_KEY/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[4].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_ACCOUNT_SID/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[5].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_AUTH_TOKEN/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.",
+              "reason": "SecretsAccessCheckFailed",
+              "status": "False",
+              "type": "ConfigurationsReady"
+            },
+            {
+              "lastTransitionTime": "2026-08-11T21:56:23.537281Z",
+              "message": "Provisioning revision instances to receive traffic.",
+              "status": "Unknown",
+              "type": "RoutesReady"
+            }
+          ],
+          "latestCreatedRevisionName": "armormeds-00001-j94",
+          "observedGeneration": 1
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "code": 9,
+        "message": "Ready condition status changed to False for Service armormeds with message: spec.template.spec.containers[0].env[1].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/SESSION_SECRET/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[2].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/STRIPE_SECRET_KEY/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[3].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/VITE_STRIPE_PUBLIC_KEY/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[4].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_ACCOUNT_SID/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[5].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_AUTH_TOKEN/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level.\nspec.template.spec.containers[0].env[6].value_from.secret_key_ref.name: Permission denied on secret: projects/562518692979/secrets/TWILIO_PHONE_NUMBER/versions/latest for Revision service account 562518692979-compute@developer.gserviceaccount.com. The service account used must be granted the 'Secret Manager Secret Accessor' role (roles/secretmanager.secretAccessor) at the secret, project or higher level."
+      }
+    },
+    "receiveTimestamp": "2026-08-11T21:56:24.818023770Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "armormeds-production",
+        "revision_name": "",
+        "service_name": "armormeds"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "timestamp": "2026-08-11T21:56:24.729680Z"

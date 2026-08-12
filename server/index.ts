@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import "dotenv/config";
+import { getPublicBaseUrl } from "./baseUrl";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -42,7 +43,7 @@ async function initStripe() {
     const stripeSync = await getStripeSync();
 
     log('Setting up managed webhook...', 'stripe');
-    const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+    const webhookBaseUrl = getPublicBaseUrl();
     try {
       const result = await stripeSync.findOrCreateManagedWebhook(
         `${webhookBaseUrl}/api/stripe/webhook`

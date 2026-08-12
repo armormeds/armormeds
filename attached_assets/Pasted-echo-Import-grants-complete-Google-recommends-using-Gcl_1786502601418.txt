@@ -1,0 +1,17 @@
+echo "✅ Import + grants complete"
+Google recommends using Gcloud storage CLI (https://docs.cloud.google.com/storage/docs/discover-object-storage-gcloud) instead of gsutil. Please refer to migration guide (https://docs.cloud.google.com/storage/docs/gsutil-transition-to-gcloud) for assistance.
+CommandException: No URLs matched: /home/armor_medss/armormeds-dump.sql
+Google recommends using Gcloud storage CLI (https://docs.cloud.google.com/storage/docs/discover-object-storage-gcloud) instead of gsutil. Please refer to migration guide (https://docs.cloud.google.com/storage/docs/gsutil-transition-to-gcloud) for assistance.
+Copying file:///home/armor_medss/grants.sql [Content-Type=application/sql]...
+/ [1 files][  413.0 B/  413.0 B]                                                
+Operation completed over 1 objects/413.0 B.                                      
+Google recommends using Gcloud storage CLI (https://docs.cloud.google.com/storage/docs/discover-object-storage-gcloud) instead of gsutil. Please refer to migration guide (https://docs.cloud.google.com/storage/docs/gsutil-transition-to-gcloud) for assistance.
+ERROR: (gcloud.sql.import.sql) HTTPError 412: The service account does not have the required permissions for the bucket.
+Importing data into Cloud SQL instance...done.                                                                                                                                            
+Imported data from [gs://armormeds-db-import/grants.sql] into [https://sqladmin.googleapis.com/sql/v1beta4/projects/armormeds-production/instances/armormeds-db].
+Google recommends using Gcloud storage CLI (https://docs.cloud.google.com/storage/docs/discover-object-storage-gcloud) instead of gsutil. Please refer to migration guide (https://docs.cloud.google.com/storage/docs/gsutil-transition-to-gcloud) for assistance.
+Removing gs://armormeds-db-import/grants.sql#1786502566831124...
+/ [1 objects]                                                                   
+Operation completed over 1 objects.                                              
+Removing gs://armormeds-db-import/...
+✅ Import + grants complete

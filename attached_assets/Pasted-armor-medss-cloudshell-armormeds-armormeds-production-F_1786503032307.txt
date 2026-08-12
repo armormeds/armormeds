@@ -1,0 +1,125 @@
+armor_medss@cloudshell:~/armormeds (armormeds-production)$ # Fetch the new dump (overwrite the old one)
+curl -s -o ~/armormeds-dump.sql \
+  "https://eb156990-d071-4750-817f-ffee1d2edfcd-00-3ceexybqivv92.janeway.replit.dev/armormeds-dl-7f3k9x2mq8.sql"
+ls -la ~/armormeds-dump.sql   # ~186 KB this time
+
+gsutil mb -l us-central1 gs://armormeds-db-import 2>/dev/null || true
+gsutil cp ~/armormeds-dump.sql gs://armormeds-db-import/
+
+SQL_SA=$(gcloud sql instances describe armormeds-db \
+  --format="value(serviceAccountEmailAddress)")
+gsutil iam ch serviceAccount:${SQL_SA}:objectViewer gs://armormeds-db-import
+
+gcloud sql import sql armormeds-db \
+  gs://armormeds-db-import/armormeds-dump.sql \
+  --database=armormeds --user=armormeds_app --quiet
+
+gsutil rm -r gs://armormeds-db-import
+rm ~/armormeds-dump.sql
+echo "✅ Import complete"
+-rw-rw-r-- 1 armor_medss armor_medss 185925 Aug 12 02:48 /home/armor_medss/armormeds-dump.sql
+Google recommends using Gcloud storage CLI (https://docs.cloud.google.com/storage/docs/discover-object-storage-gcloud) instead of gsutil. Please refer to migration guide (https://docs.cloud.google.com/storage/docs/gsutil-transition-to-gcloud) for assistance.
+Copying file:///home/armor_medss/armormeds-dump.sql [Content-Type=application/sql]...
+/ [1 files][181.6 KiB/181.6 KiB]                                                
+Operation completed over 1 objects/181.6 KiB.                                    
+Google recommends using Gcloud storage CLI (https://docs.cloud.google.com/storage/docs/discover-object-storage-gcloud) instead of gsutil. Please refer to migration guide (https://docs.cloud.google.com/storage/docs/gsutil-transition-to-gcloud) for assistance.
+Importing data into Cloud SQL instance...failed.                                                                                                                                          
+ERROR: (gcloud.sql.import.sql) [ERROR_RDBMS] error:
+exit status 3
+stdout(capped at 100k bytes):
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+DROP SEQUENCE
+DROP TABLE
+
+stderr:
+ERROR:  cannot drop function public.set_updated_at_metadata() because other objects depend on itDETAIL:  trigger handle_updated_at on table stripe._sync_status depends on function public.set_updated_at_metadata()trigger handle_updated_at on table stripe._managed_webhooks depends on function public.set_updated_at_metadata()HINT:  Use DROP ... CASCADE to drop the dependent objects too.
+Google recommends using Gcloud storage CLI (https://docs.cloud.google.com/storage/docs/discover-object-storage-gcloud) instead of gsutil. Please refer to migration guide (https://docs.cloud.google.com/storage/docs/gsutil-transition-to-gcloud) for assistance.
+Removing gs://armormeds-db-import/armormeds-dump.sql#1786502940906569...
+/ [1 objects]                                                                   
+Operation completed over 1 objects.                                              
+Removing gs://armormeds-db-import/...
+✅ Import complete
+armor_medss@cloudshell:~/armor

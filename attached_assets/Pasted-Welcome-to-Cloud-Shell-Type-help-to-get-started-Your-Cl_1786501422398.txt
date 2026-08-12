@@ -1,0 +1,37 @@
+Welcome to Cloud Shell! Type "help" to get started.
+Your Cloud Platform project in this session is set to armormeds-production.
+Use `gcloud config set project [PROJECT_ID]` to change to a different project.
+armor_medss@cloudshell:~ (armormeds-production)$ cd ~/armormeds
+
+# Remove the Twilio secrets from the deploy config
+sed -i 's/,TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN:latest,TWILIO_PHONE_NUMBER=TWILIO_PHONE_NUMBER:latest//' cloudbuild.yaml
+
+# Confirm — should show only SESSION_SECRET, STRIPE keys, and DATABASE_URL
+grep "set-secrets" cloudbuild.yaml
+
+# Deploy
+gcloud builds submit --config cloudbuild.yaml \
+  --substitutions=COMMIT_SHA=$(git rev-parse HEAD) .
+      - '--set-secrets=SESSION_SECRET=SESSION_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,VITE_STRIPE_PUBLIC_KEY=VITE_STRIPE_PUBLIC_KEY:latest'
+Creating temporary archive of 325 file(s) totalling 133.7 MiB before compression.
+Some files were not included in the source upload.
+
+Check the gcloud log [/tmp/tmp.0PIHkZgqVR/logs/2026.08.12/02.19.53.155774.log] to see which files and the contents of the
+default gcloudignore file used (see `$ gcloud topic gcloudignore` to learn
+more).
+
+Uploading tarball of [.] to [gs://armormeds-production_cloudbuild/source/1786501193.586385-843e086c6c2647029cf2f3b8ea41e5db.tgz]
+Created [https://cloudbuild.googleapis.com/v1/projects/armormeds-production/locations/global/builds/9526a65a-028c-4192-b376-626a0543943e].
+Logs are available at [ https://console.cloud.google.com/cloud-build/builds/9526a65a-028c-4192-b376-626a0543943e?project=562518692979 ].
+
+gcloud builds submit only displays logs from Cloud Storage. To view logs from Cloud Logging, run:
+gcloud beta builds submit
+
+Waiting for build to complete. Polling interval: 1 second(s).
+ID: 9526a65a-028c-4192-b376-626a0543943e
+CREATE_TIME: 2026-08-12T02:20:03+00:00
+DURATION: 2M56S
+SOURCE: gs://armormeds-production_cloudbuild/source/1786501193.586385-843e086c6c2647029cf2f3b8ea41e5db.tgz
+IMAGES: us-central1-docker.pkg.dev/armormeds-production/armormeds/app:fa3d1111d10c14776591e102f3a7fad8334c3543 (+2 more)
+STATUS: SUCCESS
+armor_medss@cloudshell:~/armormeds (armormeds-production)$ 
