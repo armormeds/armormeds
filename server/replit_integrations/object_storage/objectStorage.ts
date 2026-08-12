@@ -11,24 +11,31 @@ import {
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
+// Detect whether we're running inside Replit (sidecar available) or on Cloud Run (use ADC).
+const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.REPLIT_DEPLOYMENT);
+
 // The object storage client is used to interact with the object storage service.
-export const objectStorageClient = new Storage({
-  credentials: {
-    audience: "replit",
-    subject_token_type: "access_token",
-    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-    type: "external_account",
-    credential_source: {
-      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-      format: {
-        type: "json",
-        subject_token_field_name: "access_token",
+// On Replit: use the sidecar-provided credentials.
+// On Cloud Run / other GCP hosts: use Application Default Credentials (ADC).
+export const objectStorageClient = isReplit
+  ? new Storage({
+      credentials: {
+        audience: "replit",
+        subject_token_type: "access_token",
+        token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+        type: "external_account",
+        credential_source: {
+          url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+          format: {
+            type: "json",
+            subject_token_field_name: "access_token",
+          },
+        },
+        universe_domain: "googleapis.com",
       },
-    },
-    universe_domain: "googleapis.com",
-  },
-  projectId: "",
-});
+      projectId: "",
+    })
+  : new Storage(); // ADC — automatically uses the Cloud Run service account
 
 export class ObjectNotFoundError extends Error {
   constructor() {
@@ -154,6 +161,40 @@ export class ObjectStorageService {
     });
   }
 
+  /**
+   * Upload a file buffer directly to GCS using ADC credentials.
+   * Used on Cloud Run where the Replit sidecar is not available.
+   * Requires GCS_UPLOAD_BUCKET env var to be set.
+   *
+   * Returns the normalized objectPath (e.g. /objects/uploads/<uuid>).
+   */
+  async uploadBufferToGCS(
+    buffer: Buffer,
+    contentType: string
+  ): Promise<{ objectPath: string }> {
+    const bucketName = process.env.GCS_UPLOAD_BUCKET;
+    if (!bucketName) {
+      throw new Error(
+        "GCS_UPLOAD_BUCKET not set. Create a GCS bucket and set this env var on Cloud Run."
+      );
+    }
+
+    const objectId = randomUUID();
+    const objectName = `uploads/${objectId}`;
+
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(objectName);
+
+    await file.save(buffer, {
+      metadata: { contentType },
+      resumable: false,
+    });
+
+    // Normalize to the /objects/ path format used by the download route
+    const objectPath = `/objects/${objectName}`;
+    return { objectPath };
+  }
+
   // Gets the object entity file from the object path.
   async getObjectEntityFile(objectPath: string): Promise<File> {
     if (!objectPath.startsWith("/objects/")) {
@@ -166,6 +207,17 @@ export class ObjectStorageService {
     }
 
     const entityId = parts.slice(1).join("/");
+
+    // Try GCS_UPLOAD_BUCKET first (Cloud Run proxy-uploaded files)
+    const gcsBucket = process.env.GCS_UPLOAD_BUCKET;
+    if (gcsBucket) {
+      const bucket = objectStorageClient.bucket(gcsBucket);
+      const objectFile = bucket.file(entityId);
+      const [exists] = await objectFile.exists();
+      if (exists) return objectFile;
+    }
+
+    // Fall back to PRIVATE_OBJECT_DIR (Replit signed-URL uploads)
     let entityDir = this.getPrivateObjectDir();
     if (!entityDir.endsWith("/")) {
       entityDir = `${entityDir}/`;

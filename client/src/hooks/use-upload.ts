@@ -105,7 +105,32 @@ export function useUpload(options: UseUploadOptions = {}) {
   );
 
   /**
+   * Upload a file via the server-side proxy route (POST /api/uploads/file).
+   * Works on Cloud Run (no Replit sidecar needed) and on Replit.
+   */
+  const uploadViaProxy = useCallback(
+    async (file: File): Promise<UploadResponse> => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/uploads/file", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to upload file");
+      }
+      const data = await response.json();
+      // Proxy route returns { objectPath, metadata } — add a dummy uploadURL for compatibility
+      return { uploadURL: "", objectPath: data.objectPath, metadata: data.metadata };
+    },
+    []
+  );
+
+  /**
    * Upload a file using the presigned URL flow.
+   * Falls back to the server-side proxy if the signed-URL request fails
+   * (e.g. on Cloud Run where the Replit sidecar is unavailable).
    *
    * @param file - The file to upload
    * @returns The upload response containing the object path
@@ -117,13 +142,20 @@ export function useUpload(options: UseUploadOptions = {}) {
       setProgress(0);
 
       try {
-        // Step 1: Request presigned URL (send metadata as JSON)
         setProgress(10);
-        const uploadResponse = await requestUploadUrl(file);
 
-        // Step 2: Upload file directly to presigned URL
-        setProgress(30);
-        await uploadToPresignedUrl(file, uploadResponse.uploadURL);
+        let uploadResponse: UploadResponse;
+
+        try {
+          // Try signed-URL flow first (works on Replit)
+          uploadResponse = await requestUploadUrl(file);
+          setProgress(30);
+          await uploadToPresignedUrl(file, uploadResponse.uploadURL);
+        } catch {
+          // Fall back to server-side proxy (works on Cloud Run)
+          setProgress(30);
+          uploadResponse = await uploadViaProxy(file);
+        }
 
         setProgress(100);
         options.onSuccess?.(uploadResponse);
@@ -137,7 +169,7 @@ export function useUpload(options: UseUploadOptions = {}) {
         setIsUploading(false);
       }
     },
-    [requestUploadUrl, uploadToPresignedUrl, options]
+    [requestUploadUrl, uploadToPresignedUrl, uploadViaProxy, options]
   );
 
   /**
