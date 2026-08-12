@@ -106,22 +106,24 @@ export function useUpload(options: UseUploadOptions = {}) {
 
   /**
    * Upload a file via the server-side proxy route (POST /api/uploads/file).
-   * Works on Cloud Run (no Replit sidecar needed) and on Replit.
+   * Sends the file as a raw body (no multipart) — works on Cloud Run and Replit.
    */
   const uploadViaProxy = useCallback(
     async (file: File): Promise<UploadResponse> => {
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/uploads/file", {
+      const params = new URLSearchParams({
+        name: file.name,
+        contentType: file.type || "application/octet-stream",
+      });
+      const response = await fetch(`/api/uploads/file?${params}`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file,
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to upload file");
       }
       const data = await response.json();
-      // Proxy route returns { objectPath, metadata } — add a dummy uploadURL for compatibility
       return { uploadURL: "", objectPath: data.objectPath, metadata: data.metadata };
     },
     []

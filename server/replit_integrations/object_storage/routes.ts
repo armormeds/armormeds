@@ -1,5 +1,5 @@
-import type { Express, Request, Response } from "express";
-import busboy from "busboy";
+import express from "express";
+import type { Express } from "express";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 /**
@@ -66,65 +66,46 @@ export function registerObjectStorageRoutes(app: Express): void {
   /**
    * Proxy file upload — works on Cloud Run (no Replit sidecar needed).
    *
-   * POST /api/uploads/file  (multipart/form-data, field name "file")
+   * POST /api/uploads/file
+   *   Content-Type: <file mime type>
+   *   Query params: name (filename), contentType (mime type)
+   *   Body: raw file bytes
    *
-   * The browser sends the actual file here; the server writes it to GCS using
+   * The browser sends the file as a raw body; the server writes it to GCS using
    * Application Default Credentials, then returns { objectPath, metadata }.
    * Requires GCS_UPLOAD_BUCKET env var on Cloud Run.
    */
-  app.post("/api/uploads/file", (req: Request, res: Response) => {
-    const MAX_BYTES = 15 * 1024 * 1024;
-    let received = 0;
-    let finished = false;
+  app.post(
+    "/api/uploads/file",
+    express.raw({ type: "*/*", limit: "15mb" }),
+    async (req, res) => {
+      try {
+        const fileName = (req.query.name as string) || "upload";
+        const contentType =
+          (req.query.contentType as string) ||
+          req.get("Content-Type") ||
+          "application/octet-stream";
 
-    const bb = busboy({ headers: req.headers, limits: { fileSize: MAX_BYTES } });
-
-    bb.on("file", (fieldname, stream, info) => {
-      const { filename, mimeType } = info;
-      const chunks: Buffer[] = [];
-
-      stream.on("data", (chunk: Buffer) => {
-        received += chunk.length;
-        chunks.push(chunk);
-      });
-
-      stream.on("limit", () => {
-        if (!finished) {
-          finished = true;
-          res.status(413).json({ error: "File too large (max 15 MB)" });
+        const buffer = req.body as Buffer;
+        if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+          return res.status(400).json({ error: "No file data received" });
         }
-      });
 
-      stream.on("end", async () => {
-        if (finished) return;
-        finished = true;
-        try {
-          const buffer = Buffer.concat(chunks);
-          const { objectPath } = await objectStorageService.uploadBufferToGCS(
-            buffer,
-            mimeType || "application/octet-stream"
-          );
-          res.json({
-            objectPath,
-            metadata: { name: filename, size: received, contentType: mimeType },
-          });
-        } catch (err) {
-          console.error("Error uploading file to GCS:", err);
-          res.status(500).json({ error: "Failed to upload file" });
-        }
-      });
-    });
+        const { objectPath } = await objectStorageService.uploadBufferToGCS(
+          buffer,
+          contentType
+        );
 
-    bb.on("error", (err: Error) => {
-      if (!finished) {
-        finished = true;
-        console.error("Busboy error:", err);
-        res.status(500).json({ error: "Failed to parse upload" });
+        res.json({
+          objectPath,
+          metadata: { name: fileName, size: buffer.length, contentType },
+        });
+      } catch (err) {
+        console.error("Error uploading file to GCS:", err);
+        res.status(500).json({ error: "Failed to upload file" });
       }
-    });
-
-    req.pipe(bb);
-  });
+    }
+  );
 
   /**
    * Serve uploaded objects.
