@@ -108,6 +108,29 @@ export function registerObjectStorageRoutes(app: Express): void {
   );
 
   /**
+   * GET /api/object-storage/download?path=<objectPath>
+   *
+   * Used by the admin UI to download/view uploaded files.
+   * Accepts the objectPath as a query param (e.g. /objects/uploads/<uuid>).
+   */
+  app.get("/api/object-storage/download", async (req, res) => {
+    try {
+      const path = req.query.path as string;
+      if (!path) {
+        return res.status(400).json({ error: "Missing path query parameter" });
+      }
+      const objectFile = await objectStorageService.getObjectEntityFile(path);
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving object via download route:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ error: "Object not found" });
+      }
+      return res.status(500).json({ error: "Failed to serve object" });
+    }
+  });
+
+  /**
    * Serve uploaded objects.
    *
    * GET /objects/:objectPath(*)
