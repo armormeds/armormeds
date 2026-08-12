@@ -33,7 +33,7 @@ steps:
       - '--min-instances=1'
       - '--max-instances=10'
       - '--concurrency=80'
-      - '--set-env-vars=NODE_ENV=production'
+      - '--set-env-vars=NODE_ENV=production,PUBLIC_BASE_URL=https://armormeds.com,GCS_UPLOAD_BUCKET=armormeds-uploads'
       - '--set-secrets=SESSION_SECRET=SESSION_SECRET:latest,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,VITE_STRIPE_PUBLIC_KEY=VITE_STRIPE_PUBLIC_KEY:latest,DATABASE_URL=DATABASE_URL:latest'
       - '--service-account=armormeds-run@armormeds-production.iam.gserviceaccount.com'
       - '--network=armormeds-vpc'
