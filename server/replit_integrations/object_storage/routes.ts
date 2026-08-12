@@ -1,5 +1,5 @@
-import type { Express } from "express";
-import multer from "multer";
+import type { Express, Request, Response } from "express";
+import busboy from "busboy";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 /**
@@ -14,9 +14,6 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
  * - Add file metadata storage (save to database after upload)
  * - Add ACL policies for access control
  */
-// multer: store uploaded files in memory (max 15 MB per file)
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
-
 export function registerObjectStorageRoutes(app: Express): void {
   const objectStorageService = new ObjectStorageService();
 
@@ -75,27 +72,58 @@ export function registerObjectStorageRoutes(app: Express): void {
    * Application Default Credentials, then returns { objectPath, metadata }.
    * Requires GCS_UPLOAD_BUCKET env var on Cloud Run.
    */
-  app.post("/api/uploads/file", upload.single("file"), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file provided" });
-      }
+  app.post("/api/uploads/file", (req: Request, res: Response) => {
+    const MAX_BYTES = 15 * 1024 * 1024;
+    let received = 0;
+    let finished = false;
 
-      const { originalname, size, mimetype, buffer } = req.file;
+    const bb = busboy({ headers: req.headers, limits: { fileSize: MAX_BYTES } });
 
-      const { objectPath } = await objectStorageService.uploadBufferToGCS(
-        buffer,
-        mimetype || "application/octet-stream"
-      );
+    bb.on("file", (fieldname, stream, info) => {
+      const { filename, mimeType } = info;
+      const chunks: Buffer[] = [];
 
-      res.json({
-        objectPath,
-        metadata: { name: originalname, size, contentType: mimetype },
+      stream.on("data", (chunk: Buffer) => {
+        received += chunk.length;
+        chunks.push(chunk);
       });
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      res.status(500).json({ error: "Failed to upload file" });
-    }
+
+      stream.on("limit", () => {
+        if (!finished) {
+          finished = true;
+          res.status(413).json({ error: "File too large (max 15 MB)" });
+        }
+      });
+
+      stream.on("end", async () => {
+        if (finished) return;
+        finished = true;
+        try {
+          const buffer = Buffer.concat(chunks);
+          const { objectPath } = await objectStorageService.uploadBufferToGCS(
+            buffer,
+            mimeType || "application/octet-stream"
+          );
+          res.json({
+            objectPath,
+            metadata: { name: filename, size: received, contentType: mimeType },
+          });
+        } catch (err) {
+          console.error("Error uploading file to GCS:", err);
+          res.status(500).json({ error: "Failed to upload file" });
+        }
+      });
+    });
+
+    bb.on("error", (err: Error) => {
+      if (!finished) {
+        finished = true;
+        console.error("Busboy error:", err);
+        res.status(500).json({ error: "Failed to parse upload" });
+      }
+    });
+
+    req.pipe(bb);
   });
 
   /**
