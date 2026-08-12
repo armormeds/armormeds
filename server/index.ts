@@ -7,6 +7,7 @@ import { createServer } from "http";
 import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync, getStripePublishableKey } from './stripeClient';
 import { WebhookHandlers } from './webhookHandlers';
+import { runAutoMigrate } from './db';
 
 const app = express();
 const httpServer = createServer(app);
@@ -146,6 +147,9 @@ app.use((req, res, next) => {
 (async () => {
   // Health check endpoint — responds immediately before anything else loads
   app.get("/health", (_req, res) => res.status(200).json({ status: "ok" }));
+
+  // Run DB migrations before routes so all tables exist
+  await runAutoMigrate();
 
   // Register API routes (DB seeding runs in background, won't block this)
   try {

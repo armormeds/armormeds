@@ -1,7 +1,10 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
 import * as schema from "@shared/schema";
 import "dotenv/config";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const { Pool } = pg;
 
@@ -31,3 +34,23 @@ if (!process.env.DATABASE_URL) {
 
 export const pool = _pool;
 export const db = drizzle(pool, { schema });
+
+/**
+ * Run all pending Drizzle migrations at startup.
+ * Safe to call on every boot — already-applied migrations are skipped.
+ */
+export async function runAutoMigrate() {
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️  Skipping auto-migrate: DATABASE_URL not set.");
+    return;
+  }
+  try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    // In the compiled dist the migrations folder is copied next to index.cjs
+    const migrationsFolder = path.resolve(__dirname, "../migrations");
+    await migrate(db, { migrationsFolder });
+    console.log("✅ Database migrations applied.");
+  } catch (err) {
+    console.error("❌ Auto-migrate failed (non-fatal — server will still start):", err);
+  }
+}
